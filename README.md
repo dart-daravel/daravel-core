@@ -1,15 +1,4 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
-
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/tools/pub/writing-package-pages).
-
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/to/develop-packages).
--->
+[![test](https://github.com/Dart-Daravel/daravel-core/actions/workflows/test.yaml/badge.svg)](https://github.com/Dart-Daravel/daravel-core/actions/workflows/test.yaml) [![codecov](https://codecov.io/gh/Dart-Daravel/daravel-core/graph/badge.svg?token=ITU0NL7LY6)](https://codecov.io/gh/Dart-Daravel/daravel-core) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 TODO: Put a short description of the package here that helps potential users
 know whether this package might be useful for them.
