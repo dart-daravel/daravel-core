@@ -5,5 +5,5 @@ import '../app/http/controllers/test_controller.dart';
 final webRouter = DaravelRouter();
 
 void apiRoutes() {
-  webRouter.get('/', LandingController().web);
+  webRouter.get('/', TestController().web);
 }

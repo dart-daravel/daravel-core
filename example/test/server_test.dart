@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:http/http.dart';
@@ -21,15 +22,25 @@ void main() {
   tearDown(() => p.kill());
 
   test('Root', () async {
-    final response = await get(Uri.parse('$host/'));
+    final response = await get(Uri.parse('$host/v1'));
     expect(response.statusCode, 200);
-    expect(response.body, 'Hello, World!\n');
+    expect(
+      response.body,
+      jsonEncode({
+        'message': 'Hello, World!',
+      }),
+    );
   });
 
   test('Echo', () async {
-    final response = await get(Uri.parse('$host/echo/hello'));
+    final response = await get(Uri.parse('$host/v1/echo/hello'));
     expect(response.statusCode, 200);
-    expect(response.body, 'hello\n');
+    expect(
+      response.body,
+      jsonEncode({
+        'message': 'hello',
+      }),
+    );
   });
 
   test('404', () async {

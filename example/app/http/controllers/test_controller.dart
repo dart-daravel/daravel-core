@@ -1,11 +1,15 @@
+import 'dart:convert';
+
 import 'package:shelf/shelf.dart';
 
 import '../../../resources/views/welcome.html.dart';
 import 'controller.dart';
 
-class LandingController extends Controller {
+class TestController extends Controller {
   Response api(Request req) {
-    return Response.ok('Hello, World!\n');
+    return Response.ok(jsonEncode({
+      'message': 'Hello, World!',
+    }));
   }
 
   Response web(Request req) {
@@ -13,5 +17,9 @@ class LandingController extends Controller {
       welcome(),
       headers: {'Content-Type': 'text/html'},
     );
+  }
+
+  Response echo(Request req, String echoMessage) {
+    return Response.ok(jsonEncode({'message': echoMessage}));
   }
 }
