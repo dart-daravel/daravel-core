@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:daravel_core/daravel_core.dart';
 import 'package:daravel_core/http/daravel_router.dart';
+import 'package:flutter/foundation.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart';
 import 'package:shelf_router/shelf_router.dart';
@@ -11,7 +12,9 @@ class DaravelApp {
   final List<DaravelRouter> routers;
   final List<daravel.Middleware> globalMiddlewares;
 
-  const DaravelApp({
+  Handler? _rootHandler;
+
+  DaravelApp({
     this.routers = const [],
     this.globalMiddlewares = const [],
   });
@@ -30,15 +33,18 @@ class DaravelApp {
       pipeline = pipeline.addMiddleware(middleware.handle());
     }
 
-    final handler = pipeline.addHandler(rootRouter.call);
+    _rootHandler = pipeline.addHandler(rootRouter.call);
 
     // Use any available host or container IP (usually `0.0.0.0`).
     final ip = InternetAddress.anyIPv4;
-    final server = await serve(handler, ip, port);
+    final server = await serve(_rootHandler!, ip, port);
 
     // ignore: avoid_print
     print('Server listening on port ${server.port}');
 
     return server;
   }
+
+  @visibleForTesting
+  Handler? get rootHandler => _rootHandler;
 }
