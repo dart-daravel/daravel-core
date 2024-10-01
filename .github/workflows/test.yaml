@@ -24,6 +24,10 @@ jobs:
 
       - run: cd example && dart test --coverage coverage
 
+      - run: dart pub global activate coverage
+
+      - run: cd example && format_coverage --packages=.dart_tool/package_config.json --report-on=. --report-on=../lib --in=coverage/test/server_test.dart.vm.json --lcov --out=coverage/test/lcov.info
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:
