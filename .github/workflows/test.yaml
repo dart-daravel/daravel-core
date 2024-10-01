@@ -20,9 +20,9 @@ jobs:
 
       - run: dart analyze
 
-      - run: flutter test --coverage
+      - run: dart test --coverage=coverage
 
-      - run: cd example && dart test --coverage coverage
+      - run: cd example && dart test
 
       - run: dart pub global activate coverage
 
