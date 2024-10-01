@@ -22,7 +22,7 @@ jobs:
 
       - run: flutter test --coverage
 
-      - run: cd example && dart test --coverage
+      - run: cd example && dart test --coverage coverage
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
