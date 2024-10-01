@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:daravel_core/daravel_core.dart';
 import 'package:daravel_core/http/daravel_router.dart';
-import 'package:flutter/foundation.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart';
 import 'package:shelf_router/shelf_router.dart';
@@ -45,6 +44,5 @@ class DaravelApp {
     return server;
   }
 
-  @visibleForTesting
   Handler? get rootHandler => _rootHandler;
 }
