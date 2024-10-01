@@ -1,8 +1,8 @@
-import 'package:daravel_core/http/middleware/middleware.dart' as daravel;
+import 'package:daravel_core/http/middleware/middleware.dart';
 import 'package:shelf/shelf.dart';
 
 // TODO: Test
-class CorsMiddleware implements daravel.Middleware {
+class CorsMiddleware implements DaravelMiddleware {
   final List methods;
   final dynamic origin;
 

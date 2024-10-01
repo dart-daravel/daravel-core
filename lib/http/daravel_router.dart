@@ -4,12 +4,12 @@ import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 
 import 'package:daravel_core/app.dart';
-import 'package:daravel_core/http/middleware/middleware.dart' as daravel;
+import 'package:daravel_core/http/middleware/middleware.dart';
 
 class DaravelRouteParams {
-  final List<daravel.Middleware> middlewares = [];
+  final List<DaravelMiddleware> middlewares = [];
 
-  DaravelRouteParams middleware(daravel.Middleware middleware) {
+  DaravelRouteParams middleware(DaravelMiddleware middleware) {
     middlewares.add(middleware);
     return this;
   }

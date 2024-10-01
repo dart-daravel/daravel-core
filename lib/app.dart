@@ -1,15 +1,14 @@
 import 'dart:io';
 
-import 'package:daravel_core/daravel_core.dart';
-import 'package:daravel_core/http/daravel_router.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart';
 import 'package:shelf_router/shelf_router.dart';
-import 'package:daravel_core/http/middleware/middleware.dart' as daravel;
+
+import 'package:daravel_core/daravel_core.dart';
 
 class DaravelApp {
   final List<DaravelRouter> routers;
-  final List<daravel.Middleware> globalMiddlewares;
+  final List<DaravelMiddleware> globalMiddlewares;
 
   Handler? _rootHandler;
 
@@ -28,7 +27,7 @@ class DaravelApp {
 
     var pipeline = const Pipeline();
 
-    for (daravel.Middleware middleware in globalMiddlewares) {
+    for (DaravelMiddleware middleware in globalMiddlewares) {
       pipeline = pipeline.addMiddleware(middleware.handle());
     }
 

@@ -1,5 +1,5 @@
 import 'package:shelf/shelf.dart' as shelf;
 
-abstract class Middleware {
+abstract class DaravelMiddleware {
   shelf.Middleware handle();
 }
