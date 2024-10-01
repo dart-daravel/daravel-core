@@ -26,10 +26,12 @@ jobs:
 
       - run: dart pub global activate coverage
 
-      - run: format_coverage --packages=.dart_tool/package_config.json --report-on=lib --in=coverage/test/router_test.dart.vm.json --lcov --out=coverage/test/router_test_lcov.info
+      - run: |
+          format_coverage --packages=.dart_tool/package_config.json --report-on=lib --in=coverage/test/router_test.dart.vm.json --lcov --out=coverage/test/router_test_lcov.info
+          format_coverage --packages=.dart_tool/package_config.json --report-on=lib --in=coverage/test/middleware_test.dart.vm.json --lcov --out=coverage/test/middleware_test_lcov.info
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          file: coverage/router_test_lcov.info
+          files: coverage/router_test_lcov.info,coverage/middleware_test_lcov.info
