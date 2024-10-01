@@ -22,10 +22,10 @@ jobs:
 
       - run: flutter test --coverage
 
+      - run: cd example && dart test --coverage
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: coverage/lcov.info
-
-      - run: cd example && dart test
