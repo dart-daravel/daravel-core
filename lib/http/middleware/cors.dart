@@ -7,7 +7,7 @@ class CorsMiddleware implements DaravelMiddleware {
   final dynamic origin;
 
   CorsMiddleware({
-    this.origin,
+    this.origin = '*',
     this.methods = const ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   });
 
