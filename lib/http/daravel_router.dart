@@ -3,10 +3,13 @@ import 'dart:io';
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 
-class DaravelRouteParams {
-  final List<String> middlewares = [];
+import 'package:daravel_core/app.dart';
+import 'package:daravel_core/http/middleware/middleware.dart' as daravel;
 
-  DaravelRouteParams middleware(String middleware) {
+class DaravelRouteParams {
+  final List<daravel.Middleware> middlewares = [];
+
+  DaravelRouteParams middleware(daravel.Middleware middleware) {
     middlewares.add(middleware);
     return this;
   }
@@ -34,6 +37,12 @@ class DaravelRouter {
 
   final List<DaravelRoute> _routes = [];
   final List<DaravelRouter> _routers = [];
+
+  late final DaravelApp app;
+
+  void setApp(DaravelApp app) {
+    this.app = app;
+  }
 
   /// Define a route with the GET method
   DaravelRouteParams get(String path, Function handler) {
@@ -154,7 +163,14 @@ class DaravelRouter {
   }
 
   void _mountRoute(Router router, DaravelRoute route) {
-    router.add(route.method, route.path, (
+    var pipeline = const Pipeline();
+    if (_domain != null) {
+      pipeline = pipeline.addMiddleware(_domainHandler(router, _domain!));
+    }
+    for (final middleware in route.params.middlewares) {
+      pipeline = pipeline.addMiddleware(middleware.handle());
+    }
+    final handler = pipeline.addHandler((
       Request req, [
       String? a1,
       String? a2,
@@ -163,16 +179,9 @@ class DaravelRouter {
       String? a5,
       String? a6,
     ]) {
-      return _domain == null
-          ? Function.apply(route.handler!, [req, ...req.params.values])
-          : const Pipeline()
-              .addMiddleware(logRequests())
-              .addMiddleware(_domainHandler(router, _domain!))
-              .addHandler((req) {
-              return Function.apply(
-                  route.handler!, [req, ...req.params.values]);
-            });
+      return Function.apply(route.handler!, [req, ...req.params.values]);
     });
+    router.add(route.method, route.path, handler);
   }
 }
 
