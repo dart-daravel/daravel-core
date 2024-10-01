@@ -56,4 +56,71 @@ void main() {
 
     await server.close();
   });
+
+  test('CORS Middleware Test, Origin: app.enterprise.com', () async {
+    final router = DaravelRouter();
+    router.get('/', (Request request) => Response.ok('Hello, World!'));
+    router.get('/<name>',
+        (Request request, String name) => Response.ok('Hello, $name!'));
+
+    final app = DaravelApp(
+      routers: [router],
+      globalMiddlewares: [
+        CorsMiddleware(origin: 'app.enterprise.com'),
+      ],
+    );
+
+    final HttpServer server = await app.run(port: 8081);
+
+    final Response response =
+        await app.rootHandler!(Request('GET', Uri.parse('$host/')));
+
+    expect(response.statusCode, 403);
+    expect(await response.readAsString(), 'Origin not allowed');
+
+    final Response response2 =
+        await app.rootHandler!(Request('GET', Uri.parse('$host/'), headers: {
+      'origin': 'app.enterprise.com',
+    }));
+
+    expect(response2.statusCode, 200);
+    expect(
+        response2.headers['Access-Control-Allow-Origin'], 'app.enterprise.com');
+    expect(response2.headers['Access-Control-Allow-Methods'],
+        'GET, POST, PUT, DELETE, OPTIONS');
+    expect(response2.headers['Access-Control-Allow-Headers'],
+        'Origin, Content-Type, X-Requested-With, Accept');
+    expect(await response2.readAsString(), 'Hello, World!');
+
+    final Response response3 = await app
+        .rootHandler!(Request('GET', Uri.parse('$host/John'), headers: {
+      'origin': 'app.enterprise.com',
+    }));
+
+    expect(response3.statusCode, 200);
+    expect(
+        response3.headers['Access-Control-Allow-Origin'], 'app.enterprise.com');
+    expect(response3.headers['Access-Control-Allow-Methods'],
+        'GET, POST, PUT, DELETE, OPTIONS');
+    expect(response3.headers['Access-Control-Allow-Headers'],
+        'Origin, Content-Type, X-Requested-With, Accept');
+    expect(await response3.readAsString(), 'Hello, John!');
+
+    final Response response4 = await app
+        .rootHandler!(Request('OPTIONS', Uri.parse('$host/'), headers: {
+      'origin': 'app.enterprise.com',
+    }));
+
+    // Pre-Flight Request
+    expect(response4.statusCode, 200);
+    expect(
+        response4.headers['Access-Control-Allow-Origin'], 'app.enterprise.com');
+    expect(response4.headers['Access-Control-Allow-Methods'],
+        'GET, POST, PUT, DELETE, OPTIONS');
+    expect(response4.headers['Access-Control-Allow-Headers'],
+        'Origin, Content-Type, X-Requested-With, Accept');
+    expect(await response4.readAsString(), '');
+
+    await server.close();
+  });
 }
