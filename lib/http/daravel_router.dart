@@ -181,7 +181,11 @@ class DaravelRouter {
     ]) {
       return Function.apply(route.handler!, [req, ...req.params.values]);
     });
-    router.add(route.method, route.path, handler);
+    if (route.method.isEmpty) {
+      router.all(route.path, handler);
+    } else {
+      router.add(route.method, route.path, handler);
+    }
   }
 }
 

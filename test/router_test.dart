@@ -251,6 +251,118 @@ void main() {
     await server.close();
   });
 
+  test('Options requests', () async {
+    final router = DaravelRouter();
+    router.options('/', (Request request) => Response.ok(''));
+    router.options(
+        '/<name>', (Request request, String name) => Response.ok(''));
+    router.options('/<name>/age/<age>',
+        (Request request, String name, String age) => Response.ok(''));
+
+    expect(router.routes.length, 3);
+    expect(router.routes[0].method, 'OPTIONS');
+    expect(router.routes[0].path, '/');
+    expect(router.routes[1].method, 'OPTIONS');
+    expect(router.routes[1].path, '/<name>');
+    expect(router.routes[2].method, 'OPTIONS');
+    expect(router.routes[2].path, '/<name>/age/<age>');
+
+    final app = DaravelApp(
+      routers: [router],
+      globalMiddlewares: [
+        LoggerMiddleware(),
+      ],
+    );
+
+    final HttpServer server = await app.run();
+
+    final Response response =
+        await app.rootHandler!(Request('OPTIONS', Uri.parse('$host:8080/')));
+
+    expect(response.statusCode, 200);
+    expect(await response.readAsString(), '');
+
+    final Response response2 = await app
+        .rootHandler!(Request('OPTIONS', Uri.parse('$host:8080/John')));
+
+    expect(response2.statusCode, 200);
+    expect(await response2.readAsString(), '');
+
+    final Response response3 = await app
+        .rootHandler!(Request('OPTIONS', Uri.parse('$host:8080/John/age/25')));
+
+    expect(response3.statusCode, 200);
+    expect(await response3.readAsString(), '');
+
+    await server.close();
+  });
+
+  test('All requests', () async {
+    final router = DaravelRouter();
+    router.all('/', (Request request) => Response.ok('Hello, World!'));
+    router.all('/<name>',
+        (Request request, String name) => Response.ok('Hello, $name!'));
+    router.all(
+        '/<name>/age/<age>',
+        (Request request, String name, String age) =>
+            Response.ok('Hello, $name! You are $age years old!'));
+
+    expect(router.routes.length, 3);
+    expect(router.routes[0].method, '');
+    expect(router.routes[0].path, '/');
+    expect(router.routes[1].method, '');
+    expect(router.routes[1].path, '/<name>');
+    expect(router.routes[2].method, '');
+    expect(router.routes[2].path, '/<name>/age/<age>');
+
+    final app = DaravelApp(
+      routers: [router],
+      globalMiddlewares: [
+        LoggerMiddleware(),
+      ],
+    );
+
+    final HttpServer server = await app.run();
+
+    Response response =
+        await app.rootHandler!(Request('GET', Uri.parse('$host:8080/')));
+
+    expect(response.statusCode, 200);
+    expect(await response.readAsString(), 'Hello, World!');
+
+    response =
+        await app.rootHandler!(Request('POST', Uri.parse('$host:8080/')));
+
+    expect(response.statusCode, 200);
+    expect(await response.readAsString(), 'Hello, World!');
+
+    response = await app.rootHandler!(Request('PUT', Uri.parse('$host:8080/')));
+
+    expect(response.statusCode, 200);
+    expect(await response.readAsString(), 'Hello, World!');
+
+    response =
+        await app.rootHandler!(Request('DELETE', Uri.parse('$host:8080/')));
+
+    expect(response.statusCode, 200);
+    expect(await response.readAsString(), 'Hello, World!');
+
+    final Response response2 =
+        await app.rootHandler!(Request('GET', Uri.parse('$host:8080/John')));
+
+    expect(response2.statusCode, 200);
+    expect(await response2.readAsString(), 'Hello, John!');
+
+    final Response response3 = await app
+        .rootHandler!(Request('GET', Uri.parse('$host:8080/John/age/25')));
+
+    expect(response3.statusCode, 200);
+    expect(
+        await response3.readAsString(), 'Hello, John! You are 25 years old!');
+
+    await server.close();
+  });
+
   test('Delete requests', () {
     final router = DaravelRouter();
     router.delete('/', (Request request) => Response.ok('Hello, World!'));
