@@ -8,7 +8,7 @@ import 'package:daravel_core/daravel_core.dart';
 import 'middleware.dart';
 
 void main() {
-  const host = 'http://localhost:8080';
+  const host = 'http://localhost';
 
   test('Top level routes', () async {
     final router = DaravelRouter();
@@ -38,19 +38,19 @@ void main() {
     final HttpServer server = await app.run();
 
     final Response response =
-        await app.rootHandler!(Request('GET', Uri.parse('$host/')));
+        await app.rootHandler!(Request('GET', Uri.parse('$host:8080/')));
 
     expect(response.statusCode, 200);
     expect(await response.readAsString(), 'Hello, World!');
 
     final Response response2 =
-        await app.rootHandler!(Request('GET', Uri.parse('$host/John')));
+        await app.rootHandler!(Request('GET', Uri.parse('$host:8080/John')));
 
     expect(response2.statusCode, 200);
     expect(await response2.readAsString(), 'Hello, John!');
 
-    final Response response3 =
-        await app.rootHandler!(Request('GET', Uri.parse('$host/John/age/25')));
+    final Response response3 = await app
+        .rootHandler!(Request('GET', Uri.parse('$host:8080/John/age/25')));
 
     expect(response3.statusCode, 200);
     expect(
@@ -87,19 +87,19 @@ void main() {
     final HttpServer server = await app.run();
 
     final Response response =
-        await app.rootHandler!(Request('POST', Uri.parse('$host/')));
+        await app.rootHandler!(Request('POST', Uri.parse('$host:8080/')));
 
     expect(response.statusCode, 200);
     expect(await response.readAsString(), 'Hello, World!');
 
     final Response response2 =
-        await app.rootHandler!(Request('POST', Uri.parse('$host/John')));
+        await app.rootHandler!(Request('POST', Uri.parse('$host:8080/John')));
 
     expect(response2.statusCode, 200);
     expect(await response2.readAsString(), 'Hello, John!');
 
-    final Response response3 =
-        await app.rootHandler!(Request('POST', Uri.parse('$host/John/age/25')));
+    final Response response3 = await app
+        .rootHandler!(Request('POST', Uri.parse('$host:8080/John/age/25')));
 
     expect(response3.statusCode, 200);
     expect(
@@ -136,19 +136,19 @@ void main() {
     final HttpServer server = await app.run();
 
     final Response response =
-        await app.rootHandler!(Request('PUT', Uri.parse('$host/')));
+        await app.rootHandler!(Request('PUT', Uri.parse('$host:8080/')));
 
     expect(response.statusCode, 200);
     expect(await response.readAsString(), 'Hello, World!');
 
     final Response response2 =
-        await app.rootHandler!(Request('PUT', Uri.parse('$host/John')));
+        await app.rootHandler!(Request('PUT', Uri.parse('$host:8080/John')));
 
     expect(response2.statusCode, 200);
     expect(await response2.readAsString(), 'Hello, John!');
 
-    final Response response3 =
-        await app.rootHandler!(Request('PUT', Uri.parse('$host/John/age/25')));
+    final Response response3 = await app
+        .rootHandler!(Request('PUT', Uri.parse('$host:8080/John/age/25')));
 
     expect(response3.statusCode, 200);
     expect(
@@ -185,23 +185,68 @@ void main() {
     final HttpServer server = await app.run();
 
     final Response response =
-        await app.rootHandler!(Request('PATCH', Uri.parse('$host/')));
+        await app.rootHandler!(Request('PATCH', Uri.parse('$host:8080/')));
 
     expect(response.statusCode, 200);
     expect(await response.readAsString(), 'Hello, World!');
 
     final Response response2 =
-        await app.rootHandler!(Request('PATCH', Uri.parse('$host/John')));
+        await app.rootHandler!(Request('PATCH', Uri.parse('$host:8080/John')));
 
     expect(response2.statusCode, 200);
     expect(await response2.readAsString(), 'Hello, John!');
 
     final Response response3 = await app
-        .rootHandler!(Request('PATCH', Uri.parse('$host/John/age/25')));
+        .rootHandler!(Request('PATCH', Uri.parse('$host:8080/John/age/25')));
 
     expect(response3.statusCode, 200);
     expect(
         await response3.readAsString(), 'Hello, John! You are 25 years old!');
+
+    await server.close();
+  });
+
+  test('Head requests', () async {
+    final router = DaravelRouter();
+    router.head('/', (Request request) => Response.ok(''));
+    router.head('/<name>', (Request request, String name) => Response.ok(''));
+    router.head('/<name>/age/<age>',
+        (Request request, String name, String age) => Response.ok(''));
+
+    expect(router.routes.length, 3);
+    expect(router.routes[0].method, 'HEAD');
+    expect(router.routes[0].path, '/');
+    expect(router.routes[1].method, 'HEAD');
+    expect(router.routes[1].path, '/<name>');
+    expect(router.routes[2].method, 'HEAD');
+    expect(router.routes[2].path, '/<name>/age/<age>');
+
+    final app = DaravelApp(
+      routers: [router],
+      globalMiddlewares: [
+        LoggerMiddleware(),
+      ],
+    );
+
+    final HttpServer server = await app.run();
+
+    final Response response =
+        await app.rootHandler!(Request('HEAD', Uri.parse('$host:8080/')));
+
+    expect(response.statusCode, 200);
+    expect(await response.readAsString(), '');
+
+    final Response response2 =
+        await app.rootHandler!(Request('HEAD', Uri.parse('$host:8080/John')));
+
+    expect(response2.statusCode, 200);
+    expect(await response2.readAsString(), '');
+
+    final Response response3 = await app
+        .rootHandler!(Request('HEAD', Uri.parse('$host:8080/John/age/25')));
+
+    expect(response3.statusCode, 200);
+    expect(await response3.readAsString(), '');
 
     await server.close();
   });
@@ -239,21 +284,22 @@ void main() {
       ],
     );
 
-    HttpServer server = await app.run();
+    HttpServer server = await app.run(port: 8082);
 
     Response response =
-        await app.rootHandler!(Request('GET', Uri.parse('$host/')));
+        await app.rootHandler!(Request('GET', Uri.parse('$host:8082/')));
 
     expect(response.statusCode, 200);
     expect(await response.readAsString(), 'Hello, World!');
 
-    response = await app.rootHandler!(Request('GET', Uri.parse('$host/v1')));
+    response =
+        await app.rootHandler!(Request('GET', Uri.parse('$host:8082/v1')));
 
     expect(response.statusCode, 200);
     expect(await response.readAsString(), 'Hello, World!');
 
     response = await app
-        .rootHandler!(Request('GET', Uri.parse('$host/v1/echo/hello')));
+        .rootHandler!(Request('GET', Uri.parse('$host:8080/v1/echo/hello')));
 
     expect(response.statusCode, 200);
     expect(await response.readAsString(), 'hello');
@@ -274,10 +320,10 @@ void main() {
       ],
     );
 
-    final HttpServer server = await app.run();
+    final HttpServer server = await app.run(port: 8083);
 
     final Response response =
-        await app.rootHandler!(Request('GET', Uri.parse('$host/')));
+        await app.rootHandler!(Request('GET', Uri.parse('$host:8083/')));
 
     expect(response.statusCode, 200);
 
