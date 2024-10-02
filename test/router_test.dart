@@ -206,6 +206,61 @@ void main() {
     await server.close();
   });
 
+  test('Custom requests', () async {
+    final router = DaravelRouter();
+    router.add('GET', '/', (Request request) => Response.ok('Hello, World!'));
+    router.add('POST', '/<name>',
+        (Request request, String name) => Response.ok('Hello, $name!'));
+    router.add(
+        'PATCH',
+        '/<name>/age/<age>',
+        (Request request, String name, String age) =>
+            Response.ok('Hello, $name! You are $age years old!'));
+
+    expect(router.routes.length, 3);
+    expect(router.routes[0].method, 'GET');
+    expect(router.routes[0].path, '/');
+    expect(router.routes[1].method, 'POST');
+    expect(router.routes[1].path, '/<name>');
+    expect(router.routes[2].method, 'PATCH');
+    expect(router.routes[2].path, '/<name>/age/<age>');
+
+    final app = DaravelApp(
+      routers: [router],
+      globalMiddlewares: [
+        LoggerMiddleware(),
+      ],
+    );
+
+    final HttpServer server = await app.run(port: 8084);
+
+    final Response response =
+        await app.rootHandler!(Request('GET', Uri.parse('$host:8084/')));
+
+    expect(response.statusCode, 200);
+    expect(await response.readAsString(), 'Hello, World!');
+
+    final Response response2 =
+        await app.rootHandler!(Request('POST', Uri.parse('$host:8084/John')));
+
+    expect(response2.statusCode, 200);
+    expect(await response2.readAsString(), 'Hello, John!');
+
+    final Response response3 = await app
+        .rootHandler!(Request('PATCH', Uri.parse('$host:8084/John/age/25')));
+
+    expect(response3.statusCode, 200);
+    expect(
+        await response3.readAsString(), 'Hello, John! You are 25 years old!');
+
+    final Response response4 = await app
+        .rootHandler!(Request('GET', Uri.parse('$host:8084/John/age/25')));
+
+    expect(response4.statusCode, 404);
+
+    await server.close();
+  });
+
   test('Head requests', () async {
     final router = DaravelRouter();
     router.head('/', (Request request) => Response.ok(''));
@@ -297,12 +352,12 @@ void main() {
     await server.close();
   });
 
-  test('All requests', () async {
+  test('Any requests', () async {
     final router = DaravelRouter();
-    router.all('/', (Request request) => Response.ok('Hello, World!'));
-    router.all('/<name>',
+    router.any('/', (Request request) => Response.ok('Hello, World!'));
+    router.any('/<name>',
         (Request request, String name) => Response.ok('Hello, $name!'));
-    router.all(
+    router.any(
         '/<name>/age/<age>',
         (Request request, String name, String age) =>
             Response.ok('Hello, $name! You are $age years old!'));
