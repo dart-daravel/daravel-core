@@ -34,4 +34,4 @@ jobs:
         uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: coverage/router_test_lcov.info,coverage/middleware_test_lcov.info
+          files: coverage/test/router_test_lcov.info,coverage/test/middleware_test_lcov.info
