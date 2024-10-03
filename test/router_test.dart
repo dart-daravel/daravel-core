@@ -499,4 +499,65 @@ void main() {
 
     await server.close();
   });
+
+  test('Domain Routing Test', () async {
+    final router = DaravelRouter();
+    final router2 = DaravelRouter();
+
+    router.get(
+        '/root-level', (Request request) => Response.ok('Hello, World!'));
+
+    router.domain('app.enterprise.com').get('/', (Request request) {
+      return Response.ok('Hello, World!');
+    });
+
+    router2.domain('app.dart.com').group('', (router) {
+      router.get('/v1', (Request request) => Response.ok('Hello, World!'));
+    });
+
+    final app = DaravelApp(
+      routers: [
+        router,
+        router2,
+      ],
+      globalMiddlewares: [
+        LoggerMiddleware(),
+      ],
+    );
+
+    final HttpServer server = await app.run(port: 8086);
+
+    final Response response =
+        await app.rootHandler!(Request('GET', Uri.parse('$host:8086/')));
+
+    expect(response.statusCode, 404);
+
+    final Response response2 = await app
+        .rootHandler!(Request('GET', Uri.parse('$host:8086/root-level')));
+
+    expect(response2.statusCode, 200);
+
+    final Response response3 = await app
+        .rootHandler!(Request('GET', Uri.parse('$host:8086/'), headers: {
+      HttpHeaders.hostHeader: 'app.enterprise.com',
+    }));
+
+    expect(response3.statusCode, 200);
+    expect(await response3.readAsString(), 'Hello, World!');
+
+    final Response response4 = await app
+        .rootHandler!(Request('GET', Uri.parse('$host:8086/v1'), headers: {
+      HttpHeaders.hostHeader: 'app.dart.com',
+    }));
+
+    expect(response4.statusCode, 200);
+    expect(await response4.readAsString(), 'Hello, World!');
+
+    final Response response5 =
+        await app.rootHandler!(Request('GET', Uri.parse('$host:8086/v1')));
+
+    expect(response5.statusCode, 404);
+
+    await server.close();
+  });
 }
