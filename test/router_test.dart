@@ -232,29 +232,29 @@ void main() {
       ],
     );
 
-    final HttpServer server = await app.run(port: 8084);
+    final HttpServer server = await app.run(port: 8087);
 
     final Response response =
-        await app.rootHandler!(Request('GET', Uri.parse('$host:8084/')));
+        await app.rootHandler!(Request('GET', Uri.parse('$host:8087/')));
 
     expect(response.statusCode, 200);
     expect(await response.readAsString(), 'Hello, World!');
 
     final Response response2 =
-        await app.rootHandler!(Request('POST', Uri.parse('$host:8084/John')));
+        await app.rootHandler!(Request('POST', Uri.parse('$host:8087/John')));
 
     expect(response2.statusCode, 200);
     expect(await response2.readAsString(), 'Hello, John!');
 
     final Response response3 = await app
-        .rootHandler!(Request('PATCH', Uri.parse('$host:8084/John/age/25')));
+        .rootHandler!(Request('PATCH', Uri.parse('$host:8087/John/age/25')));
 
     expect(response3.statusCode, 200);
     expect(
         await response3.readAsString(), 'Hello, John! You are 25 years old!');
 
     final Response response4 = await app
-        .rootHandler!(Request('GET', Uri.parse('$host:8084/John/age/25')));
+        .rootHandler!(Request('GET', Uri.parse('$host:8087/John/age/25')));
 
     expect(response4.statusCode, 404);
 
