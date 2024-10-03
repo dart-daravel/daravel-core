@@ -2,7 +2,7 @@ name: daravel
 description: A Dart framework inspired by Laravel.
 version: 1.0.0
 publish_to: 'none'
-# repository: https://github.com/my_org/my_repo
+repository: https://github.com/dart-daravel/daravel-core
 
 environment:
   sdk: ^3.5.2

@@ -73,7 +73,7 @@ class DaravelRouter {
   }
 
   /// Define a route for all HTTP methods
-  DaravelRouteParams all(String path, Function handler) {
+  DaravelRouteParams any(String path, Function handler) {
     final route = DaravelRoute('', path, handler);
     _routes.add(route);
     return route.params;
@@ -100,11 +100,19 @@ class DaravelRouter {
     return route.params;
   }
 
+  /// Define a route with custom method
+  DaravelRouteParams add(String method, String path, Function handler) {
+    final route = DaravelRoute(method, path, handler);
+    _routes.add(route);
+    return route.params;
+  }
+
   void group(String path, Function(DaravelRouter) callback) {
     final router = DaravelRouter();
     callback(router);
 
-    _routes.add(DaravelRoute('', path, null, routes: router.routes));
+    _routes.add(DaravelRoute('', path.isEmpty ? '/' : path, null,
+        routes: router.routes));
   }
 
   DaravelRouter domain(String domain) {
@@ -193,10 +201,10 @@ Middleware _domainHandler(Router? router, String domain) {
   return (Handler innerHandler) {
     return (Request request) {
       final host = request.headers[HttpHeaders.hostHeader] ?? '';
-      if (router != null && host.contains(domain)) {
-        return router.call(request);
+      if (router != null && host.startsWith(domain)) {
+        return innerHandler(request);
       }
-      return innerHandler(request);
+      return Response.notFound('Not found');
     };
   };
 }
