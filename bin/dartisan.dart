@@ -12,7 +12,8 @@ void main(List<String> args) async {
 
   if (commandRunner.parse(args).command == null &&
       File('main.dart').existsSync()) {
-    await passExecutionToDaravelProject(path.absolute('main.dart'), args);
+    await passExecutionToDaravelProject(
+        path.absolute('main.dart'), args, commandRunner);
     return;
   }
 
@@ -20,7 +21,7 @@ void main(List<String> args) async {
 }
 
 Future<void> passExecutionToDaravelProject(
-    String filePath, List<String> args) async {
+    String filePath, List<String> args, CommandRunner commandRunner) async {
   var receivePort = ReceivePort();
 
   await Isolate.spawnUri(
@@ -31,6 +32,7 @@ Future<void> passExecutionToDaravelProject(
 
   await for (var message in receivePort) {
     if (message == null) {
+      commandRunner.printUsage();
       receivePort.close();
       break;
     }
