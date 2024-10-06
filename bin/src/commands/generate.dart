@@ -122,7 +122,7 @@ class _ConfigMapCodeBuilder {
     codeBuffer.writeln(initializationSection);
     codeBuffer.writeln(assignmentSection);
 
-    print(codeBuffer.toString());
+    print("Done generating config map file.");
 
     return codeBuffer.toString();
   }

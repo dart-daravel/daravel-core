@@ -10,7 +10,7 @@ import 'package:daravel_core/daravel_core.dart';
 class Core {
   final List<DaravelRouter> routers;
   final List<DaravelMiddleware> globalMiddlewares;
-  final Map<String, dynamic> config;
+  final Map<String, dynamic> configMap;
 
   late final _env = DotEnv(includePlatformEnvironment: true)..load();
 
@@ -19,7 +19,7 @@ class Core {
   Core({
     this.routers = const [],
     this.globalMiddlewares = const [],
-    this.config = const {},
+    this.configMap = const {},
   });
 
   Future<HttpServer> run({int? port}) async {
@@ -58,4 +58,6 @@ class Core {
   Handler? get rootHandler => _rootHandler;
 
   String? env(String key) => _env[key];
+
+  String? config(String key) => configMap[key];
 }

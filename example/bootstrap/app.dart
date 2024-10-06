@@ -13,7 +13,7 @@ void boot(List<String> args) async {
   apiRoutes();
 
   core = Core(
-    config: config,
+    configMap: config,
     routers: [
       apiRouter,
     ],
