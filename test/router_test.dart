@@ -28,7 +28,7 @@ void main() {
     expect(router.routes[2].method, 'GET');
     expect(router.routes[2].path, '/<name>/age/<age>');
 
-    final app = DaravelApp(
+    final app = Core(
       routers: [router],
       globalMiddlewares: [
         LoggerMiddleware(),
@@ -77,7 +77,7 @@ void main() {
     expect(router.routes[2].method, 'POST');
     expect(router.routes[2].path, '/<name>/age/<age>');
 
-    final app = DaravelApp(
+    final app = Core(
       routers: [router],
       globalMiddlewares: [
         LoggerMiddleware(),
@@ -126,7 +126,7 @@ void main() {
     expect(router.routes[2].method, 'PUT');
     expect(router.routes[2].path, '/<name>/age/<age>');
 
-    final app = DaravelApp(
+    final app = Core(
       routers: [router],
       globalMiddlewares: [
         LoggerMiddleware(),
@@ -175,7 +175,7 @@ void main() {
     expect(router.routes[2].method, 'PATCH');
     expect(router.routes[2].path, '/<name>/age/<age>');
 
-    final app = DaravelApp(
+    final app = Core(
       routers: [router],
       globalMiddlewares: [
         LoggerMiddleware(),
@@ -225,7 +225,7 @@ void main() {
     expect(router.routes[2].method, 'PATCH');
     expect(router.routes[2].path, '/<name>/age/<age>');
 
-    final app = DaravelApp(
+    final app = Core(
       routers: [router],
       globalMiddlewares: [
         LoggerMiddleware(),
@@ -276,7 +276,7 @@ void main() {
     expect(router.routes[2].method, 'HEAD');
     expect(router.routes[2].path, '/<name>/age/<age>');
 
-    final app = DaravelApp(
+    final app = Core(
       routers: [router],
       globalMiddlewares: [
         LoggerMiddleware(),
@@ -322,7 +322,7 @@ void main() {
     expect(router.routes[2].method, 'OPTIONS');
     expect(router.routes[2].path, '/<name>/age/<age>');
 
-    final app = DaravelApp(
+    final app = Core(
       routers: [router],
       globalMiddlewares: [
         LoggerMiddleware(),
@@ -370,7 +370,7 @@ void main() {
     expect(router.routes[2].method, '');
     expect(router.routes[2].path, '/<name>/age/<age>');
 
-    final app = DaravelApp(
+    final app = Core(
       routers: [router],
       globalMiddlewares: [
         LoggerMiddleware(),
@@ -444,7 +444,7 @@ void main() {
     expect(router.routes[1].routes[0].path, '/');
     expect(router.routes[1].routes[1].path, '/echo/<message>');
 
-    final app = DaravelApp(
+    final app = Core(
       routers: [router],
       globalMiddlewares: [
         LoggerMiddleware(),
@@ -480,7 +480,7 @@ void main() {
         .get('/', (Request request) => Response.ok('Hello, World!'))
         .middleware(TestMiddleware());
 
-    final app = DaravelApp(
+    final app = Core(
       routers: [router],
       globalMiddlewares: [
         LoggerMiddleware(),
@@ -515,7 +515,7 @@ void main() {
       router.get('/v1', (Request request) => Response.ok('Hello, World!'));
     });
 
-    final app = DaravelApp(
+    final app = Core(
       routers: [
         router,
         router2,

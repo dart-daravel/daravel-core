@@ -12,7 +12,7 @@ void main() {
     router.get('/<name>',
         (Request request, String name) => Response.ok('Hello, $name!'));
 
-    final app = DaravelApp(
+    final app = Core(
       routers: [router],
       globalMiddlewares: [
         CorsMiddleware(),
@@ -63,7 +63,7 @@ void main() {
     router.get('/<name>',
         (Request request, String name) => Response.ok('Hello, $name!'));
 
-    final app = DaravelApp(
+    final app = Core(
       routers: [router],
       globalMiddlewares: [
         CorsMiddleware(origin: 'app.enterprise.com'),
@@ -130,7 +130,7 @@ void main() {
     router.get('/<name>',
         (Request request, String name) => Response.ok('Hello, $name!'));
 
-    final app = DaravelApp(
+    final app = Core(
       routers: [router],
       globalMiddlewares: [
         CorsMiddleware(origin: [
