@@ -19,7 +19,7 @@ jobs:
       - run: dart pub get
 
       - name: Generate files
-        run: dart run daravel_core:dartisan generate
+        run: cd example && dart run daravel_core:dartisan generate
 
       - run: dart analyze
 
