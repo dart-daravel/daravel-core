@@ -6,7 +6,7 @@ import 'package:test/test.dart';
 
 void main() {
   final port = '8080';
-  final host = 'http://0.0.0.0:$port';
+  final host = 'http://localhost:$port';
   late Process p;
 
   setUp(() async {
