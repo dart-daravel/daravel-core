@@ -15,7 +15,7 @@ class ServeCommand extends Command {
   }
 
   @override
-  void run() async {
+  Future<void> run() async {
     await core.run(port: int.tryParse(argResults?.option('port') ?? ''));
   }
 }
