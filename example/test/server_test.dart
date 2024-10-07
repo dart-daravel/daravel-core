@@ -12,8 +12,7 @@ void main() {
   setUp(() async {
     p = await Process.start(
       'dart',
-      ['run', 'main.dart'],
-      environment: {'PORT': port},
+      ['run', 'main.dart', 'serve', '--port', port],
     );
     // Wait for server to start and print to stdout.
     await p.stdout.first;
