@@ -31,6 +31,4 @@ void main() {
 
     await server.close();
   });
-
-  test('Config map generation', () {});
 }

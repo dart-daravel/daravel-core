@@ -5,6 +5,7 @@ import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:args/command_runner.dart';
+import 'package:path/path.dart' as path;
 
 class GenerateCommand extends Command {
   @override
@@ -14,8 +15,8 @@ class GenerateCommand extends Command {
   String get name => 'generate';
 
   @override
-  void run() async {
-    final directory = Directory('config');
+  Future<void> run([String? rootPath]) async {
+    final directory = Directory(path.join(rootPath ?? '', 'config'));
 
     final configMapCodeBuilder = _ConfigMapCodeBuilder();
 
@@ -24,7 +25,8 @@ class GenerateCommand extends Command {
       return;
     }
 
-    final File configMapFile = File('bootstrap/config.dart');
+    final File configMapFile =
+        File(path.join(rootPath ?? '', 'bootstrap/config.dart'));
 
     try {
       await for (var entity in directory.list(recursive: false)) {

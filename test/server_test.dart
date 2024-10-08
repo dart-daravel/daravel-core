@@ -15,7 +15,12 @@ void main() {
       routers: [router],
     );
 
-    await ServeCommand(app).run();
+    final serveCommand = ServeCommand(app);
+
+    expect(serveCommand.name, 'serve');
+    expect(serveCommand.description, 'Generates the project config map file');
+
+    await serveCommand.run();
 
     final response = await get(Uri.parse('$host/'));
     expect(response.statusCode, 200);
