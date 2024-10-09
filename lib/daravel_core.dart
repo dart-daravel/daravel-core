@@ -6,4 +6,11 @@ export 'http/middleware/middleware.dart';
 export 'http/middleware/cors.dart';
 export 'http/middleware/logger.dart';
 
-export 'app.dart';
+// Annotations
+export 'annotations/config.dart';
+export 'annotations/command.dart';
+
+// Commands
+export 'app/console/serve.dart';
+
+export 'core.dart';

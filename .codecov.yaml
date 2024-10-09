@@ -1,0 +1,4 @@
+coverage:
+  ignore:
+    - lib/annotations/command.dart
+    - lib/annotations/config.dart

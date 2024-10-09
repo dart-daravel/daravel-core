@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:shelf/shelf.dart';
 import 'package:shelf_router/shelf_router.dart';
 
-import 'package:daravel_core/app.dart';
+import 'package:daravel_core/core.dart';
 import 'package:daravel_core/http/middleware/middleware.dart';
 
 class DaravelRouteParams {
@@ -38,9 +38,9 @@ class DaravelRouter {
   final List<DaravelRoute> _routes = [];
   final List<DaravelRouter> _routers = [];
 
-  late final DaravelApp app;
+  late final Core app;
 
-  void setApp(DaravelApp app) {
+  void setApp(Core app) {
     this.app = app;
   }
 
