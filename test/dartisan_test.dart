@@ -78,23 +78,44 @@ void main() {
     String generatedConfigFileContent =
         await generatedConfigFile.readAsString();
 
-    expect(generatedConfigFileContent.contains('''
-// Generated code, do not modify
-import '../config/cache.dart';
-import '../config/app.dart';
+    expect(
+        generatedConfigFileContent.contains('// Generated code, do not modify'),
+        true);
+    expect(
+        generatedConfigFileContent.contains("import '../config/cache.dart';"),
+        true);
+    expect(generatedConfigFileContent.contains("import '../config/app.dart';"),
+        true);
 
-final session = Session();
-final app = App();
+    expect(generatedConfigFileContent.contains('final session = Session();'),
+        true);
+    expect(generatedConfigFileContent.contains('final app = App();'), true);
 
-final Map<String, dynamic> config = {};
+    expect(
+        generatedConfigFileContent
+            .contains('final Map<String, dynamic> config = {};'),
+        true);
 
-void bootConfig() {
-  config['session.driver'] = session.driver;
-  config['session.lifetime'] = session.lifetime;
-  config['session.path'] = session.path;
-  config['session.cookie'] = session.cookie;
-  config['app.name'] = app.name;
-}
-'''), true);
+    expect(generatedConfigFileContent.contains('void bootConfig() {'), true);
+    expect(
+        generatedConfigFileContent
+            .contains("config['session.driver'] = session.driver;"),
+        true);
+    expect(
+        generatedConfigFileContent
+            .contains("config['session.lifetime'] = session.lifetime;"),
+        true);
+    expect(
+        generatedConfigFileContent
+            .contains("config['session.path'] = session.path;"),
+        true);
+    expect(
+        generatedConfigFileContent
+            .contains("config['session.cookie'] = session.cookie;"),
+        true);
+    expect(
+        generatedConfigFileContent.contains("config['app.name'] = app.name;"),
+        true);
+    expect(generatedConfigFileContent.contains('}'), true);
   });
 }
