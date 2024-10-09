@@ -20,7 +20,7 @@ class GenerateCommand extends Command {
 
     final configMapCodeBuilder = _ConfigMapCodeBuilder();
 
-    if (!await directory.exists()) {
+    if (!directory.existsSync()) {
       print('Config directory not found.');
       return;
     }

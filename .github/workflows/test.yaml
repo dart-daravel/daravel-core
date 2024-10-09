@@ -35,9 +35,10 @@ jobs:
           format_coverage --packages=.dart_tool/package_config.json --report-on=lib --in=coverage/test/config_test.dart.vm.json --lcov --out=coverage/test/config_test_lcov.info
           format_coverage --packages=.dart_tool/package_config.json --report-on=lib --in=coverage/test/server_test.dart.vm.json --lcov --out=coverage/test/server_test_lcov.info
           format_coverage --packages=.dart_tool/package_config.json --report-on=lib,bin --in=coverage/test/dartisan_test.dart.vm.json --lcov --out=coverage/test/dartisan_test_lcov.info
+          format_coverage --packages=.dart_tool/package_config.json --report-on=lib --in=coverage/test/core_test.dart.vm.json --lcov --out=coverage/test/core_test_lcov.info
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: coverage/test/router_test_lcov.info,coverage/test/middleware_test_lcov.info,coverage/test/config_test_lcov.info,coverage/test/server_test_lcov.info,coverage/test/dartisan_test_lcov.info
+          files: coverage/test/router_test_lcov.info,coverage/test/middleware_test_lcov.info,coverage/test/config_test_lcov.info,coverage/test/server_test_lcov.info,coverage/test/dartisan_test_lcov.info,coverage/test/core_test_lcov.info

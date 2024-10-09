@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:test/test.dart';
@@ -6,7 +7,14 @@ import 'package:path/path.dart' as path;
 import '../bin/src/commands/generate.dart';
 
 void main() {
-  test('Code generation test', () async {
+  tearDown(() {
+    Directory(path.join(Directory.current.path, 'test/playground'))
+        .deleteSync(recursive: true);
+  });
+
+  test('Code  generation test', () async {
+    final logs = <String>[];
+
     // Prepare
     final playgroundDirectory =
         Directory(path.join(Directory.current.path, 'test/playground'));
@@ -17,6 +25,21 @@ void main() {
 
     final playgroundConfigDirectory =
         Directory(path.join(playgroundDirectory.path, 'config'));
+
+    runZonedGuarded(
+      () async {
+        await GenerateCommand().run(playgroundDirectory.path);
+      },
+      (e, s) {},
+      zoneSpecification: ZoneSpecification(
+        print: (self, parent, zone, line) {
+          logs.add(line);
+        },
+      ),
+    );
+
+    expect(logs, ['Config directory not found.']);
+    logs.clear();
 
     if (!playgroundConfigDirectory.existsSync()) {
       playgroundConfigDirectory.createSync();
@@ -39,7 +62,13 @@ void main() {
       playgroundBootstrapDirectory.createSync();
     }
 
-    await GenerateCommand().run(playgroundDirectory.path);
+    final generateCommand = GenerateCommand();
+
+    expect(generateCommand.name, 'generate');
+    expect(
+        generateCommand.description, 'Generates the project config map file');
+
+    await generateCommand.run(playgroundDirectory.path);
 
     final generatedConfigFile =
         File(path.join(playgroundBootstrapDirectory.path, 'config.dart'));
@@ -69,6 +98,6 @@ void bootConfig() {
 '''), true);
 
     // Cleanup
-    playgroundDirectory.deleteSync(recursive: true);
+    // playgroundDirectory.deleteSync(recursive: true);
   });
 }
