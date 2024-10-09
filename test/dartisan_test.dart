@@ -96,8 +96,5 @@ void bootConfig() {
   config['app.name'] = app.name;
 }
 '''), true);
-
-    // Cleanup
-    // playgroundDirectory.deleteSync(recursive: true);
   });
 }
