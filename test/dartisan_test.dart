@@ -38,7 +38,7 @@ void main() {
       ),
     );
 
-    expect(logs, ['Config directory not found.']);
+    expect(logs, ['\x1B[31m', '[ERROR] Config directory not found.']);
     logs.clear();
 
     if (!playgroundConfigDirectory.existsSync()) {
