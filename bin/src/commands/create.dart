@@ -39,7 +39,7 @@ class CreateCommand extends Command {
   }
 
   @override
-  Future<void> run() async {
+  Future<void> run([String? createPath]) async {
     try {
       await _checkForTemplateReleaseUpdate();
     } catch (error) {
@@ -57,7 +57,8 @@ class CreateCommand extends Command {
       return;
     }
 
-    final projectPath = path.join(Directory.current.path, projectName);
+    final projectPath =
+        path.join(createPath ?? Directory.current.path, projectName);
 
     if (Directory(projectPath).existsSync()) {
       logger.warning("Directory $projectName already exists");
