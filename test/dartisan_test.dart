@@ -121,6 +121,8 @@ void main() {
   });
 
   test('Create project test', () async {
+    final logs = <String>[];
+
     // Prepare
     final playgroundDirectory =
         Directory(path.join(Directory.current.path, 'test/playground'));
@@ -135,5 +137,20 @@ void main() {
         Directory(path.join(playgroundDirectory.path, 'test_project'));
 
     expect(projectDirectory.existsSync(), true);
+
+    runZonedGuarded(
+      () async {
+        await CreateCommand().run(playgroundDirectory.path, 'test_project');
+      },
+      (e, s) {},
+      zoneSpecification: ZoneSpecification(
+        print: (self, parent, zone, line) {
+          logs.add(line);
+        },
+      ),
+    );
+
+    expect(
+        logs, ['\x1B[33m', '[WARNING] Directory test_project already exists']);
   });
 }
