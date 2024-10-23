@@ -138,7 +138,7 @@ void main() {
 
     expect(projectDirectory.existsSync(), true);
 
-    runZonedGuarded(
+    await runZonedGuarded(
       () async {
         await CreateCommand().run(playgroundDirectory.path, 'test_project');
       },
