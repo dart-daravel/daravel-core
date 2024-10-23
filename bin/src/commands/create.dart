@@ -49,7 +49,7 @@ class CreateCommand extends Command {
       }
     }
 
-    final projectName = (argResults!.rest.isNotEmpty
+    final projectName = ((argResults?.rest.isNotEmpty ?? false)
             ? argResults!.rest.first
             : argResults!["project-name"]) ??
         overrideName;
