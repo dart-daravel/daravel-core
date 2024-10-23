@@ -5,6 +5,7 @@ import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:args/command_runner.dart';
+import 'package:daravel_core/console/logger.dart';
 import 'package:path/path.dart' as path;
 
 class GenerateCommand extends Command {
@@ -14,6 +15,8 @@ class GenerateCommand extends Command {
   @override
   String get name => 'generate';
 
+  late final Logger logger = Logger();
+
   @override
   Future<void> run([String? rootPath]) async {
     final directory = Directory(path.join(rootPath ?? '', 'config'));
@@ -21,7 +24,7 @@ class GenerateCommand extends Command {
     final configMapCodeBuilder = _ConfigMapCodeBuilder();
 
     if (!directory.existsSync()) {
-      print('Config directory not found.');
+      logger.error('Config directory not found.');
       return;
     }
 
@@ -43,8 +46,10 @@ class GenerateCommand extends Command {
 
       configMapFile.writeAsStringSync(configMapCodeBuilder.build(),
           mode: FileMode.writeOnly);
+
+      logger.success("Done generating config map file.");
     } catch (e) {
-      print(
+      logger.error(
           "The was an error while generating the config map file, this is likely due to syntax errors in one of the concerned files.");
     }
   }
@@ -123,8 +128,6 @@ class _ConfigMapCodeBuilder {
     codeBuffer.writeln(importsSection);
     codeBuffer.writeln(initializationSection);
     codeBuffer.writeln(assignmentSection);
-
-    print("Done generating config map file.");
 
     return codeBuffer.toString();
   }

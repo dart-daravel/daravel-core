@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:test/test.dart';
 import 'package:path/path.dart' as path;
 
+import '../bin/src/commands/create.dart';
 import '../bin/src/commands/generate.dart';
 
 void main() {
@@ -38,7 +39,7 @@ void main() {
       ),
     );
 
-    expect(logs, ['Config directory not found.']);
+    expect(logs, ['\x1B[31m', '[ERROR] Config directory not found.']);
     logs.clear();
 
     if (!playgroundConfigDirectory.existsSync()) {
@@ -117,5 +118,56 @@ void main() {
         generatedConfigFileContent.contains("config['app.name'] = app.name;"),
         true);
     expect(generatedConfigFileContent.contains('}'), true);
+  });
+
+  test('Create project test', () async {
+    final logs = <String>[];
+
+    // Prepare
+    final playgroundDirectory =
+        Directory(path.join(Directory.current.path, 'test/playground'));
+
+    if (!playgroundDirectory.existsSync()) {
+      playgroundDirectory.createSync();
+    }
+
+    await CreateCommand().run(playgroundDirectory.path, 'test_project');
+
+    final projectDirectory =
+        Directory(path.join(playgroundDirectory.path, 'test_project'));
+
+    expect(projectDirectory.existsSync(), true);
+
+    await runZonedGuarded(
+      () async {
+        await CreateCommand().run(playgroundDirectory.path, 'test_project');
+      },
+      (e, s) {},
+      zoneSpecification: ZoneSpecification(
+        print: (self, parent, zone, line) {
+          logs.add(line);
+        },
+      ),
+    );
+
+    expect(
+        logs, ['\x1B[33m', '[WARNING] Directory test_project already exists']);
+    logs.clear();
+
+    await runZonedGuarded(
+      () async {
+        await CreateCommand().run(
+          playgroundDirectory.path,
+        );
+      },
+      (e, s) {},
+      zoneSpecification: ZoneSpecification(
+        print: (self, parent, zone, line) {
+          logs.add(line);
+        },
+      ),
+    );
+
+    expect(logs, ['\x1B[33m', '[WARNING] Please provide a project name']);
   });
 }

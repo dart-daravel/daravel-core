@@ -13,4 +13,7 @@ export 'annotations/command.dart';
 // Commands
 export 'app/console/serve.dart';
 
+// Console
+export 'console/logger.dart';
+
 export 'core.dart';
