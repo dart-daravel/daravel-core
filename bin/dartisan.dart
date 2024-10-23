@@ -5,9 +5,11 @@ import 'package:args/command_runner.dart';
 import 'package:path/path.dart' as path;
 
 import './src/commands/generate.dart';
+import './src/commands/create.dart';
 
 void main(List<String> args) async {
   final commandRunner = CommandRunner("dartisan", "The CLI tool for Daravel")
+    ..addCommand(CreateCommand())
     ..addCommand(GenerateCommand());
 
   if (commandRunner.parse(args).command == null &&
