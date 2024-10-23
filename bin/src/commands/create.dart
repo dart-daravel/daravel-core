@@ -51,7 +51,7 @@ class CreateCommand extends Command {
 
     final projectName = ((argResults?.rest.isNotEmpty ?? false)
             ? argResults!.rest.first
-            : argResults!["project-name"]) ??
+            : argResults?["project-name"]) ??
         overrideName;
     if (projectName == null) {
       logger.warning("Please provide a project name");
