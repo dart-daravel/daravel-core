@@ -39,7 +39,7 @@ class CreateCommand extends Command {
   }
 
   @override
-  Future<void> run([String? createPath]) async {
+  Future<void> run([String? createPath, String? overrideName]) async {
     try {
       await _checkForTemplateReleaseUpdate();
     } catch (error) {
@@ -49,9 +49,10 @@ class CreateCommand extends Command {
       }
     }
 
-    final projectName = argResults!.rest.isNotEmpty
-        ? argResults!.rest.first
-        : argResults!["project-name"];
+    final projectName = (argResults!.rest.isNotEmpty
+            ? argResults!.rest.first
+            : argResults!["project-name"]) ??
+        overrideName;
     if (projectName == null) {
       logger.warning("Please provide a project name");
       return;

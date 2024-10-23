@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:test/test.dart';
 import 'package:path/path.dart' as path;
 
+import '../bin/src/commands/create.dart';
 import '../bin/src/commands/generate.dart';
 
 void main() {
@@ -117,5 +118,22 @@ void main() {
         generatedConfigFileContent.contains("config['app.name'] = app.name;"),
         true);
     expect(generatedConfigFileContent.contains('}'), true);
+  });
+
+  test('Create project test', () async {
+    // Prepare
+    final playgroundDirectory =
+        Directory(path.join(Directory.current.path, 'test/playground'));
+
+    if (!playgroundDirectory.existsSync()) {
+      playgroundDirectory.createSync();
+    }
+
+    await CreateCommand().run(playgroundDirectory.path, 'test_project');
+
+    final projectDirectory =
+        Directory(path.join(playgroundDirectory.path, 'test_project'));
+
+    expect(projectDirectory.existsSync(), true);
   });
 }
