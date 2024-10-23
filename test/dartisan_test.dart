@@ -152,5 +152,22 @@ void main() {
 
     expect(
         logs, ['\x1B[33m', '[WARNING] Directory test_project already exists']);
+    logs.clear();
+
+    await runZonedGuarded(
+      () async {
+        await CreateCommand().run(
+          playgroundDirectory.path,
+        );
+      },
+      (e, s) {},
+      zoneSpecification: ZoneSpecification(
+        print: (self, parent, zone, line) {
+          logs.add(line);
+        },
+      ),
+    );
+
+    expect(logs, ['\x1B[33m', '[WARNING] Please provide a project name']);
   });
 }
