@@ -106,6 +106,20 @@ class CreateCommand extends Command {
 
     await GenerateCommand().run(projectPath);
 
+    logger.info("Running pub get...");
+
+    // Dart Pub Get
+    final pubGetProcess = await Process.run(
+      'dart',
+      ['pub', 'get'],
+      workingDirectory: projectPath,
+    );
+
+    if (pubGetProcess.exitCode != 0) {
+      logger.warning("Failed to run pub get, however the project was created.");
+      return;
+    }
+
     logger.success("Project $projectName created!");
   }
 

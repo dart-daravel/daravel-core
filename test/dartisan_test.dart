@@ -6,6 +6,7 @@ import 'package:path/path.dart' as path;
 
 import '../bin/src/commands/create.dart';
 import '../bin/src/commands/generate.dart';
+import '../bin/src/commands/make_config.dart';
 
 void main() {
   tearDown(() {
@@ -137,6 +138,8 @@ void main() {
         Directory(path.join(playgroundDirectory.path, 'test_project'));
 
     expect(projectDirectory.existsSync(), true);
+    expect(File(path.join(projectDirectory.path, 'pubspec.yaml')).existsSync(),
+        true);
 
     await runZonedGuarded(
       () async {
@@ -169,5 +172,69 @@ void main() {
     );
 
     expect(logs, ['\x1B[33m', '[WARNING] Please provide a project name']);
+  });
+
+  test('Generate Config File', () async {
+    final logs = <String>[];
+
+    // Prepare
+    final playgroundDirectory =
+        Directory(path.join(Directory.current.path, 'test/playground'));
+
+    if (!playgroundDirectory.existsSync()) {
+      playgroundDirectory.createSync();
+    }
+
+    await CreateCommand()
+        .run(playgroundDirectory.path, 'make_config_test_project');
+
+    final projectDirectory = Directory(
+        path.join(playgroundDirectory.path, 'make_config_test_project'));
+
+    expect(projectDirectory.existsSync(), true);
+    expect(File(path.join(projectDirectory.path, 'pubspec.yaml')).existsSync(),
+        true);
+
+    await MakeConfigCommand().run(projectDirectory.path, 'Redis');
+
+    expect(
+        File(path.join(projectDirectory.path, 'config/redis.dart'))
+            .existsSync(),
+        true);
+
+    await CreateCommand()
+        .run(playgroundDirectory.path, 'error_make_config_test_project');
+
+    await runZonedGuarded(
+      () async {
+        await MakeConfigCommand().run(
+          path.join(projectDirectory.path),
+        );
+      },
+      (e, s) {},
+      zoneSpecification: ZoneSpecification(
+        print: (self, parent, zone, line) {
+          logs.add(line);
+        },
+      ),
+    );
+
+    expect(logs, ['\x1B[31m', '[ERROR] Please provide config file name.']);
+    logs.clear();
+
+    await runZonedGuarded(
+      () async {
+        await MakeConfigCommand()
+            .run(path.join(playgroundDirectory.path), 'JWT');
+      },
+      (e, s) {},
+      zoneSpecification: ZoneSpecification(
+        print: (self, parent, zone, line) {
+          logs.add(line);
+        },
+      ),
+    );
+
+    expect(logs, ['\x1B[31m', '[ERROR] Config directory not found.']);
   });
 }

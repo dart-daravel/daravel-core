@@ -125,6 +125,7 @@ class _ConfigMapCodeBuilder {
     assignmentSection.writeln("}");
 
     codeBuffer.writeln('// Generated code, do not modify');
+    codeBuffer.writeln();
     codeBuffer.writeln(importsSection);
     codeBuffer.writeln(initializationSection);
     codeBuffer.writeln(assignmentSection);
