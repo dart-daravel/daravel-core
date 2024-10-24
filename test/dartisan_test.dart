@@ -193,7 +193,7 @@ void main() {
     expect(File(path.join(projectDirectory.path, 'pubspec.yaml')).existsSync(),
         true);
 
-    await MakeConfigCommand().run(playgroundDirectory.path, 'Redis');
+    await MakeConfigCommand().run(projectDirectory.path, 'Redis');
 
     expect(
         File(path.join(projectDirectory.path, 'config/redis.dart'))
