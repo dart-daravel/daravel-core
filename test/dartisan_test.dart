@@ -208,7 +208,7 @@ void main() {
     await runZonedGuarded(
       () async {
         await MakeConfigCommand().run(
-          path.join(playgroundDirectory.path, 'error_make_config_test_project'),
+          path.join(projectDirectory.path),
         );
       },
       (e, s) {},
@@ -220,5 +220,21 @@ void main() {
     );
 
     expect(logs, ['\x1B[31m', '[ERROR] Please provide config file name.']);
+    logs.clear();
+
+    await runZonedGuarded(
+      () async {
+        await MakeConfigCommand()
+            .run(path.join(playgroundDirectory.path), 'JWT');
+      },
+      (e, s) {},
+      zoneSpecification: ZoneSpecification(
+        print: (self, parent, zone, line) {
+          logs.add(line);
+        },
+      ),
+    );
+
+    expect(logs, ['\x1B[31m', '[ERROR] Config directory not found.']);
   });
 }

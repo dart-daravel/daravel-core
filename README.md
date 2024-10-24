@@ -1,11 +1,16 @@
 [![test](https://github.com/Dart-Daravel/daravel-core/actions/workflows/test.yaml/badge.svg)](https://github.com/Dart-Daravel/daravel-core/actions/workflows/test.yaml) [![codecov](https://codecov.io/gh/Dart-Daravel/daravel-core/graph/badge.svg?token=ITU0NL7LY6)](https://codecov.io/gh/Dart-Daravel/daravel-core) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![publish](https://github.com/Dart-Daravel/daravel-core/actions/workflows/publish.yaml/badge.svg)](https://github.com/Dart-Daravel/daravel-core/actions/workflows/publish.yaml)
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+Daravel is a Laravel inspired back-end framework built in dart.
+
+At the core of this framework is the `dart shelf` web server.
 
 ## Features
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
+- Laravel like router
+- Middlewares
+- CORS
+- CLI Tool: Dartisan
+- More coming...
 
 ## Getting started
 
