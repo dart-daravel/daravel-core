@@ -6,11 +6,13 @@ import 'package:path/path.dart' as path;
 
 import './src/commands/generate.dart';
 import './src/commands/create.dart';
+import './src/commands/make_config.dart';
 
 void main(List<String> args) async {
   final commandRunner = CommandRunner("dartisan", "The CLI tool for Daravel")
     ..addCommand(CreateCommand())
-    ..addCommand(GenerateCommand());
+    ..addCommand(GenerateCommand())
+    ..addCommand(MakeConfigCommand());
 
   if (commandRunner.parse(args).command == null &&
       File('main.dart').existsSync()) {

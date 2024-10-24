@@ -11,9 +11,15 @@ export 'annotations/config.dart';
 export 'annotations/command.dart';
 
 // Commands
-export 'app/console/serve.dart';
+export 'console/commands/serve.dart';
 
 // Console
 export 'console/logger.dart';
+
+// Extensions
+export 'extensions/string.dart';
+
+// Helpers
+export 'helpers/string.dart';
 
 export 'core.dart';
