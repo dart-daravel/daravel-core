@@ -175,6 +175,8 @@ void main() {
   });
 
   test('Generate Config File', () async {
+    final logs = <String>[];
+
     // Prepare
     final playgroundDirectory =
         Directory(path.join(Directory.current.path, 'test/playground'));
@@ -199,5 +201,24 @@ void main() {
         File(path.join(projectDirectory.path, 'config/redis.dart'))
             .existsSync(),
         true);
+
+    await CreateCommand()
+        .run(playgroundDirectory.path, 'error_make_config_test_project');
+
+    await runZonedGuarded(
+      () async {
+        await MakeConfigCommand().run(
+          path.join(playgroundDirectory.path, 'error_make_config_test_project'),
+        );
+      },
+      (e, s) {},
+      zoneSpecification: ZoneSpecification(
+        print: (self, parent, zone, line) {
+          logs.add(line);
+        },
+      ),
+    );
+
+    expect(logs, ['\x1B[31m', '[ERROR] Please provide config file name.']);
   });
 }
