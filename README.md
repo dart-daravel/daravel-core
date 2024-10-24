@@ -9,7 +9,7 @@ At the core of this framework is the `dart shelf` web server.
 - Laravel like router
 - Middlewares
 - CORS
-- CLI Tool: Dartisan
+- CLI Tool: `dartisan`
 - More coming...
 
 ## Getting started
