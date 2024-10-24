@@ -44,13 +44,13 @@ class MakeConfigCommand extends Command {
       return;
     }
 
-    final configFile = File(
-        '${directory.path}${Platform.pathSeparator}${configName!.underscoreCase()}.dart');
+    final configFile =
+        File('${path.join(directory.path, configName!.underscoreCase())}.dart');
 
     configFile.writeAsStringSync(template, mode: FileMode.writeOnly);
 
     logger.success(
-        'Config file ${directory.path}${Platform.pathSeparator}${configName!.underscoreCase()}.dart created.');
+        'Config file ${path.join(directory.path, configName!.underscoreCase())}.dart created.');
   }
 
   String get template => '''
