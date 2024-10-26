@@ -65,11 +65,44 @@ abstract class FieldBlueprint {
     return this;
   }
 
+  ForeignKeyConstraint foreign() {
+    foreignKey ??= ForeignKeyConstraint(name);
+    return foreignKey!;
+  }
+
+  ForeignKeyConstraint references(String columnName) {
+    foreignKey ??= ForeignKeyConstraint(name);
+    foreignKey!.foreignColumnName = columnName;
+    return foreignKey!;
+  }
+
+  ForeignKeyConstraint on(String tableName) {
+    foreignKey ??= ForeignKeyConstraint(name);
+    foreignKey!.foreignTableName = tableName;
+    return foreignKey!;
+  }
+
   bool hasForeignKeyConstraint() {
     return foreignKey?.columnName != null &&
         foreignKey?.foreignColumnName != null &&
         foreignKey?.foreignTableName != null;
   }
+
+  FieldBlueprint onDelete(String onDelete) {
+    foreignKey ??= ForeignKeyConstraint(name);
+    foreignKey!.onDelete = onDelete.toUpperCase();
+    return this;
+  }
+
+  FieldBlueprint onUpdate(String onUpdate) {
+    foreignKey ??= ForeignKeyConstraint(name);
+    foreignKey!.onUpdate = onUpdate.toUpperCase();
+    return this;
+  }
+
+  FieldBlueprint useCurrent();
+
+  FieldBlueprint useCurrentOnUpdate();
 }
 
 class ForeignKeyConstraint {

@@ -14,35 +14,7 @@ class SqliteFieldBlueprint extends FieldBlueprint {
     super.fieldComment,
   });
 
-  ForeignKeyConstraint foreign() {
-    foreignKey ??= ForeignKeyConstraint(name);
-    return foreignKey!;
-  }
-
-  ForeignKeyConstraint references(String columnName) {
-    foreignKey ??= ForeignKeyConstraint(name);
-    foreignKey!.foreignColumnName = columnName;
-    return foreignKey!;
-  }
-
-  ForeignKeyConstraint on(String tableName) {
-    foreignKey ??= ForeignKeyConstraint(name);
-    foreignKey!.foreignTableName = tableName;
-    return foreignKey!;
-  }
-
-  SqliteFieldBlueprint onDelete(String onDelete) {
-    foreignKey ??= ForeignKeyConstraint(name);
-    foreignKey!.onDelete = onDelete.toUpperCase();
-    return this;
-  }
-
-  SqliteFieldBlueprint onUpdate(String onUpdate) {
-    foreignKey ??= ForeignKeyConstraint(name);
-    foreignKey!.onUpdate = onUpdate.toUpperCase();
-    return this;
-  }
-
+  @override
   SqliteFieldBlueprint useCurrent() {
     if (type == 'TIMESTAMP' || type == 'DATETIME') {
       type += ' DEFAULT CURRENT_TIMESTAMP';
@@ -53,6 +25,7 @@ class SqliteFieldBlueprint extends FieldBlueprint {
     return this;
   }
 
+  @override
   SqliteFieldBlueprint useCurrentOnUpdate() {
     if (type == 'TIMESTAMP' || type == 'DATETIME') {
       type += ' ON UPDATE CURRENT_TIMESTAMP';
@@ -60,11 +33,6 @@ class SqliteFieldBlueprint extends FieldBlueprint {
       throw QueryException(
           'useCurrentOnUpdate() can only be used with TIMESTAMP or DATETIME');
     }
-    return this;
-  }
-
-  SqliteFieldBlueprint unsigned() {
-    isUnsigned = true;
     return this;
   }
 }
