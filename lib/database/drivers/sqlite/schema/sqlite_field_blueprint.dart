@@ -14,41 +14,6 @@ class SqliteFieldBlueprint extends FieldBlueprint {
     super.fieldComment,
   });
 
-  SqliteFieldBlueprint change() {
-    modify = true;
-    return this;
-  }
-
-  SqliteFieldBlueprint nullable() {
-    isNullable = true;
-    return this;
-  }
-
-  SqliteFieldBlueprint unique() {
-    isUnique = true;
-    return this;
-  }
-
-  SqliteFieldBlueprint defaultsTo(dynamic value) {
-    defaultValue = value;
-    return this;
-  }
-
-  SqliteFieldBlueprint comment(String comment) {
-    fieldComment = comment;
-    return this;
-  }
-
-  SqliteFieldBlueprint primary(bool value) {
-    isPrimaryKey = value;
-    return this;
-  }
-
-  SqliteFieldBlueprint autoIncrement() {
-    isAutoIncrement = true;
-    return this;
-  }
-
   ForeignKeyConstraint foreign() {
     foreignKey ??= ForeignKeyConstraint(name);
     return foreignKey!;

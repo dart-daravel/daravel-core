@@ -25,6 +25,46 @@ abstract class FieldBlueprint {
     this.fieldComment,
   });
 
+  FieldBlueprint change() {
+    modify = true;
+    return this;
+  }
+
+  FieldBlueprint nullable() {
+    isNullable = true;
+    return this;
+  }
+
+  FieldBlueprint unique() {
+    isUnique = true;
+    return this;
+  }
+
+  FieldBlueprint defaultsTo(dynamic value) {
+    defaultValue = value;
+    return this;
+  }
+
+  FieldBlueprint comment(String comment) {
+    fieldComment = comment;
+    return this;
+  }
+
+  FieldBlueprint primary(bool value) {
+    isPrimaryKey = value;
+    return this;
+  }
+
+  FieldBlueprint autoIncrement() {
+    isAutoIncrement = true;
+    return this;
+  }
+
+  FieldBlueprint unsigned() {
+    isUnsigned = true;
+    return this;
+  }
+
   bool hasForeignKeyConstraint() {
     return foreignKey?.columnName != null &&
         foreignKey?.foreignColumnName != null &&
