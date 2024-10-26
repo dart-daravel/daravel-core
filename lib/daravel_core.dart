@@ -22,4 +22,14 @@ export 'extensions/string.dart';
 // Helpers
 export 'helpers/string.dart';
 
+// Config
+export 'config/database_connection.dart';
+
+// Database
+export 'database/db.dart';
+
+// Exceptions
+export 'exceptions/component_not_booted.dart';
+export 'exceptions/db_connection_not_found.dart';
+
 export 'core.dart';
