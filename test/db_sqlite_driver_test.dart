@@ -50,4 +50,15 @@ void main() {
     expect(query,
         'CREATE TABLE users_2 (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, email VARCHAR(100), password VARCHAR(100) NOT NULL);');
   });
+
+  test('Create unique field table Blueprint', () {
+    final query = Schema.create('users_3', (table) {
+      table.increments('id');
+      table.string('email').unique();
+      table.string('password');
+    });
+
+    expect(query,
+        'CREATE TABLE users_3 (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, email VARCHAR(100) UNIQUE NOT NULL, password VARCHAR(100) NOT NULL);');
+  });
 }
