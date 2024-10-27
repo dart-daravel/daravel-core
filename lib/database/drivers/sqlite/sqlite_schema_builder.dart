@@ -88,14 +88,14 @@ class SqliteSchemaBuilder extends SchemaBuilder {
 
   @override
   String drop(String table) {
-    final query = 'DROP TABLE $table';
+    final query = 'DROP TABLE $table;';
     _driver.statement(query);
     return query;
   }
 
   @override
   String dropIfExists(String table) {
-    final query = 'DROP TABLE IF EXISTS $table';
+    final query = 'DROP TABLE IF EXISTS $table;';
     _driver.statement(query);
     return query;
   }

@@ -4,6 +4,7 @@ import 'package:daravel_core/daravel_core.dart';
 import 'package:daravel_core/database/concerns/query_result.dart';
 
 import 'package:daravel_core/database/schema.dart';
+import 'package:sqlite3/sqlite3.dart';
 import 'package:test/test.dart';
 import 'package:path/path.dart' as path;
 
@@ -367,5 +368,20 @@ void main() {
     final result = DB.select('SELECT * FROM new_users');
 
     expect(result!.rows.length, 0);
+  });
+
+  test('Drop table', () {
+    final table = 'users_19';
+    final query =
+        'CREATE TABLE $table (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, email VARCHAR(100) NOT NULL, password VARCHAR(100) NOT NULL);';
+
+    DB.connection()!.statement(query);
+
+    final dropQuery = Schema.drop(table);
+
+    expect(dropQuery, 'DROP TABLE $table;');
+
+    expect(() => DB.select('SELECT * FROM $table'),
+        throwsA(isA<SqliteException>()));
   });
 }

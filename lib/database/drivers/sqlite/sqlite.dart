@@ -85,14 +85,12 @@ class SQLiteDriver extends DBDriver {
 
   @override
   String drop(String table) {
-    // TODO: implement drop
-    throw UnimplementedError();
+    return _schemaBuilder.drop(table);
   }
 
   @override
   String dropIfExists(String table) {
-    // TODO: implement dropIfExists
-    throw UnimplementedError();
+    return _schemaBuilder.dropIfExists(table);
   }
 
   @override
