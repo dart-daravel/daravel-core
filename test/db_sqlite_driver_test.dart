@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:daravel_core/daravel_core.dart';
 import 'package:daravel_core/database/concerns/query_result.dart';
@@ -265,5 +266,26 @@ void main() {
     expect(result, isA<QueryResult>());
 
     expect(result!.rows.length, 0);
+  });
+
+  test('Insert statement', () {
+    final table = 'users_16';
+    final query =
+        'CREATE TABLE $table (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, email VARCHAR(100) NOT NULL, password VARCHAR(100) NOT NULL);';
+
+    DB.connection()!.statement(query);
+
+    final result = DB.insert(
+        'INSERT INTO $table (email, password) VALUES (?, ?)',
+        ['john@gmail.com', 'password']);
+
+    expect(result, true);
+
+    final selectResult = DB.select('SELECT * FROM $table');
+
+    print(selectResult!.rows);
+
+    expect(selectResult.rows.first[1], 'john@gmail.com');
+    expect(selectResult.rows.first[2], 'password');
   });
 }
