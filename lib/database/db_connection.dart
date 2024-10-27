@@ -2,7 +2,6 @@ import 'package:daravel_core/daravel_core.dart';
 import 'package:daravel_core/database/concerns/db_driver.dart';
 import 'package:daravel_core/database/concerns/query_result.dart';
 import 'package:daravel_core/database/drivers/sqlite/sqlite.dart';
-import 'package:daravel_core/database/schema/blueprint.dart';
 
 class DBConnection {
   late final DBDriver driver;
@@ -39,9 +38,5 @@ class DBConnection {
 
   bool unprepared(String query) {
     return driver.unprepared(query);
-  }
-
-  String createTable(Blueprint blueprint) {
-    return driver.executeCreateBlueprint(blueprint);
   }
 }

@@ -82,4 +82,21 @@ class SQLiteDriver extends DBDriver {
   Blueprint initBlueprint(String name, bool modify) {
     return SqliteBlueprint(name, modify);
   }
+
+  @override
+  String drop(String table) {
+    // TODO: implement drop
+    throw UnimplementedError();
+  }
+
+  @override
+  String dropIfExists(String table) {
+    // TODO: implement dropIfExists
+    throw UnimplementedError();
+  }
+
+  @override
+  String renameTable(String from, String to) {
+    return _schemaBuilder.renameTable(from, to);
+  }
 }

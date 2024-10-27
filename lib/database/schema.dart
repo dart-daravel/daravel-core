@@ -11,6 +11,21 @@ class Schema {
   }) {
     final blueprint = DB.connection()!.driver.initBlueprint(tableName, false);
     buildFunction(blueprint);
-    return DB.connection()!.createTable(blueprint);
+    return DB.connection()!.driver.executeCreateBlueprint(blueprint);
+  }
+
+  /// Rename a table.
+  static String rename(String from, String to) {
+    return DB.connection()!.driver.renameTable(from, to);
+  }
+
+  /// Drop table.
+  static String drop(String table) {
+    return DB.connection()!.driver.drop(table);
+  }
+
+  /// Drop table if exists.
+  static String dropIfExists(String table) {
+    return DB.connection()!.driver.dropIfExists(table);
   }
 }

@@ -85,4 +85,25 @@ class SqliteSchemaBuilder extends SchemaBuilder {
   String _prepareValue(dynamic value) {
     return value is String ? "'$value'" : value;
   }
+
+  @override
+  String drop(String table) {
+    final query = 'DROP TABLE $table';
+    _driver.statement(query);
+    return query;
+  }
+
+  @override
+  String dropIfExists(String table) {
+    final query = 'DROP TABLE IF EXISTS $table';
+    _driver.statement(query);
+    return query;
+  }
+
+  @override
+  String renameTable(String from, String to) {
+    final query = 'ALTER TABLE $from RENAME TO $to;';
+    _driver.statement(query);
+    return query;
+  }
 }

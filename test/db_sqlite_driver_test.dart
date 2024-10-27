@@ -323,4 +323,20 @@ void main() {
     expect(selectResult.mappedRows!.first['email'], 'john@gmail.com');
     expect(selectResult.mappedRows!.first['password'], 'password');
   });
+
+  test('Rename table', () {
+    final table = 'users_17';
+    final query =
+        'CREATE TABLE $table (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, email VARCHAR(100) NOT NULL, password VARCHAR(100) NOT NULL);';
+
+    DB.connection()!.statement(query);
+
+    final renameQuery = Schema.rename(table, 'new_users');
+
+    expect(renameQuery, 'ALTER TABLE $table RENAME TO new_users;');
+
+    final result = DB.select('SELECT * FROM new_users');
+
+    expect(result!.rows.length, 0);
+  });
 }

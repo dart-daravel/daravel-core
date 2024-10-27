@@ -24,6 +24,16 @@ abstract class DBDriver {
     return '';
   }
 
+  String executeUpdateBlueprint(Blueprint blueprint) {
+    return '';
+  }
+
+  String renameTable(String from, String to);
+
+  String drop(String table);
+
+  String dropIfExists(String table);
+
   Blueprint initBlueprint(String name, bool modify);
 
   void executeAlterBlueprint(Blueprint blueprint) {}
