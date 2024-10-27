@@ -354,8 +354,46 @@ void main() {
     expect(selectResult!.rows.length, 0);
   });
 
-  test('Rename table', () {
+  test('Update statement', () {
     final table = 'users_18';
+
+    Schema.create(table, (table) {
+      table.increments('id');
+      table.string('email');
+      table.string('password');
+    });
+
+    DB.insert(
+      'INSERT INTO $table (email, password) VALUES (?, ?)',
+      ['john@gmail.com', 'password'],
+    );
+
+    var selectResult = DB.select('SELECT * FROM $table');
+
+    expect(selectResult!.rows.length, 1);
+
+    var result = DB.update(
+      'UPDATE $table SET email = ?, password = ? WHERE email = ?',
+      ['john-edited@gmail.com', 'new-password', 'john@gmail.com'],
+    );
+
+    expect(result, true);
+
+    selectResult = DB.select('SELECT * FROM $table');
+
+    expect(selectResult!.rows.length, 1);
+
+    expect(selectResult.rows.first[0], 1);
+    expect(selectResult.rows.first[1], 'john-edited@gmail.com');
+    expect(selectResult.rows.first[2], 'new-password');
+
+    expect(selectResult.mappedRows!.first['id'], 1);
+    expect(selectResult.mappedRows!.first['email'], 'john-edited@gmail.com');
+    expect(selectResult.mappedRows!.first['password'], 'new-password');
+  });
+
+  test('Rename table', () {
+    final table = 'users_19';
     final query =
         'CREATE TABLE $table (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, email VARCHAR(100) NOT NULL, password VARCHAR(100) NOT NULL);';
 
@@ -371,7 +409,7 @@ void main() {
   });
 
   test('Drop table', () {
-    final table = 'users_19';
+    final table = 'users_20';
     final query =
         'CREATE TABLE $table (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, email VARCHAR(100) NOT NULL, password VARCHAR(100) NOT NULL);';
 
@@ -383,5 +421,7 @@ void main() {
 
     expect(() => DB.select('SELECT * FROM $table'),
         throwsA(isA<SqliteException>()));
+
+    expect(Schema.dropIfExists(table), 'DROP TABLE IF EXISTS $table;');
   });
 }
