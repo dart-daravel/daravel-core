@@ -216,7 +216,7 @@ void main() {
     final query =
         'CREATE TABLE $table (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, email VARCHAR(100) NOT NULL, password VARCHAR(100) NOT NULL);';
 
-    DB.connection()!.select(query);
+    DB.connection()!.statement(query);
     // Select from connection.
     var result = DB.connection()!.select('SELECT * FROM $table');
 
@@ -224,7 +224,43 @@ void main() {
 
     expect(result!.rows.length, 0);
 
+    // Direct Select
     result = DB.select('SELECT * FROM $table');
+
+    expect(result, isA<QueryResult>());
+
+    expect(result!.rows.length, 0);
+  });
+
+  test('Secondary Sqlite connection', () {
+    final table = 'users_15';
+    final query =
+        'CREATE TABLE $table (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, email VARCHAR(100) NOT NULL, password VARCHAR(100) NOT NULL);';
+
+    DB.connection('sqlite1')!.statement(query);
+
+    // Select from connection.
+    final result = DB.connection('sqlite1')!.select('SELECT * FROM $table');
+
+    expect(result, isA<QueryResult>());
+
+    expect(result!.rows.length, 0);
+  });
+
+  test('Test non-existent connection & switching of default connection', () {
+    final table = 'users_15';
+    final query =
+        'CREATE TABLE $table (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, email VARCHAR(100) NOT NULL, password VARCHAR(100) NOT NULL);';
+
+    expect(() => DB.connection('sqlite-non-existent')!.statement(query),
+        throwsA(isA<DBConnectionNotFoundException>()));
+
+    expect(() => DB.setDefaultConnection('sqlite-non-existent'),
+        throwsA(isA<DBConnectionNotFoundException>()));
+
+    DB.setDefaultConnection('sqlite1');
+
+    final result = DB.select('SELECT * FROM $table');
 
     expect(result, isA<QueryResult>());
 

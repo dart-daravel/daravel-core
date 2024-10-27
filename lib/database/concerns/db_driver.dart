@@ -15,7 +15,7 @@ abstract class DBDriver {
   bool delete(String query, [List<dynamic> bindings = const []]);
 
   /// Execute a query
-  void statement(String query, [List<dynamic> bindings = const []]);
+  bool statement(String query, [List<dynamic> bindings = const []]);
 
   /// Execute an unprepared query
   bool unprepared(String query);

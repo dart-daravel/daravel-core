@@ -16,9 +16,25 @@ class DB {
 
   Map<String, DatabaseConnection>? connections;
 
-  QueryResult? select(String query, [List<dynamic> bindings = const []]) {
-    return _dbConnection!.select(query, bindings);
+  static QueryResult? select(String query,
+      [List<dynamic> bindings = const []]) {
+    return _mainInstance!._dbConnection!.select(query, bindings);
   }
+
+  static bool statement(String query, [List<dynamic> bindings = const []]) =>
+      _mainInstance!._dbConnection!.statement(query, bindings);
+
+  static bool insert(String query, [List<dynamic> bindings = const []]) =>
+      _mainInstance!._dbConnection!.insert(query, bindings);
+
+  static bool delete(String query, [List<dynamic> bindings = const []]) =>
+      _mainInstance!._dbConnection!.delete(query, bindings);
+
+  static bool update(String query, [List<dynamic> bindings = const []]) =>
+      _mainInstance!._dbConnection!.update(query, bindings);
+
+  static bool unprepared(String query) =>
+      _mainInstance!._dbConnection!.unprepared(query);
 
   static DBConnection? connection([String? connection]) {
     if (_mainInstance?._core == null) {

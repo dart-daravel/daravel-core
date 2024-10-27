@@ -52,9 +52,10 @@ class SQLiteDriver extends DBDriver {
 
   /// Run an SQL statement.
   @override
-  void statement(String query, [List bindings = const []]) {
+  bool statement(String query, [List bindings = const []]) {
     final statement = _db!.prepare(query);
     statement.execute(bindings);
+    return true;
   }
 
   /// Run an unprepared query.

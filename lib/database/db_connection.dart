@@ -21,6 +21,26 @@ class DBConnection {
     return driver.select(query, bindings);
   }
 
+  bool statement(String query, [List<dynamic> bindings = const []]) {
+    return driver.statement(query, bindings);
+  }
+
+  bool insert(String query, [List<dynamic> bindings = const []]) {
+    return driver.insert(query, bindings);
+  }
+
+  bool delete(String query, [List<dynamic> bindings = const []]) {
+    return driver.delete(query, bindings);
+  }
+
+  bool update(String query, [List<dynamic> bindings = const []]) {
+    return driver.update(query, bindings);
+  }
+
+  bool unprepared(String query) {
+    return driver.unprepared(query);
+  }
+
   String createTable(Blueprint blueprint) {
     return driver.executeCreateBlueprint(blueprint);
   }
