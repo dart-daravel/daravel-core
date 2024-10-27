@@ -28,6 +28,7 @@ void main() {
           database: 'test/database-playground/database1.sqlite',
           prefix: '',
           foreignKeyConstraints: true,
+          busyTimeout: 5000,
         ),
         'sqlite2': DatabaseConnection(
           driver: 'sqlite',
@@ -303,7 +304,7 @@ void main() {
     final query =
         'CREATE TABLE $table (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, email VARCHAR(100) NOT NULL, password VARCHAR(100) NOT NULL);';
 
-    DB.connection()!.statement(query);
+    DB.connection()!.unprepared(query);
 
     final result = DB.insert(
         'INSERT INTO $table (email, password) VALUES (?, ?)',
@@ -324,8 +325,36 @@ void main() {
     expect(selectResult.mappedRows!.first['password'], 'password');
   });
 
-  test('Rename table', () {
+  test('Delete statement', () {
     final table = 'users_17';
+
+    Schema.create(table, (table) {
+      table.increments('id');
+      table.string('email');
+      table.string('password');
+    });
+
+    DB.insert(
+      'INSERT INTO $table (email, password) VALUES (?, ?)',
+      ['frank@gmail.com', 'password'],
+    );
+
+    var selectResult = DB.select('SELECT * FROM $table');
+
+    expect(selectResult!.rows.length, 1);
+
+    var result =
+        DB.delete('DELETE FROM $table WHERE email = ?', ['frank@gmail.com']);
+
+    expect(result, true);
+
+    selectResult = DB.select('SELECT * FROM $table');
+
+    expect(selectResult!.rows.length, 0);
+  });
+
+  test('Rename table', () {
+    final table = 'users_18';
     final query =
         'CREATE TABLE $table (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, email VARCHAR(100) NOT NULL, password VARCHAR(100) NOT NULL);';
 
