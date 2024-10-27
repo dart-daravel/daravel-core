@@ -21,7 +21,7 @@ class SqliteBlueprint extends Blueprint {
   SqliteFieldBlueprint bigIncrements(String field) {
     final blueprint = SqliteFieldBlueprint(
       field,
-      'BIGINT',
+      'INTEGER',
       isAutoIncrement: true,
       isPrimaryKey: true,
     );
@@ -65,6 +65,18 @@ class SqliteBlueprint extends Blueprint {
   @override
   SqliteFieldBlueprint date(String field) {
     final blueprint = SqliteFieldBlueprint(field, 'DATE');
+    fields.add(blueprint);
+    return blueprint;
+  }
+
+  @override
+  FieldBlueprint integer(String field,
+      {bool autoIncrement = false, bool unsigned = false}) {
+    final blueprint = SqliteFieldBlueprint(
+      field,
+      'INTEGER',
+      isAutoIncrement: autoIncrement,
+    );
     fields.add(blueprint);
     return blueprint;
   }

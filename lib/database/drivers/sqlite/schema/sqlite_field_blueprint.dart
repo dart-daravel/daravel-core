@@ -35,4 +35,15 @@ class SqliteFieldBlueprint extends FieldBlueprint {
     }
     return this;
   }
+
+  @override
+  SqliteFieldBlueprint comment(String comment) {
+    throw UnimplementedError('SQLite does not support field comments');
+  }
+
+  @override
+  SqliteFieldBlueprint unsigned() {
+    throw UnimplementedError(
+        'SQLite does not differentiate between signed and unsigned integers');
+  }
 }

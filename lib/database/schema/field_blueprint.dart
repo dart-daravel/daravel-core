@@ -50,7 +50,7 @@ abstract class FieldBlueprint {
     return this;
   }
 
-  FieldBlueprint primary(bool value) {
+  FieldBlueprint primary([bool value = true]) {
     isPrimaryKey = value;
     return this;
   }

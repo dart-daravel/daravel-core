@@ -80,4 +80,37 @@ void main() {
     expect(query,
         'CREATE TABLE $table (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, email VARCHAR(100) UNIQUE NOT NULL DEFAULT \'john-doe@example.com\', password VARCHAR(100) NOT NULL);');
   });
+
+  test('Column comments not supported', () {
+    final table = 'users_5';
+
+    expect(
+        () => Schema.create(table, (table) {
+              table.increments('id').comment('This is the primary key');
+            }),
+        throwsA(isA<UnimplementedError>()));
+  });
+
+  test('Primary field modifier', () {
+    final table = 'users_6';
+
+    final query = Schema.create(table, (table) {
+      table.string('id');
+      table.string('email').primary();
+      table.string('password');
+    });
+
+    expect(query,
+        'CREATE TABLE $table (id VARCHAR(100) NOT NULL, email VARCHAR(100) PRIMARY KEY NOT NULL, password VARCHAR(100) NOT NULL);');
+  });
+
+  test('Signed and Unsigned integers not supported', () {
+    final table = 'users_5';
+
+    expect(
+        () => Schema.create(table, (table) {
+              table.integer('id').unsigned();
+            }),
+        throwsA(isA<UnimplementedError>()));
+  });
 }
