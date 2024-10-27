@@ -13,6 +13,8 @@ void main() {
     Directory(path.join(Directory.current.path, 'test/database-playground'))
         .createSync(recursive: true);
 
+    expect(() => DB.connection(), throwsA(isA<ComponentNotBootedException>()));
+
     DB.boot(Core(configMap: {
       'database.defaultConnection': 'sqlite',
       'database.connections': {
