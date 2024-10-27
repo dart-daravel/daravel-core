@@ -61,11 +61,11 @@ class SqliteSchemaBuilder extends SchemaBuilder {
     }
 
     if (blueprint.primaryKeys.isNotEmpty) {
-      query += ', PRIMARY KEY(';
+      query += ', PRIMARY KEY (';
       for (final key in blueprint.primaryKeys) {
-        query += ' $key';
+        query += key;
         if (key != blueprint.primaryKeys.last) {
-          query += ',';
+          query += ', ';
         }
       }
       query += ')';

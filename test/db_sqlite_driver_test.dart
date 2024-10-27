@@ -424,4 +424,18 @@ void main() {
 
     expect(Schema.dropIfExists(table), 'DROP TABLE IF EXISTS $table;');
   });
+
+  test('Compound primary keys', () {
+    final table = 'users_21';
+
+    final query = Schema.create(table, (table) {
+      table.string('id');
+      table.string('email');
+      table.string('password');
+      table.primary(['id', 'email']);
+    });
+
+    expect(query,
+        'CREATE TABLE $table (id VARCHAR(100) NOT NULL, email VARCHAR(100) NOT NULL, password VARCHAR(100) NOT NULL, PRIMARY KEY (id, email));');
+  });
 }

@@ -26,4 +26,6 @@ abstract class Blueprint {
   FieldBlueprint time(String field);
   FieldBlueprint timestamp(String field);
   ForeignKeyConstraint foreign(String field);
+
+  void primary(List<String> fields) => primaryKeys.addAll(fields);
 }
