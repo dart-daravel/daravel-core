@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:math';
 
 import 'package:daravel_core/daravel_core.dart';
 import 'package:daravel_core/database/concerns/query_result.dart';
@@ -285,9 +284,14 @@ void main() {
 
     final selectResult = DB.select('SELECT * FROM $table');
 
-    print(selectResult!.rows);
+    expect(selectResult!.rows.length, 1);
 
+    expect(selectResult.rows.first[0], 1);
     expect(selectResult.rows.first[1], 'john@gmail.com');
     expect(selectResult.rows.first[2], 'password');
+
+    expect(selectResult.mappedRows!.first['id'], 1);
+    expect(selectResult.mappedRows!.first['email'], 'john@gmail.com');
+    expect(selectResult.mappedRows!.first['password'], 'password');
   });
 }
