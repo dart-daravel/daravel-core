@@ -36,7 +36,12 @@ void main() {
           database: 'test/database-playground/database2.sqlite',
           prefix: '',
           foreignKeyConstraints: true,
-        )
+        ),
+        's3': DatabaseConnection(
+          driver: 's3',
+          url: 'localhost',
+          database: 'test',
+        ),
       }
     }));
   });
@@ -44,6 +49,10 @@ void main() {
   tearDownAll(() {
     Directory(path.join(Directory.current.path, 'test/database-playground'))
         .deleteSync(recursive: true);
+  });
+
+  test('Unsupported driver', () {
+    expect(() => DB.connection('s3'), throwsA(isA<Exception>()));
   });
 
   test('Create simple table Blueprint', () {
@@ -397,7 +406,7 @@ void main() {
     final query =
         'CREATE TABLE $table (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, email VARCHAR(100) NOT NULL, password VARCHAR(100) NOT NULL);';
 
-    DB.connection()!.statement(query);
+    DB.unprepared(query);
 
     final renameQuery = Schema.rename(table, 'new_users');
 
@@ -405,7 +414,7 @@ void main() {
 
     final result = DB.select('SELECT * FROM new_users');
 
-    expect(result!.rows.length, 0);
+    expect((result!.resultObject as ResultSet).length, 0);
   });
 
   test('Drop table', () {
@@ -413,7 +422,7 @@ void main() {
     final query =
         'CREATE TABLE $table (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, email VARCHAR(100) NOT NULL, password VARCHAR(100) NOT NULL);';
 
-    DB.connection()!.statement(query);
+    DB.statement(query);
 
     final dropQuery = Schema.drop(table);
 

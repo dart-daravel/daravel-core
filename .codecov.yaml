@@ -2,3 +2,6 @@ coverage:
   ignore:
     - lib/annotations/command.dart
     - lib/annotations/config.dart
+    - lib/database/concerns/db_driver.dart
+    - lib/exceptions/*.dart
+    - lib/database/concerns/schema_builder.dart
