@@ -137,4 +137,64 @@ void main() {
     expect(query,
         'CREATE TABLE $table2 (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, name VARCHAR(100) UNIQUE NOT NULL, password VARCHAR(100) NOT NULL, role_id INTEGER NOT NULL, CONSTRAINT ${table2}_role_id_foreign FOREIGN KEY (role_id) REFERENCES roles(id));');
   });
+
+  test('Uuid column type', () {
+    final table = 'users_8';
+
+    final query = Schema.create(table, (table) {
+      table.uuid();
+    });
+
+    expect(query, 'CREATE TABLE $table (uuid CHAR(36) NOT NULL);');
+  });
+
+  test('Char column type', () {
+    final table = 'users_9';
+
+    final query = Schema.create(table, (table) {
+      table.char('name');
+    });
+
+    expect(query, 'CREATE TABLE $table (name CHAR(50) NOT NULL);');
+  });
+
+  test('Date column type', () {
+    final table = 'users_10';
+
+    final query = Schema.create(table, (table) {
+      table.date('dob');
+    });
+
+    expect(query, 'CREATE TABLE $table (dob DATE NOT NULL);');
+  });
+
+  test('DateTime column type', () {
+    final table = 'users_11';
+
+    expect(
+        () => Schema.create(table, (table) {
+              table.dateTime('created_at');
+            }),
+        throwsA(isA<UnimplementedError>()));
+  });
+
+  test('Time column type', () {
+    final table = 'users_12';
+
+    expect(
+        () => Schema.create(table, (table) {
+              table.time('time');
+            }),
+        throwsA(isA<UnimplementedError>()));
+  });
+
+  test('Timestamp column type', () {
+    final table = 'users_13';
+
+    expect(
+        () => Schema.create(table, (table) {
+              table.timestamp('created_at');
+            }),
+        throwsA(isA<UnimplementedError>()));
+  });
 }
