@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:daravel_core/daravel_core.dart';
+import 'package:daravel_core/database/concerns/query_result.dart';
 
 import 'package:daravel_core/database/schema.dart';
 import 'package:test/test.dart';
@@ -196,5 +197,19 @@ void main() {
               table.timestamp('created_at');
             }),
         throwsA(isA<UnimplementedError>()));
+  });
+
+  test('Run SQL SELECT statement', () {
+    final table = 'users_14';
+    final query =
+        'CREATE TABLE $table (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, email VARCHAR(100) NOT NULL, password VARCHAR(100) NOT NULL);';
+
+    DB.connection()!.select(query);
+
+    final result = DB.connection()!.select('SELECT * FROM $table');
+
+    expect(result, isA<QueryResult>());
+
+    expect(result!.rows.length, 0);
   });
 }
