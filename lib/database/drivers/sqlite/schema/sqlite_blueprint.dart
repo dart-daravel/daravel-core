@@ -8,6 +8,7 @@ class SqliteBlueprint extends Blueprint {
   @override
   SqliteFieldBlueprint increments(String field) {
     final blueprint = SqliteFieldBlueprint(
+      name,
       field,
       'INTEGER',
       isAutoIncrement: true,
@@ -20,6 +21,7 @@ class SqliteBlueprint extends Blueprint {
   @override
   SqliteFieldBlueprint bigIncrements(String field) {
     final blueprint = SqliteFieldBlueprint(
+      name,
       field,
       'INTEGER',
       isAutoIncrement: true,
@@ -32,6 +34,7 @@ class SqliteBlueprint extends Blueprint {
   @override
   SqliteFieldBlueprint string(String field, [int length = 100]) {
     final blueprint = SqliteFieldBlueprint(
+      name,
       field,
       'VARCHAR',
       constraint: length.toString(),
@@ -43,6 +46,7 @@ class SqliteBlueprint extends Blueprint {
   @override
   SqliteFieldBlueprint uuid([String field = 'uuid']) {
     final blueprint = SqliteFieldBlueprint(
+      name,
       field,
       'CHAR',
       constraint: '36',
@@ -54,6 +58,7 @@ class SqliteBlueprint extends Blueprint {
   @override
   SqliteFieldBlueprint char(String field, [int length = 50]) {
     final blueprint = SqliteFieldBlueprint(
+      name,
       field,
       'CHAR',
       constraint: length.toString(),
@@ -64,7 +69,11 @@ class SqliteBlueprint extends Blueprint {
 
   @override
   SqliteFieldBlueprint date(String field) {
-    final blueprint = SqliteFieldBlueprint(field, 'DATE');
+    final blueprint = SqliteFieldBlueprint(
+      name,
+      field,
+      'DATE',
+    );
     fields.add(blueprint);
     return blueprint;
   }
@@ -73,6 +82,7 @@ class SqliteBlueprint extends Blueprint {
   FieldBlueprint integer(String field,
       {bool autoIncrement = false, bool unsigned = false}) {
     final blueprint = SqliteFieldBlueprint(
+      name,
       field,
       'INTEGER',
       isAutoIncrement: autoIncrement,
@@ -94,5 +104,12 @@ class SqliteBlueprint extends Blueprint {
   @override
   FieldBlueprint timestamp(String field) {
     throw UnimplementedError();
+  }
+
+  @override
+  ForeignKeyConstraint foreign(String field) {
+    final blueprint = SqliteFieldBlueprint(name, field, '');
+    fields.add(blueprint);
+    return blueprint.foreign();
   }
 }

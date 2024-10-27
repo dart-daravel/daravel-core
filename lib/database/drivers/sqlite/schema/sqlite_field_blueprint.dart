@@ -3,6 +3,7 @@ import 'package:daravel_core/exceptions/query.dart';
 
 class SqliteFieldBlueprint extends FieldBlueprint {
   SqliteFieldBlueprint(
+    super.table,
     super.name,
     super.type, {
     super.isAutoIncrement,

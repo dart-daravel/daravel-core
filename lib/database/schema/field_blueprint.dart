@@ -1,4 +1,5 @@
 abstract class FieldBlueprint {
+  String table;
   String name;
   bool modify = false;
   String type;
@@ -14,6 +15,7 @@ abstract class FieldBlueprint {
   ForeignKeyConstraint? foreignKey;
 
   FieldBlueprint(
+    this.table,
     this.name,
     this.type, {
     this.constraint,
@@ -66,19 +68,7 @@ abstract class FieldBlueprint {
   }
 
   ForeignKeyConstraint foreign() {
-    foreignKey ??= ForeignKeyConstraint(name);
-    return foreignKey!;
-  }
-
-  ForeignKeyConstraint references(String columnName) {
-    foreignKey ??= ForeignKeyConstraint(name);
-    foreignKey!.foreignColumnName = columnName;
-    return foreignKey!;
-  }
-
-  ForeignKeyConstraint on(String tableName) {
-    foreignKey ??= ForeignKeyConstraint(name);
-    foreignKey!.foreignTableName = tableName;
+    foreignKey ??= ForeignKeyConstraint(table, name);
     return foreignKey!;
   }
 
@@ -88,29 +78,40 @@ abstract class FieldBlueprint {
         foreignKey?.foreignTableName != null;
   }
 
-  FieldBlueprint onDelete(String onDelete) {
-    foreignKey ??= ForeignKeyConstraint(name);
-    foreignKey!.onDelete = onDelete.toUpperCase();
-    return this;
-  }
-
-  FieldBlueprint onUpdate(String onUpdate) {
-    foreignKey ??= ForeignKeyConstraint(name);
-    foreignKey!.onUpdate = onUpdate.toUpperCase();
-    return this;
-  }
-
   FieldBlueprint useCurrent();
 
   FieldBlueprint useCurrentOnUpdate();
 }
 
 class ForeignKeyConstraint {
+  String table;
   String columnName;
   String? foreignColumnName;
   String? foreignTableName;
-  String? onDelete;
-  String? onUpdate;
+  String? onDeleteAction;
+  String? onUpdateAction;
 
-  ForeignKeyConstraint(this.columnName);
+  ForeignKeyConstraint(this.table, this.columnName);
+
+  ForeignKeyConstraint references(String columnName) {
+    foreignColumnName = columnName;
+    return this;
+  }
+
+  ForeignKeyConstraint on(String tableName) {
+    foreignTableName = tableName;
+    return this;
+  }
+
+  ForeignKeyConstraint onDelete(String onDelete) {
+    onDeleteAction = onDelete.toUpperCase();
+    return this;
+  }
+
+  ForeignKeyConstraint onUpdate(String onUpdate) {
+    onUpdateAction = onUpdate.toUpperCase();
+    return this;
+  }
+
+  String get constraintName => '${table}_${columnName}_foreign';
 }

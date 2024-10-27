@@ -12,44 +12,47 @@ class SqliteSchemaBuilder extends SchemaBuilder {
     String foreignKeyConstraints = '';
     String query = 'CREATE TABLE ${blueprint.name} (';
     for (final field in blueprint.fields) {
-      query += '${field.name} ${field.type}';
+      if (field.type.isNotEmpty) {
+        query += '${field.name} ${field.type}';
 
-      if (field.constraint != null) {
-        query += '(${field.constraint})';
-      }
+        if (field.constraint != null) {
+          query += '(${field.constraint})';
+        }
 
-      if (field.isPrimaryKey) {
-        query += ' PRIMARY KEY';
-      }
+        if (field.isPrimaryKey) {
+          query += ' PRIMARY KEY';
+        }
 
-      if (field.isAutoIncrement) {
-        query += ' AUTOINCREMENT';
-      }
+        if (field.isAutoIncrement) {
+          query += ' AUTOINCREMENT';
+        }
 
-      if (field.isUnique) {
-        query += ' UNIQUE';
-      }
+        if (field.isUnique) {
+          query += ' UNIQUE';
+        }
 
-      if (!field.isNullable) {
-        query += ' NOT NULL';
-      }
+        if (!field.isNullable) {
+          query += ' NOT NULL';
+        }
 
-      if (field.defaultValue != null) {
-        query += ' DEFAULT ${_prepareValue(field.defaultValue)}';
-      }
+        if (field.defaultValue != null) {
+          query += ' DEFAULT ${_prepareValue(field.defaultValue)}';
+        }
 
-      if (field.name != blueprint.fields.last.name) {
-        query += ', ';
+        if (field.name != blueprint.fields.last.name) {
+          query += ', ';
+        }
       }
 
       if (field.hasForeignKeyConstraint()) {
-        final prefix = foreignKeyConstraints.isEmpty ? '' : ', ';
+        final prefix =
+            '${foreignKeyConstraints.isEmpty ? '' : ', '}CONSTRAINT ${field.foreignKey!.constraintName} ';
         foreignKeyConstraints +=
             '${prefix}FOREIGN KEY (${field.foreignKey!.columnName}) REFERENCES ${field.foreignKey!.foreignTableName}(${field.foreignKey!.foreignColumnName})';
-        if (field.foreignKey!.onDelete != null) {
+        if (field.foreignKey!.onDeleteAction != null) {
           foreignKeyConstraints += ' ON DELETE ${field.foreignKey!.onDelete}';
         }
-        if (field.foreignKey!.onUpdate != null) {
+        if (field.foreignKey!.onUpdateAction != null) {
           foreignKeyConstraints += ' ON UPDATE ${field.foreignKey!.onUpdate}';
         }
       }
@@ -67,7 +70,7 @@ class SqliteSchemaBuilder extends SchemaBuilder {
     }
 
     if (foreignKeyConstraints.isNotEmpty) {
-      query += ' $foreignKeyConstraints';
+      query += ', $foreignKeyConstraints';
     }
 
     query += ');';

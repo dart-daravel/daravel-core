@@ -11,6 +11,7 @@ abstract class Blueprint {
   List<String> compoundKeys = [];
   String? comment;
   List<String> columnsToDrop = [];
+
   Blueprint(this.name, this.modify);
 
   FieldBlueprint increments(String field);
@@ -24,4 +25,5 @@ abstract class Blueprint {
   FieldBlueprint dateTime(String field);
   FieldBlueprint time(String field);
   FieldBlueprint timestamp(String field);
+  ForeignKeyConstraint foreign(String field);
 }

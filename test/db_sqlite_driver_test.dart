@@ -113,4 +113,52 @@ void main() {
             }),
         throwsA(isA<UnimplementedError>()));
   });
+
+  test('Foreign key constraints', () {
+    final table1 = 'roles';
+    final table2 = 'users_7';
+
+    String query = Schema.create(table1, (table) {
+      table.increments('id');
+      table.string('name').unique();
+    });
+
+    expect(query,
+        'CREATE TABLE $table1 (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, name VARCHAR(100) UNIQUE NOT NULL);');
+
+    query = Schema.create(table2, (table) {
+      table.increments('id');
+      table.string('name').unique();
+      table.string('password');
+      table.integer('role_id');
+      table.foreign('role_id').references('id').on('roles');
+    });
+
+    expect(query,
+        'CREATE TABLE $table2 (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, name VARCHAR(100) UNIQUE NOT NULL, password VARCHAR(100) NOT NULL, role_id INTEGER NOT NULL, CONSTRAINT ${table2}_role_id_foreign FOREIGN KEY (role_id) REFERENCES roles(id));');
+  });
+
+  test('Drop foreign key constraint', () {
+    final table1 = 'roles';
+    final table2 = 'users_8';
+
+    String query = Schema.create(table1, (table) {
+      table.increments('id');
+      table.string('name').unique();
+    });
+
+    expect(query,
+        'CREATE TABLE $table1 (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, name VARCHAR(100) UNIQUE NOT NULL);');
+
+    query = Schema.create(table2, (table) {
+      table.increments('id');
+      table.string('name').unique();
+      table.string('password');
+      table.integer('role_id');
+      table.foreign('role_id').references('id').on('roles');
+    });
+
+    expect(query,
+        'CREATE TABLE $table2 (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, name VARCHAR(100) UNIQUE NOT NULL, password VARCHAR(100) NOT NULL, role_id INTEGER NOT NULL, CONSTRAINT ${table2}_role_id_foreign FOREIGN KEY (role_id) REFERENCES roles(id));');
+  });
 }
