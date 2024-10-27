@@ -50,10 +50,12 @@ class SqliteSchemaBuilder extends SchemaBuilder {
         foreignKeyConstraints +=
             '${prefix}FOREIGN KEY (${field.foreignKey!.columnName}) REFERENCES ${field.foreignKey!.foreignTableName}(${field.foreignKey!.foreignColumnName})';
         if (field.foreignKey!.onDeleteAction != null) {
-          foreignKeyConstraints += ' ON DELETE ${field.foreignKey!.onDelete}';
+          foreignKeyConstraints +=
+              ' ON DELETE ${field.foreignKey!.onDeleteAction}';
         }
         if (field.foreignKey!.onUpdateAction != null) {
-          foreignKeyConstraints += ' ON UPDATE ${field.foreignKey!.onUpdate}';
+          foreignKeyConstraints +=
+              ' ON UPDATE ${field.foreignKey!.onUpdateAction}';
         }
       }
     }

@@ -153,6 +153,35 @@ void main() {
         'CREATE TABLE $table2 (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, name VARCHAR(100) UNIQUE NOT NULL, password VARCHAR(100) NOT NULL, role_id INTEGER NOT NULL, CONSTRAINT ${table2}_role_id_foreign FOREIGN KEY (role_id) REFERENCES roles(id));');
   });
 
+  test('Foreign key constraints with onDelete and onUpdate actions', () {
+    final table1 = 'roles_1';
+    final table2 = 'people_8';
+
+    String query = Schema.create(table1, (table) {
+      table.increments('id');
+      table.string('name').unique();
+    });
+
+    expect(query,
+        'CREATE TABLE $table1 (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, name VARCHAR(100) UNIQUE NOT NULL);');
+
+    query = Schema.create(table2, (table) {
+      table.integer('id').primary().autoIncrement();
+      table.string('name').unique();
+      table.string('password');
+      table.integer('role_id');
+      table
+          .foreign('role_id')
+          .references('id')
+          .on('roles')
+          .onDelete('CASCADE')
+          .onUpdate('CASCADE');
+    });
+
+    expect(query,
+        'CREATE TABLE $table2 (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, name VARCHAR(100) UNIQUE NOT NULL, password VARCHAR(100) NOT NULL, role_id INTEGER NOT NULL, CONSTRAINT ${table2}_role_id_foreign FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE ON UPDATE CASCADE);');
+  });
+
   test('Uuid column type', () {
     final table = 'users_8';
 
