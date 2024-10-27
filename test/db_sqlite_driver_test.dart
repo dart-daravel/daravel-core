@@ -20,6 +20,18 @@ void main() {
           database: 'test/database-playground/database.sqlite',
           prefix: '',
           foreignKeyConstraints: true,
+        ),
+        'sqlite1': DatabaseConnection(
+          driver: 'sqlite',
+          database: 'test/database-playground/database1.sqlite',
+          prefix: '',
+          foreignKeyConstraints: true,
+        ),
+        'sqlite2': DatabaseConnection(
+          driver: 'sqlite',
+          database: 'test/database-playground/database2.sqlite',
+          prefix: '',
+          foreignKeyConstraints: true,
         )
       }
     }));
@@ -205,8 +217,14 @@ void main() {
         'CREATE TABLE $table (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, email VARCHAR(100) NOT NULL, password VARCHAR(100) NOT NULL);';
 
     DB.connection()!.select(query);
+    // Select from connection.
+    var result = DB.connection()!.select('SELECT * FROM $table');
 
-    final result = DB.connection()!.select('SELECT * FROM $table');
+    expect(result, isA<QueryResult>());
+
+    expect(result!.rows.length, 0);
+
+    result = DB.select('SELECT * FROM $table');
 
     expect(result, isA<QueryResult>());
 
