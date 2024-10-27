@@ -1,5 +1,4 @@
 import 'package:daravel_core/database/schema/field_blueprint.dart';
-import 'package:daravel_core/exceptions/query.dart';
 
 class SqliteFieldBlueprint extends FieldBlueprint {
   SqliteFieldBlueprint(
@@ -16,28 +15,6 @@ class SqliteFieldBlueprint extends FieldBlueprint {
   });
 
   @override
-  SqliteFieldBlueprint useCurrent() {
-    if (type == 'TIMESTAMP' || type == 'DATETIME') {
-      type += ' DEFAULT CURRENT_TIMESTAMP';
-    } else {
-      throw QueryException(
-          'useCurrent() can only be used with TIMESTAMP or DATETIME');
-    }
-    return this;
-  }
-
-  @override
-  SqliteFieldBlueprint useCurrentOnUpdate() {
-    if (type == 'TIMESTAMP' || type == 'DATETIME') {
-      type += ' ON UPDATE CURRENT_TIMESTAMP';
-    } else {
-      throw QueryException(
-          'useCurrentOnUpdate() can only be used with TIMESTAMP or DATETIME');
-    }
-    return this;
-  }
-
-  @override
   SqliteFieldBlueprint comment(String comment) {
     throw UnimplementedError('SQLite does not support field comments');
   }
@@ -46,5 +23,17 @@ class SqliteFieldBlueprint extends FieldBlueprint {
   SqliteFieldBlueprint unsigned() {
     throw UnimplementedError(
         'SQLite does not differentiate between signed and unsigned integers');
+  }
+
+  @override
+  SqliteFieldBlueprint useCurrent() {
+    throw UnimplementedError(
+        'useCurrent() is not supported by SQLite. Use a default value instead.');
+  }
+
+  @override
+  SqliteFieldBlueprint useCurrentOnUpdate() {
+    throw UnimplementedError(
+        'useCurrentOnUpdate() is not supported by SQLite.');
   }
 }

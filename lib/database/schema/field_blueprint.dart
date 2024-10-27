@@ -1,3 +1,5 @@
+import 'package:daravel_core/exceptions/query.dart';
+
 abstract class FieldBlueprint {
   String table;
   String name;
@@ -78,9 +80,25 @@ abstract class FieldBlueprint {
         foreignKey?.foreignTableName != null;
   }
 
-  FieldBlueprint useCurrent();
+  FieldBlueprint useCurrent() {
+    if (type == 'TIMESTAMP' || type == 'DATETIME') {
+      type += ' DEFAULT CURRENT_TIMESTAMP';
+    } else {
+      throw QueryException(
+          'useCurrent() can only be used with TIMESTAMP or DATETIME');
+    }
+    return this;
+  }
 
-  FieldBlueprint useCurrentOnUpdate();
+  FieldBlueprint useCurrentOnUpdate() {
+    if (type == 'TIMESTAMP' || type == 'DATETIME') {
+      type += ' ON UPDATE CURRENT_TIMESTAMP';
+    } else {
+      throw QueryException(
+          'useCurrentOnUpdate() can only be used with TIMESTAMP or DATETIME');
+    }
+    return this;
+  }
 }
 
 class ForeignKeyConstraint {
