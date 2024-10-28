@@ -74,8 +74,8 @@ class SQLiteDriver extends DBDriver {
   }
 
   @override
-  String executeCreateBlueprint(Blueprint blueprint) {
-    return _schemaBuilder.executeCreateBlueprint(blueprint);
+  String executeBlueprint(Blueprint blueprint) {
+    return _schemaBuilder.executeBlueprint(blueprint);
   }
 
   @override

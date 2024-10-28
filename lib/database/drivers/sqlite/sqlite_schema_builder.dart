@@ -8,78 +8,92 @@ class SqliteSchemaBuilder extends SchemaBuilder {
   SqliteSchemaBuilder(this._driver);
 
   @override
-  String executeCreateBlueprint(Blueprint blueprint) {
-    String foreignKeyConstraints = '';
-    String query = 'CREATE TABLE ${blueprint.name} (';
+  String executeBlueprint(Blueprint blueprint) {
+    if (blueprint.modify) {
+      return _modifyTable(blueprint);
+    } else {
+      return _createTable(blueprint);
+    }
+  }
+
+  String _createTable(Blueprint blueprint) {
+    final StringBuffer foreignKeyConstraints = StringBuffer();
+    final StringBuffer query = StringBuffer('CREATE TABLE ${blueprint.name} (');
     for (final field in blueprint.fields) {
       if (field.type.isNotEmpty) {
-        query += '${field.name} ${field.type}';
+        query.write('${field.name} ${field.type}');
 
         if (field.constraint != null) {
-          query += '(${field.constraint})';
+          query.write('(${field.constraint})');
         }
 
         if (field.isPrimaryKey) {
-          query += ' PRIMARY KEY';
+          query.write(' PRIMARY KEY');
         }
 
         if (field.isAutoIncrement) {
-          query += ' AUTOINCREMENT';
+          query.write(' AUTOINCREMENT');
         }
 
         if (field.isUnique) {
-          query += ' UNIQUE';
+          query.write(' UNIQUE');
         }
 
         if (!field.isNullable) {
-          query += ' NOT NULL';
+          query.write(' NOT NULL');
         }
 
         if (field.defaultValue != null) {
-          query += ' DEFAULT ${_prepareValue(field.defaultValue)}';
+          query.write(' DEFAULT ${_prepareValue(field.defaultValue)}');
         }
 
         if (field.name != blueprint.fields.last.name) {
-          query += ', ';
+          query.write(', ');
         }
       }
 
       if (field.hasForeignKeyConstraint()) {
         final prefix =
             '${foreignKeyConstraints.isEmpty ? '' : ', '}CONSTRAINT ${field.foreignKey!.constraintName} ';
-        foreignKeyConstraints +=
-            '${prefix}FOREIGN KEY (${field.foreignKey!.columnName}) REFERENCES ${field.foreignKey!.foreignTableName}(${field.foreignKey!.foreignColumnName})';
+        foreignKeyConstraints.write(
+            '${prefix}FOREIGN KEY (${field.foreignKey!.columnName}) REFERENCES ${field.foreignKey!.foreignTableName}(${field.foreignKey!.foreignColumnName})');
         if (field.foreignKey!.onDeleteAction != null) {
-          foreignKeyConstraints +=
-              ' ON DELETE ${field.foreignKey!.onDeleteAction}';
+          foreignKeyConstraints
+              .write(' ON DELETE ${field.foreignKey!.onDeleteAction}');
         }
         if (field.foreignKey!.onUpdateAction != null) {
-          foreignKeyConstraints +=
-              ' ON UPDATE ${field.foreignKey!.onUpdateAction}';
+          foreignKeyConstraints
+              .write(' ON UPDATE ${field.foreignKey!.onUpdateAction}');
         }
       }
     }
 
     if (blueprint.primaryKeys.isNotEmpty) {
-      query += ', PRIMARY KEY (';
+      query.write(', PRIMARY KEY (');
       for (final key in blueprint.primaryKeys) {
-        query += key;
+        query.write(key);
         if (key != blueprint.primaryKeys.last) {
-          query += ', ';
+          query.write(', ');
         }
       }
-      query += ')';
+      query.write(')');
     }
 
     if (foreignKeyConstraints.isNotEmpty) {
-      query += ', $foreignKeyConstraints';
+      query.write(', $foreignKeyConstraints');
     }
 
-    query += ');';
+    query.write(');');
 
-    _driver.statement(query);
+    _driver.statement(query.toString());
 
-    return query;
+    return query.toString();
+  }
+
+  String _modifyTable(Blueprint blueprint) {
+    StringBuffer query = StringBuffer('ALTER TABLE ${blueprint.name}');
+    if (blueprint.fields.isNotEmpty) {}
+    return query.toString();
   }
 
   String _prepareValue(dynamic value) {

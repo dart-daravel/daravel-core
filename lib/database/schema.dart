@@ -11,7 +11,13 @@ class Schema {
   }) {
     final blueprint = DB.connection()!.driver.initBlueprint(tableName, false);
     buildFunction(blueprint);
-    return DB.connection()!.driver.executeCreateBlueprint(blueprint);
+    return DB.connection()!.driver.executeBlueprint(blueprint);
+  }
+
+  static String table(String tableName, Function(Blueprint) buildFunction) {
+    final blueprint = DB.connection()!.driver.initBlueprint(tableName, true);
+    buildFunction(blueprint);
+    return DB.connection()!.driver.executeBlueprint(blueprint);
   }
 
   /// Rename a table.

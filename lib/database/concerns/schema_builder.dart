@@ -1,12 +1,8 @@
 import 'package:daravel_core/database/schema/blueprint.dart';
 
 abstract class SchemaBuilder {
-  /// Builds and executes a CREATE TABLE statement from a [Blueprint] object.
-  String executeCreateBlueprint(Blueprint blueprint) {
-    return '';
-  }
-
-  String executeUpdateBlueprint(Blueprint blueprint) {
+  /// Builds and executes a CREATE TABLE or ALTER TABLE statement from a [Blueprint] object.
+  String executeBlueprint(Blueprint blueprint) {
     return '';
   }
 

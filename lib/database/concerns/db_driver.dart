@@ -20,11 +20,7 @@ abstract class DBDriver {
   /// Execute an unprepared query
   bool unprepared(String query);
 
-  String executeCreateBlueprint(Blueprint blueprint) {
-    return '';
-  }
-
-  String executeUpdateBlueprint(Blueprint blueprint) {
+  String executeBlueprint(Blueprint blueprint) {
     return '';
   }
 
