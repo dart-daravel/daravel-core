@@ -32,11 +32,12 @@ abstract class Blueprint {
 
   void primary(List<String> fields) => primaryKeys.addAll(fields);
 
-  void index(List<String> fields, String? name, [String? algorithm]) {
+  void index(dynamic field, [String? name, String? algorithm]) {
+    assert(field is String || field is List<String>);
     indicesToCreate.add(Index(
       this.name,
       name,
-      fields,
+      field is String ? [field] : field,
     ));
   }
 }

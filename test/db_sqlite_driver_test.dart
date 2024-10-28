@@ -130,6 +130,62 @@ void main() {
         'CREATE TABLE $table (id VARCHAR(100) NOT NULL, email VARCHAR(100) PRIMARY KEY NOT NULL, password VARCHAR(100) NOT NULL);');
   });
 
+  test('Index field modifier', () {
+    final table = 'users_7_1';
+
+    final query = Schema.create(table, (table) {
+      table.string('id');
+      table.string('email').index();
+      table.string('password');
+    });
+
+    expect(query,
+        'CREATE TABLE $table (id VARCHAR(100) NOT NULL, email VARCHAR(100) NOT NULL, password VARCHAR(100) NOT NULL);\nCREATE INDEX email_index ON $table (email);');
+  });
+
+  test('Index field modifier with name', () {
+    final table = 'users_7_2';
+
+    final query = Schema.create(table, (table) {
+      table.string('id');
+      table.string('email').index('custom_index');
+      table.string('password');
+    });
+
+    expect(query,
+        'CREATE TABLE $table (id VARCHAR(100) NOT NULL, email VARCHAR(100) NOT NULL, password VARCHAR(100) NOT NULL);\nCREATE INDEX custom_index ON $table (email);');
+  });
+
+  test('Multiple indices via Blueprint class', () {
+    final table = 'users_7_3';
+
+    final query = Schema.create(table, (table) {
+      table.string('id');
+      table.string('email');
+      table.string('password');
+      table.string('phone');
+      table.index(['email', 'password']);
+    });
+
+    expect(query,
+        'CREATE TABLE $table (id VARCHAR(100) NOT NULL, email VARCHAR(100) NOT NULL, password VARCHAR(100) NOT NULL, phone VARCHAR(100) NOT NULL);\nCREATE INDEX email_password_index ON $table (email, password);');
+  });
+
+  test('Indices via Blueprint class', () {
+    final table = 'users_7_4';
+
+    final query = Schema.create(table, (table) {
+      table.string('id');
+      table.string('email');
+      table.string('password');
+      table.string('phone');
+      table.index('email');
+    });
+
+    expect(query,
+        'CREATE TABLE $table (id VARCHAR(100) NOT NULL, email VARCHAR(100) NOT NULL, password VARCHAR(100) NOT NULL, phone VARCHAR(100) NOT NULL);\nCREATE INDEX email_index ON $table (email);');
+  });
+
   test('Signed and Unsigned integers not supported', () {
     final table = 'users_5';
 

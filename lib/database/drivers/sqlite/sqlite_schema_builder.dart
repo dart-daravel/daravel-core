@@ -92,7 +92,12 @@ class SqliteSchemaBuilder extends SchemaBuilder {
     query.writeln(');');
 
     if (indices.length > 0) {
-      query.write(indices.toString());
+      query.writeln(indices.toString());
+    }
+
+    for (final index in blueprint.indicesToCreate) {
+      query.writeln(
+          _createIndexStatement(blueprint.name, index.columns, index.name));
     }
 
     _driver.statement(query.toString());
@@ -132,8 +137,15 @@ class SqliteSchemaBuilder extends SchemaBuilder {
     return value is String ? "'$value'" : value;
   }
 
-  String _createIndexStatement(String table, String column, [String? name]) {
-    return 'CREATE INDEX ${name ?? '${column}_index'} ON $table ($column);';
+  /// Generates a CREATE INDEX statement
+  ///
+  /// [column] can either be a [String] or [List<String>], i.e either a column,
+  /// or a list of columns.
+  String _createIndexStatement(String table, dynamic column, [String? name]) {
+    assert(column is String || column is List<String>);
+    return column is String
+        ? 'CREATE INDEX ${name ?? '${column}_index'} ON $table ($column);'
+        : 'CREATE INDEX ${name ?? '${(column as List<String>).join('_')}_index'} ON $table (${(column as List<String>).join(', ')});';
   }
 
   @override
