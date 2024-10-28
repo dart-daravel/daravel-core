@@ -11,6 +11,9 @@ abstract class Blueprint {
   List<String> compoundKeys = [];
   String? comment;
   List<String> columnsToDrop = [];
+  List<String> indexesToDrop = [];
+  List<String> foreignKeysToDrop = [];
+  List<Index> indicesToCreate = [];
 
   Blueprint(this.name, this.modify);
 
@@ -28,4 +31,22 @@ abstract class Blueprint {
   ForeignKeyConstraint foreign(String field);
 
   void primary(List<String> fields) => primaryKeys.addAll(fields);
+
+  void index(List<String> fields, String? name, [String? algorithm]) {
+    indicesToCreate.add(Index(
+      this.name,
+      name,
+      fields,
+    ));
+  }
+}
+
+class Index {
+  String table;
+  String? name;
+  List<String> columns;
+
+  Index(this.table, this.name, this.columns);
+
+  String get indexName => name ?? '${columns.join('_')}_index';
 }

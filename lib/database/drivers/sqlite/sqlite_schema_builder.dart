@@ -18,6 +18,7 @@ class SqliteSchemaBuilder extends SchemaBuilder {
 
   String _createTable(Blueprint blueprint) {
     final StringBuffer foreignKeyConstraints = StringBuffer();
+    final StringBuffer indices = StringBuffer();
     final StringBuffer query = StringBuffer('CREATE TABLE ${blueprint.name} (');
     for (final field in blueprint.fields) {
       if (field.type.isNotEmpty) {
@@ -52,6 +53,11 @@ class SqliteSchemaBuilder extends SchemaBuilder {
         }
       }
 
+      if (field.isIndex) {
+        indices.write(
+            _createIndexStatement(blueprint.name, field.name, field.indexName));
+      }
+
       if (field.hasForeignKeyConstraint()) {
         final prefix =
             '${foreignKeyConstraints.isEmpty ? '' : ', '}CONSTRAINT ${field.foreignKey!.constraintName} ';
@@ -83,21 +89,51 @@ class SqliteSchemaBuilder extends SchemaBuilder {
       query.write(', $foreignKeyConstraints');
     }
 
-    query.write(');');
+    query.writeln(');');
+
+    if (indices.length > 0) {
+      query.write(indices.toString());
+    }
 
     _driver.statement(query.toString());
 
-    return query.toString();
+    return query.toString().trim();
   }
 
   String _modifyTable(Blueprint blueprint) {
-    StringBuffer query = StringBuffer('ALTER TABLE ${blueprint.name}');
-    if (blueprint.fields.isNotEmpty) {}
+    StringBuffer query = StringBuffer();
+    if (blueprint.fields.isNotEmpty) {
+      for (final field in blueprint.fields) {
+        query.writeln(
+            'ALTER TABLE ${blueprint.name} ADD COLUMN ${field.name} ${field.type};');
+      }
+    }
+    if (blueprint.columnsToDrop.isNotEmpty) {
+      for (final column in blueprint.columnsToDrop) {
+        query.writeln('ALTER TABLE ${blueprint.name} DROP COLUMN $column;');
+      }
+    }
+    if (blueprint.indexesToDrop.isNotEmpty) {
+      for (final index in blueprint.indexesToDrop) {
+        query.writeln('DROP INDEX $index;');
+      }
+    }
+    if (blueprint.indicesToCreate.isNotEmpty) {
+      for (final index in blueprint.indicesToCreate) {
+        query.writeln(_createIndexStatement(
+            index.table, index.columns.join(', '), index.name));
+      }
+    }
+    _driver.statement(query.toString());
     return query.toString();
   }
 
   String _prepareValue(dynamic value) {
     return value is String ? "'$value'" : value;
+  }
+
+  String _createIndexStatement(String table, String column, [String? name]) {
+    return 'CREATE INDEX ${name ?? '${column}_index'} ON $table ($column);';
   }
 
   @override

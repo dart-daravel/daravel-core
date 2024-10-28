@@ -8,6 +8,8 @@ abstract class FieldBlueprint {
   String? constraint;
   bool isNullable = false;
   bool isUnique = false;
+  bool isIndex = false;
+  String? indexName;
   dynamic defaultValue;
   String? fieldComment;
   bool alter = false;
@@ -66,6 +68,12 @@ abstract class FieldBlueprint {
 
   FieldBlueprint unsigned() {
     isUnsigned = true;
+    return this;
+  }
+
+  FieldBlueprint index([String? name]) {
+    isIndex = true;
+    indexName = name;
     return this;
   }
 
