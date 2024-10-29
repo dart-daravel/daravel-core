@@ -18,7 +18,7 @@ class SqliteSchemaBuilder extends SchemaBuilder {
 
   String _createTable(Blueprint blueprint) {
     final StringBuffer foreignKeyConstraints = StringBuffer();
-    final StringBuffer indices = StringBuffer();
+    final StringBuffer fieldIndices = StringBuffer();
     final StringBuffer query = StringBuffer('CREATE TABLE ${blueprint.name} (');
     for (final field in blueprint.fields) {
       if (field.type.isNotEmpty) {
@@ -54,7 +54,7 @@ class SqliteSchemaBuilder extends SchemaBuilder {
       }
 
       if (field.isIndex) {
-        indices.write(
+        fieldIndices.write(
             _createIndexStatement(blueprint.name, field.name, field.indexName));
       }
 
@@ -91,8 +91,8 @@ class SqliteSchemaBuilder extends SchemaBuilder {
 
     query.writeln(');');
 
-    if (indices.length > 0) {
-      query.writeln(indices.toString());
+    if (fieldIndices.length > 0) {
+      query.writeln(fieldIndices.toString());
     }
 
     for (final index in blueprint.indicesToCreate) {
@@ -106,11 +106,18 @@ class SqliteSchemaBuilder extends SchemaBuilder {
   }
 
   String _modifyTable(Blueprint blueprint) {
+    final StringBuffer fieldIndices = StringBuffer();
     StringBuffer query = StringBuffer();
     if (blueprint.fields.isNotEmpty) {
       for (final field in blueprint.fields) {
-        query.writeln(
-            'ALTER TABLE ${blueprint.name} ADD COLUMN ${field.name} ${field.type}${field.constraint != null ? '(${field.constraint})' : ''};');
+        if (!field.modify) {
+          query.writeln(
+              'ALTER TABLE ${blueprint.name} ADD COLUMN ${field.name} ${field.type}${field.constraint != null ? '(${field.constraint})' : ''};');
+          if (field.isIndex) {
+            fieldIndices.write(_createIndexStatement(
+                blueprint.name, field.name, field.indexName));
+          }
+        }
       }
     }
     if (blueprint.columnsToDrop.isNotEmpty) {
@@ -124,16 +131,22 @@ class SqliteSchemaBuilder extends SchemaBuilder {
             'ALTER TABLE ${blueprint.name} RENAME COLUMN ${column[0]} TO ${column[1]};');
       }
     }
-    if (blueprint.indexesToDrop.isNotEmpty) {
-      for (final index in blueprint.indexesToDrop) {
+    if (blueprint.indicesToDrop.isNotEmpty) {
+      for (final index in blueprint.indicesToDrop) {
         query.writeln('DROP INDEX $index;');
       }
     }
     if (blueprint.indicesToCreate.isNotEmpty) {
       for (final index in blueprint.indicesToCreate) {
         query.writeln(_createIndexStatement(
-            index.table, index.columns.join(', '), index.name));
+          index.table,
+          index.columns.join(', '),
+          index.indexName,
+        ));
       }
+    }
+    if (fieldIndices.length > 0) {
+      query.writeln(fieldIndices.toString());
     }
     _driver.statement(query.toString());
     return query.toString().trim();

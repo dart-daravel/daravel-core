@@ -12,7 +12,6 @@ abstract class FieldBlueprint {
   String? indexName;
   dynamic defaultValue;
   String? fieldComment;
-  bool alter = false;
   bool isAutoIncrement;
   bool isUnsigned = true;
   bool isPrimaryKey;

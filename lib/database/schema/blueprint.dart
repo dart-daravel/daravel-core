@@ -11,7 +11,7 @@ abstract class Blueprint {
   List<String> compoundKeys = [];
   String? comment;
   List<String> columnsToDrop = [];
-  List<String> indexesToDrop = [];
+  List<String> indicesToDrop = [];
   List<String> foreignKeysToDrop = [];
   List<Index> indicesToCreate = [];
   List<List<String>> columnsToRename = [];
@@ -32,11 +32,11 @@ abstract class Blueprint {
   ForeignKeyConstraint foreign(String field);
   FieldBlueprint text(String field);
 
-  void renameColumn(String from, String to) {
-    columnsToRename.add([from, to]);
-  }
+  void renameColumn(String from, String to) => columnsToRename.add([from, to]);
 
   void dropColumn(String field) => columnsToDrop.add(field);
+
+  void dropIndex(String name) => indicesToDrop.add(name);
 
   void primary(List<String> fields) => primaryKeys.addAll(fields);
 

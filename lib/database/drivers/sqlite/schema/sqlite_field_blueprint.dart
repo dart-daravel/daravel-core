@@ -36,4 +36,9 @@ class SqliteFieldBlueprint extends FieldBlueprint {
     throw UnimplementedError(
         'useCurrentOnUpdate() is not supported by SQLite.');
   }
+
+  @override
+  SqliteFieldBlueprint change() {
+    throw UnimplementedError('SQLite does not support field modifications');
+  }
 }

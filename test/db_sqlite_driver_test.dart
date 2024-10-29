@@ -509,21 +509,22 @@ void main() {
 
     final query = Schema.create(table, (table) {
       table.uuid();
-      table.integer('employee_id');
+      table.integer('employee_id').index();
       table.string('full_name');
       table.text('address');
     });
 
     expect(query,
-        'CREATE TABLE $table (uuid CHAR(36) NOT NULL, employee_id INTEGER NOT NULL, full_name VARCHAR(100) NOT NULL, address TEXT NOT NULL);');
+        'CREATE TABLE $table (uuid CHAR(36) NOT NULL, employee_id INTEGER NOT NULL, full_name VARCHAR(100) NOT NULL, address TEXT NOT NULL);\nCREATE INDEX employee_id_index ON $table (employee_id);');
 
     final alterQuery = Schema.table(table, (table) {
       table.dropColumn('address');
-      table.string('phone');
+      table.string('phone').index();
       table.renameColumn('full_name', 'first_name');
+      table.dropIndex('employee_id_index');
     });
 
     expect(alterQuery,
-        'ALTER TABLE $table ADD COLUMN phone VARCHAR(100);\nALTER TABLE $table DROP COLUMN address;\nALTER TABLE $table RENAME COLUMN full_name TO first_name;');
+        'ALTER TABLE $table ADD COLUMN phone VARCHAR(100);\nALTER TABLE $table DROP COLUMN address;\nALTER TABLE $table RENAME COLUMN full_name TO first_name;\nDROP INDEX employee_id_index;\nCREATE INDEX phone_index ON $table (phone);');
   });
 }
