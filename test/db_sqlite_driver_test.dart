@@ -235,7 +235,7 @@ void main() {
     query = Schema.create(table2, (table) {
       table.integer('id').primary().autoIncrement();
       table.string('name').unique();
-      table.string('password');
+      table.text('password');
       table.integer('role_id');
       table
           .foreign('role_id')
@@ -246,7 +246,7 @@ void main() {
     });
 
     expect(query,
-        'CREATE TABLE $table2 (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, name VARCHAR(100) UNIQUE NOT NULL, password VARCHAR(100) NOT NULL, role_id INTEGER NOT NULL, CONSTRAINT ${table2}_role_id_foreign FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE ON UPDATE CASCADE);');
+        'CREATE TABLE $table2 (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, name VARCHAR(100) UNIQUE NOT NULL, password TEXT NOT NULL, role_id INTEGER NOT NULL, CONSTRAINT ${table2}_role_id_foreign FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE ON UPDATE CASCADE);');
   });
 
   test('Uuid column type', () {
@@ -502,5 +502,28 @@ void main() {
 
     expect(query,
         'CREATE TABLE $table (id VARCHAR(100) NOT NULL, email VARCHAR(100) NOT NULL, password VARCHAR(100) NOT NULL, PRIMARY KEY (id, email));');
+  });
+
+  test('Update Schema', () {
+    final table = 'users_22';
+
+    final query = Schema.create(table, (table) {
+      table.uuid();
+      table.integer('employee_id');
+      table.string('full_name');
+      table.text('address');
+    });
+
+    expect(query,
+        'CREATE TABLE $table (uuid CHAR(36) NOT NULL, employee_id INTEGER NOT NULL, full_name VARCHAR(100) NOT NULL, address TEXT NOT NULL);');
+
+    final alterQuery = Schema.table(table, (table) {
+      table.dropColumn('address');
+      table.string('phone');
+      table.renameColumn('full_name', 'first_name');
+    });
+
+    expect(alterQuery,
+        'ALTER TABLE $table ADD COLUMN phone VARCHAR(100);\nALTER TABLE $table DROP COLUMN address;\nALTER TABLE $table RENAME COLUMN full_name TO first_name;');
   });
 }

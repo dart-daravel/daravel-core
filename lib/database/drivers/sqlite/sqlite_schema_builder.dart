@@ -110,12 +110,18 @@ class SqliteSchemaBuilder extends SchemaBuilder {
     if (blueprint.fields.isNotEmpty) {
       for (final field in blueprint.fields) {
         query.writeln(
-            'ALTER TABLE ${blueprint.name} ADD COLUMN ${field.name} ${field.type};');
+            'ALTER TABLE ${blueprint.name} ADD COLUMN ${field.name} ${field.type}${field.constraint != null ? '(${field.constraint})' : ''};');
       }
     }
     if (blueprint.columnsToDrop.isNotEmpty) {
       for (final column in blueprint.columnsToDrop) {
         query.writeln('ALTER TABLE ${blueprint.name} DROP COLUMN $column;');
+      }
+    }
+    if (blueprint.columnsToRename.isNotEmpty) {
+      for (final column in blueprint.columnsToRename) {
+        query.writeln(
+            'ALTER TABLE ${blueprint.name} RENAME COLUMN ${column[0]} TO ${column[1]};');
       }
     }
     if (blueprint.indexesToDrop.isNotEmpty) {
@@ -130,7 +136,7 @@ class SqliteSchemaBuilder extends SchemaBuilder {
       }
     }
     _driver.statement(query.toString());
-    return query.toString();
+    return query.toString().trim();
   }
 
   String _prepareValue(dynamic value) {

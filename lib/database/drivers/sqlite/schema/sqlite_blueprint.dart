@@ -112,4 +112,15 @@ class SqliteBlueprint extends Blueprint {
     fields.add(blueprint);
     return blueprint.foreign();
   }
+
+  @override
+  FieldBlueprint text(String field) {
+    final blueprint = SqliteFieldBlueprint(
+      name,
+      field,
+      'TEXT',
+    );
+    fields.add(blueprint);
+    return blueprint;
+  }
 }

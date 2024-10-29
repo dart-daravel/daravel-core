@@ -14,6 +14,7 @@ abstract class Blueprint {
   List<String> indexesToDrop = [];
   List<String> foreignKeysToDrop = [];
   List<Index> indicesToCreate = [];
+  List<List<String>> columnsToRename = [];
 
   Blueprint(this.name, this.modify);
 
@@ -29,6 +30,13 @@ abstract class Blueprint {
   FieldBlueprint time(String field);
   FieldBlueprint timestamp(String field);
   ForeignKeyConstraint foreign(String field);
+  FieldBlueprint text(String field);
+
+  void renameColumn(String from, String to) {
+    columnsToRename.add([from, to]);
+  }
+
+  void dropColumn(String field) => columnsToDrop.add(field);
 
   void primary(List<String> fields) => primaryKeys.addAll(fields);
 
