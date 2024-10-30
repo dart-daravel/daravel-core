@@ -512,10 +512,14 @@ void main() {
       table.integer('employee_id').index();
       table.string('full_name');
       table.text('address');
+      table.text('next_of_kin');
+      table.string('next_of_kin_phone').index();
+
+      table.index(['next_of_kin', 'next_of_kin_phone']);
     });
 
     expect(query,
-        'CREATE TABLE $table (uuid CHAR(36) NOT NULL, employee_id INTEGER NOT NULL, full_name VARCHAR(100) NOT NULL, address TEXT NOT NULL);\nCREATE INDEX employee_id_index ON $table (employee_id);');
+        'CREATE TABLE $table (uuid CHAR(36) NOT NULL, employee_id INTEGER NOT NULL, full_name VARCHAR(100) NOT NULL, address TEXT NOT NULL, next_of_kin TEXT NOT NULL, next_of_kin_phone VARCHAR(100) NOT NULL);\nCREATE INDEX employee_id_index ON $table (employee_id);\nCREATE INDEX next_of_kin_phone_index ON users_22 (next_of_kin_phone);\nCREATE INDEX next_of_kin_next_of_kin_phone_index ON users_22 (next_of_kin, next_of_kin_phone);');
 
     final alterQuery = Schema.table(table, (table) {
       table.dropColumn('address');

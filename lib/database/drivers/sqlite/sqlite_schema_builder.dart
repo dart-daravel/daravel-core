@@ -54,7 +54,7 @@ class SqliteSchemaBuilder extends SchemaBuilder {
       }
 
       if (field.isIndex) {
-        fieldIndices.write(
+        fieldIndices.writeln(
             _createIndexStatement(blueprint.name, field.name, field.indexName));
       }
 
@@ -92,7 +92,7 @@ class SqliteSchemaBuilder extends SchemaBuilder {
     query.writeln(');');
 
     if (fieldIndices.length > 0) {
-      query.writeln(fieldIndices.toString());
+      query.writeln(fieldIndices.toString().trim());
     }
 
     for (final index in blueprint.indicesToCreate) {
