@@ -153,7 +153,12 @@ class SqliteSchemaBuilder extends SchemaBuilder {
   }
 
   String _prepareValue(dynamic value) {
-    return value is String ? "'$value'" : value;
+    if (value is bool) {
+      return value ? '1' : '0';
+    } else if (value is String) {
+      return "'$value'";
+    }
+    return value;
   }
 
   /// Generates a CREATE INDEX statement

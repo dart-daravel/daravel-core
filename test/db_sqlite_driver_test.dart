@@ -101,10 +101,11 @@ void main() {
       table.increments('id');
       table.string('email').unique().defaultsTo('john-doe@example.com');
       table.string('password');
+      table.boolean('is_active').defaultsTo(true);
     });
 
     expect(query,
-        'CREATE TABLE $table (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, email VARCHAR(100) UNIQUE NOT NULL DEFAULT \'john-doe@example.com\', password VARCHAR(100) NOT NULL);');
+        'CREATE TABLE $table (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, email VARCHAR(100) UNIQUE NOT NULL DEFAULT \'john-doe@example.com\', password VARCHAR(100) NOT NULL, is_active BOOLEAN NOT NULL DEFAULT 1);');
   });
 
   test('Column comments not supported', () {

@@ -123,4 +123,15 @@ class SqliteBlueprint extends Blueprint {
     fields.add(blueprint);
     return blueprint;
   }
+
+  @override
+  FieldBlueprint boolean(String field) {
+    final blueprint = SqliteFieldBlueprint(
+      name,
+      field,
+      'BOOLEAN',
+    );
+    fields.add(blueprint);
+    return blueprint;
+  }
 }

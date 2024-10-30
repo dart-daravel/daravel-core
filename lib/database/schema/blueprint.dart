@@ -31,6 +31,7 @@ abstract class Blueprint {
   FieldBlueprint timestamp(String field);
   ForeignKeyConstraint foreign(String field);
   FieldBlueprint text(String field);
+  FieldBlueprint boolean(String field);
 
   void renameColumn(String from, String to) => columnsToRename.add([from, to]);
 
