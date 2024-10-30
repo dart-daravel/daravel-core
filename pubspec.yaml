@@ -17,6 +17,7 @@ dependencies:
   http: ^1.2.2
   archive: ^3.6.1
   pub_semver: ^2.1.0
+  sqlite3: ^2.4.7
 
 dev_dependencies:
   lints: ^4.0.0

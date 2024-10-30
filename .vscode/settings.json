@@ -1,11 +1,14 @@
 {
     "cSpell.words": [
+        "AUTOINCREMENT",
         "daravel",
         "dartisan",
+        "DATETIME",
         "envsubst",
         "Laravel",
         "pubspec",
         "USERPROFILE",
+        "VARCHAR",
         "writeln",
         "zipball"
     ]

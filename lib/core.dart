@@ -45,7 +45,7 @@ class Core {
       ip,
       int.tryParse(Platform.environment['PORT'] ?? '') ??
           port ??
-          int.tryParse(_env['PORT'] ?? '') ??
+          int.tryParse(_env['APP_PORT'] ?? '') ??
           8080,
     );
 
