@@ -4,9 +4,9 @@ import 'dart:io';
 import 'package:test/test.dart';
 import 'package:path/path.dart' as path;
 
-import '../bin/src/commands/create.dart';
-import '../bin/src/commands/generate.dart';
-import '../bin/src/commands/make_config.dart';
+import 'package:daravel_core/console/commands/create.dart';
+import 'package:daravel_core/console/commands/generate.dart';
+import 'package:daravel_core/console/commands/make_config.dart';
 
 void main() {
   tearDown(() {

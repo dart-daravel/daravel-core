@@ -5,10 +5,11 @@ class ServeCommand extends Command {
   final Core core;
 
   @override
-  String get name => 'serve';
+  String get name => 'serve'; // ignore: coverage
 
   @override
-  String get description => 'Generates the project config map file';
+  String get description =>
+      'Generates the project config map file'; // ignore: coverage
 
   ServeCommand(this.core) {
     argParser.addOption('port', abbr: 'p');
