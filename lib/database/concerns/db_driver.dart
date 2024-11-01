@@ -1,3 +1,4 @@
+import 'package:daravel_core/database/concerns/query_builder.dart';
 import 'package:daravel_core/database/concerns/query_result.dart';
 import 'package:daravel_core/database/schema/blueprint.dart';
 
@@ -31,6 +32,8 @@ abstract class DBDriver {
   String dropIfExists(String table);
 
   Blueprint initBlueprint(String name, bool modify);
+
+  QueryBuilder queryBuilder([String? table]);
 
   void executeAlterBlueprint(Blueprint blueprint) {}
 }

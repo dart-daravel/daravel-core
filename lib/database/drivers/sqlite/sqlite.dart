@@ -1,8 +1,10 @@
 import 'package:daravel_core/config/database_connection.dart';
 import 'package:daravel_core/database/concerns/db_driver.dart';
+import 'package:daravel_core/database/concerns/query_builder.dart';
 import 'package:daravel_core/database/concerns/query_result.dart';
 import 'package:daravel_core/database/drivers/sqlite/result.dart';
 import 'package:daravel_core/database/drivers/sqlite/schema/sqlite_blueprint.dart';
+import 'package:daravel_core/database/drivers/sqlite/sqlite_query_builder.dart';
 import 'package:daravel_core/database/drivers/sqlite/sqlite_schema_builder.dart';
 import 'package:daravel_core/database/schema/blueprint.dart';
 import 'package:sqlite3/sqlite3.dart';
@@ -97,4 +99,7 @@ class SQLiteDriver extends DBDriver {
   String renameTable(String from, String to) {
     return _schemaBuilder.renameTable(from, to);
   }
+
+  @override
+  QueryBuilder queryBuilder([String? table]) => SQLiteQueryBuilder(this, table);
 }

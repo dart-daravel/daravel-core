@@ -3,14 +3,14 @@ import 'dart:io';
 import 'package:daravel_core/daravel_core.dart';
 import 'package:daravel_core/database/concerns/query_result.dart';
 
-import 'package:daravel_core/database/schema.dart';
 import 'package:sqlite3/sqlite3.dart';
 import 'package:test/test.dart';
 import 'package:path/path.dart' as path;
 
 void main() {
   setUpAll(() {
-    Directory(path.join(Directory.current.path, 'test/database-playground'))
+    Directory(path.join(
+            Directory.current.path, 'test/database-sqlite-driver-playground'))
         .createSync(recursive: true);
 
     expect(() => DB.connection(), throwsA(isA<ComponentNotBootedException>()));
@@ -20,20 +20,20 @@ void main() {
       'database.connections': {
         'sqlite': DatabaseConnection(
           driver: 'sqlite',
-          database: 'test/database-playground/database.sqlite',
+          database: 'test/database-sqlite-driver-playground/database.sqlite',
           prefix: '',
           foreignKeyConstraints: true,
         ),
         'sqlite1': DatabaseConnection(
           driver: 'sqlite',
-          database: 'test/database-playground/database1.sqlite',
+          database: 'test/database-sqlite-driver-playground/database1.sqlite',
           prefix: '',
           foreignKeyConstraints: true,
           busyTimeout: 5000,
         ),
         'sqlite2': DatabaseConnection(
           driver: 'sqlite',
-          database: 'test/database-playground/database2.sqlite',
+          database: 'test/database-sqlite-driver-playground/database2.sqlite',
           prefix: '',
           foreignKeyConstraints: true,
         ),
@@ -47,7 +47,8 @@ void main() {
   });
 
   tearDownAll(() {
-    Directory(path.join(Directory.current.path, 'test/database-playground'))
+    Directory(path.join(
+            Directory.current.path, 'test/database-sqlite-driver-playground'))
         .deleteSync(recursive: true);
   });
 
