@@ -10,6 +10,10 @@ abstract class QueryBuilder {
 
   QueryResult get();
 
+  QueryBuilder where(String column, dynamic operatorOrValue, [dynamic value]);
+
+  QueryBuilder orWhere(String column, dynamic operatorOrValue, [dynamic value]);
+
   QueryBuilder select(dynamic columns);
 }
 

@@ -1,6 +1,7 @@
 import 'package:daravel_core/database/concerns/db_driver.dart';
 import 'package:daravel_core/database/concerns/query_builder.dart';
 import 'package:daravel_core/database/concerns/query_result.dart';
+import 'package:daravel_core/helpers/database.dart';
 
 class SQLiteQueryBuilder implements QueryBuilder {
   @override
@@ -10,6 +11,9 @@ class SQLiteQueryBuilder implements QueryBuilder {
   DBDriver driver;
 
   Map<String, dynamic> _insertMap = {};
+  Map<String, List<String>> _whereMap = {};
+
+  String? _limitQuery;
 
   SQLiteQueryBuilder(this.driver, [this.table]);
 
@@ -28,8 +32,9 @@ class SQLiteQueryBuilder implements QueryBuilder {
     return this;
   }
 
-  String _parseSelectColumn(String column) =>
-      column.startsWith('[=]') ? column.substring(3) : column;
+  String _parseSelectColumn(String column) => column.startsWith('[=]')
+      ? column.substring(3)
+      : column; // TODO: Improve this to clean up input.
 
   @override
   QueryResult get() {
@@ -60,7 +65,24 @@ class SQLiteQueryBuilder implements QueryBuilder {
     } else {
       query.write(_selectColumns.join(', '));
     }
+    // LIMIT clause.
     query.write(' FROM $table');
+    if (_limitQuery != null) {
+      query.write(' $_limitQuery');
+    }
+    // WHERE clause.
+    if (_whereMap.isNotEmpty) {
+      query.write(' WHERE ');
+      final whereList = _whereMap.entries.toList();
+      for (var i = 0; i < whereList.length; i++) {
+        final entry = whereList[i];
+        query.write('${entry.key} ${entry.value[0]} ${entry.value[1]}');
+        if (i < whereList.length - 1) {
+          query.write(' ${entry.value[2]} ');
+        }
+      }
+    }
+    query.write(';');
     return query.toString();
   }
 
@@ -80,5 +102,27 @@ class SQLiteQueryBuilder implements QueryBuilder {
     final query = StringBuffer();
     query.write('DELETE FROM $table');
     return query.toString();
+  }
+
+  void _addWhere(
+      String logicConcatenator, String column, dynamic operatorOrValue,
+      [dynamic value]) {
+    if (operatorOrValue is String && isSqlOperator(operatorOrValue)) {
+      _whereMap[column] = [operatorOrValue, prepareSqlValue(value), 'AND'];
+    } else {
+      _whereMap[column] = ['=', prepareSqlValue(operatorOrValue), 'AND'];
+    }
+  }
+
+  @override
+  QueryBuilder where(String column, operatorOrValue, [value]) {
+    _addWhere('AND', column, operatorOrValue, value);
+    return this;
+  }
+
+  @override
+  QueryBuilder orWhere(String column, operatorOrValue, [value]) {
+    _addWhere('OR', column, operatorOrValue, value);
+    return this;
   }
 }

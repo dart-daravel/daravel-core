@@ -52,4 +52,29 @@ void main() {
     expect(result.mappedRows!.first['email'], 'frank@gmail.com');
     expect(result.mappedRows!.first['password'], 'password');
   });
+
+  test('Where clause', () async {
+    final table = 'users_2';
+
+    Schema.create(table, (table) {
+      table.increments('id');
+      table.string('email');
+      table.string('password');
+    });
+
+    DB.insert(
+      'INSERT INTO $table (email, password) VALUES (?, ?)',
+      ['frank@gmail.com', 'password'],
+    );
+
+    DB.insert(
+      'INSERT INTO $table (email, password) VALUES (?, ?)',
+      ['john@gmail.com', 'password'],
+    );
+
+    final result = DB.table(table).where('email', 'frank@gmail.com').get();
+
+    expect(result.rows.length, 1);
+    expect(result.mappedRows!.first['email'], 'frank@gmail.com');
+  });
 }
