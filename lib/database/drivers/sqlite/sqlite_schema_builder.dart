@@ -1,6 +1,7 @@
 import 'package:daravel_core/database/concerns/schema_builder.dart';
 import 'package:daravel_core/database/drivers/sqlite/sqlite.dart';
 import 'package:daravel_core/database/schema/blueprint.dart';
+import 'package:daravel_core/helpers/database.dart';
 
 class SqliteSchemaBuilder extends SchemaBuilder {
   final SQLiteDriver _driver;
@@ -45,7 +46,7 @@ class SqliteSchemaBuilder extends SchemaBuilder {
         }
 
         if (field.defaultValue != null) {
-          query.write(' DEFAULT ${_prepareValue(field.defaultValue)}');
+          query.write(' DEFAULT ${prepareSqlValue(field.defaultValue)}');
         }
 
         if (field.name != blueprint.fields.last.name) {
@@ -150,15 +151,6 @@ class SqliteSchemaBuilder extends SchemaBuilder {
     }
     _driver.statement(query.toString());
     return query.toString().trim();
-  }
-
-  String _prepareValue(dynamic value) {
-    if (value is bool) {
-      return value ? '1' : '0';
-    } else if (value is String) {
-      return "'$value'";
-    }
-    return value;
   }
 
   /// Generates a CREATE INDEX statement
