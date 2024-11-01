@@ -10,8 +10,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
   @override
   DBDriver driver;
 
-  Map<String, dynamic> _insertMap = {};
-  Map<String, List<String>> _whereMap = {};
+  final List<List<String>> _whereList = [];
 
   String? _limitQuery;
 
@@ -39,6 +38,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
   @override
   QueryResult get() {
     late final query = _buildQuery(QueryType.select);
+    print(query);
     return driver.select(query)!;
   }
 
@@ -71,14 +71,13 @@ class SQLiteQueryBuilder implements QueryBuilder {
       query.write(' $_limitQuery');
     }
     // WHERE clause.
-    if (_whereMap.isNotEmpty) {
+    if (_whereList.isNotEmpty) {
       query.write(' WHERE ');
-      final whereList = _whereMap.entries.toList();
-      for (var i = 0; i < whereList.length; i++) {
-        final entry = whereList[i];
-        query.write('${entry.key} ${entry.value[0]} ${entry.value[1]}');
-        if (i < whereList.length - 1) {
-          query.write(' ${entry.value[2]} ');
+      for (var i = 0; i < _whereList.length; i++) {
+        final entry = _whereList[i];
+        query.write('${entry[0]} ${entry[1]} ${entry[2]}');
+        if (i < _whereList.length - 1) {
+          query.write(' ${entry[3]} ');
         }
       }
     }
@@ -107,10 +106,15 @@ class SQLiteQueryBuilder implements QueryBuilder {
   void _addWhere(
       String logicConcatenator, String column, dynamic operatorOrValue,
       [dynamic value]) {
+    // Add logic concatenator to the last entry.
+    if (_whereList.isNotEmpty) {
+      _whereList[_whereList.length - 1].add(logicConcatenator);
+    }
+    // Add new entry.
     if (operatorOrValue is String && isSqlOperator(operatorOrValue)) {
-      _whereMap[column] = [operatorOrValue, prepareSqlValue(value), 'AND'];
+      _whereList.add([column, operatorOrValue, prepareSqlValue(value)]);
     } else {
-      _whereMap[column] = ['=', prepareSqlValue(operatorOrValue), 'AND'];
+      _whereList.add([column, '=', prepareSqlValue(operatorOrValue)]);
     }
   }
 

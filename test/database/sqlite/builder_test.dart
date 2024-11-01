@@ -77,4 +77,33 @@ void main() {
     expect(result.rows.length, 1);
     expect(result.mappedRows!.first['email'], 'frank@gmail.com');
   });
+
+  test('OrWhere clause', () async {
+    final table = 'users_3';
+
+    Schema.create(table, (table) {
+      table.increments('id');
+      table.string('email');
+      table.string('password');
+    });
+
+    DB.insert(
+      'INSERT INTO $table (email, password) VALUES (?, ?)',
+      ['frank@gmail.com', 'password'],
+    );
+
+    DB.insert(
+      'INSERT INTO $table (email, password) VALUES (?, ?)',
+      ['john@gmail.com', 'password'],
+    );
+
+    final result = DB
+        .table(table)
+        .where('email', 'frank@gmail.com')
+        .orWhere('email', 'john@gmail.com')
+        .get();
+
+    expect(result.rows.length, 2);
+    expect(result.mappedRows!.first['email'], 'frank@gmail.com');
+  });
 }
