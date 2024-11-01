@@ -8,5 +8,5 @@ String prepareSqlValue(dynamic value) {
   } else if (value is String) {
     return "'$value'";
   }
-  return value;
+  return value.toString();
 }

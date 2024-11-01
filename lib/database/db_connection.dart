@@ -1,6 +1,6 @@
 import 'package:daravel_core/daravel_core.dart';
 import 'package:daravel_core/database/concerns/db_driver.dart';
-import 'package:daravel_core/database/concerns/query_result.dart';
+import 'package:daravel_core/database/concerns/record_set.dart';
 import 'package:daravel_core/database/drivers/sqlite/sqlite.dart';
 
 class DBConnection {
@@ -16,7 +16,7 @@ class DBConnection {
     }
   }
 
-  QueryResult? select(String query, [List<dynamic> bindings = const []]) {
+  RecordSet? select(String query, [List<dynamic> bindings = const []]) {
     return driver.select(query, bindings);
   }
 

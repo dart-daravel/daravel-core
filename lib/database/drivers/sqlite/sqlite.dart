@@ -1,8 +1,8 @@
 import 'package:daravel_core/config/database_connection.dart';
 import 'package:daravel_core/database/concerns/db_driver.dart';
 import 'package:daravel_core/database/concerns/query_builder.dart';
-import 'package:daravel_core/database/concerns/query_result.dart';
-import 'package:daravel_core/database/drivers/sqlite/result.dart';
+import 'package:daravel_core/database/concerns/record_set.dart';
+import 'package:daravel_core/database/drivers/sqlite/sqlite_record_set.dart';
 import 'package:daravel_core/database/drivers/sqlite/schema/sqlite_blueprint.dart';
 import 'package:daravel_core/database/drivers/sqlite/sqlite_query_builder.dart';
 import 'package:daravel_core/database/drivers/sqlite/sqlite_schema_builder.dart';
@@ -27,9 +27,9 @@ class SQLiteDriver extends DBDriver {
 
   /// Run a select statement
   @override
-  QueryResult select(String query, [List bindings = const []]) {
+  RecordSet select(String query, [List bindings = const []]) {
     final statement = _db!.prepare(query);
-    return Result(statement.select(bindings));
+    return SqliteRecordSet(statement.select(bindings));
   }
 
   /// Run a delete query

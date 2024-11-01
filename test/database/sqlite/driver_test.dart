@@ -1,11 +1,13 @@
 import 'dart:io';
 
-import 'package:daravel_core/daravel_core.dart';
-import 'package:daravel_core/database/concerns/query_result.dart';
-
+import 'package:path/path.dart' as path;
 import 'package:sqlite3/sqlite3.dart';
 import 'package:test/test.dart';
-import 'package:path/path.dart' as path;
+
+import 'package:daravel_core/daravel_core.dart';
+import 'package:daravel_core/database/concerns/record_set.dart';
+import 'package:daravel_core/exceptions/component_not_booted.dart';
+import 'package:daravel_core/exceptions/db_connection_not_found.dart';
 
 void main() {
   setUpAll(() {
@@ -320,16 +322,16 @@ void main() {
     // Select from connection.
     var result = DB.connection()!.select('SELECT * FROM $table');
 
-    expect(result, isA<QueryResult>());
+    expect(result, isA<RecordSet>());
 
-    expect(result!.rows.length, 0);
+    expect(result!.length, 0);
 
     // Direct Select
     result = DB.select('SELECT * FROM $table');
 
-    expect(result, isA<QueryResult>());
+    expect(result, isA<RecordSet>());
 
-    expect(result!.rows.length, 0);
+    expect(result!.length, 0);
   });
 
   test('Secondary Sqlite connection', () {
@@ -342,9 +344,9 @@ void main() {
     // Select from connection.
     final result = DB.connection('sqlite1')!.select('SELECT * FROM $table');
 
-    expect(result, isA<QueryResult>());
+    expect(result, isA<RecordSet>());
 
-    expect(result!.rows.length, 0);
+    expect(result!.length, 0);
   });
 
   test('Test non-existent connection & switching of default connection', () {
@@ -362,9 +364,9 @@ void main() {
 
     final result = DB.select('SELECT * FROM $table');
 
-    expect(result, isA<QueryResult>());
+    expect(result, isA<RecordSet>());
 
-    expect(result!.rows.length, 0);
+    expect(result!.length, 0);
   });
 
   test('Insert statement', () {
@@ -382,15 +384,15 @@ void main() {
 
     final selectResult = DB.select('SELECT * FROM $table');
 
-    expect(selectResult!.rows.length, 1);
+    expect(selectResult!.length, 1);
 
-    expect(selectResult.rows.first[0], 1);
-    expect(selectResult.rows.first[1], 'john@gmail.com');
-    expect(selectResult.rows.first[2], 'password');
+    expect(selectResult.first?['id'], 1);
+    expect(selectResult.first?['email'], 'john@gmail.com');
+    expect(selectResult.first?['password'], 'password');
 
-    expect(selectResult.mappedRows!.first['id'], 1);
-    expect(selectResult.mappedRows!.first['email'], 'john@gmail.com');
-    expect(selectResult.mappedRows!.first['password'], 'password');
+    expect(selectResult.first?['id'], 1);
+    expect(selectResult.first?['email'], 'john@gmail.com');
+    expect(selectResult.first?['password'], 'password');
   });
 
   test('Delete statement', () {
@@ -409,7 +411,7 @@ void main() {
 
     var selectResult = DB.select('SELECT * FROM $table');
 
-    expect(selectResult!.rows.length, 1);
+    expect(selectResult!.length, 1);
 
     var result =
         DB.delete('DELETE FROM $table WHERE email = ?', ['frank@gmail.com']);
@@ -418,7 +420,7 @@ void main() {
 
     selectResult = DB.select('SELECT * FROM $table');
 
-    expect(selectResult!.rows.length, 0);
+    expect(selectResult!.length, 0);
   });
 
   test('Update statement', () {
@@ -437,7 +439,7 @@ void main() {
 
     var selectResult = DB.select('SELECT * FROM $table');
 
-    expect(selectResult!.rows.length, 1);
+    expect(selectResult!.length, 1);
 
     var result = DB.update(
       'UPDATE $table SET email = ?, password = ? WHERE email = ?',
@@ -448,15 +450,15 @@ void main() {
 
     selectResult = DB.select('SELECT * FROM $table');
 
-    expect(selectResult!.rows.length, 1);
+    expect(selectResult!.length, 1);
 
-    expect(selectResult.rows.first[0], 1);
-    expect(selectResult.rows.first[1], 'john-edited@gmail.com');
-    expect(selectResult.rows.first[2], 'new-password');
+    expect(selectResult.first?['id'], 1);
+    expect(selectResult.first?['email'], 'john-edited@gmail.com');
+    expect(selectResult.first?['password'], 'new-password');
 
-    expect(selectResult.mappedRows!.first['id'], 1);
-    expect(selectResult.mappedRows!.first['email'], 'john-edited@gmail.com');
-    expect(selectResult.mappedRows!.first['password'], 'new-password');
+    expect(selectResult.first?['id'], 1);
+    expect(selectResult.first?['email'], 'john-edited@gmail.com');
+    expect(selectResult.first?['password'], 'new-password');
   });
 
   test('Rename table', () {
@@ -472,7 +474,7 @@ void main() {
 
     final result = DB.select('SELECT * FROM new_users');
 
-    expect((result!.resultObject as ResultSet).length, 0);
+    expect(result!.length, 0);
   });
 
   test('Drop table', () {

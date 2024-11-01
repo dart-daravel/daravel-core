@@ -1,6 +1,7 @@
 import 'package:daravel_core/database/concerns/db_driver.dart';
 import 'package:daravel_core/database/concerns/query_builder.dart';
-import 'package:daravel_core/database/concerns/query_result.dart';
+import 'package:daravel_core/database/concerns/record_set.dart';
+import 'package:daravel_core/exceptions/record_not_found.dart';
 import 'package:daravel_core/helpers/database.dart';
 
 class SQLiteQueryBuilder implements QueryBuilder {
@@ -10,13 +11,21 @@ class SQLiteQueryBuilder implements QueryBuilder {
   @override
   DBDriver driver;
 
-  final List<List<String>> _whereList = [];
+  final List<WhereClause> _whereList = [];
 
   String? _limitQuery;
+  String? _orderByQuery;
 
   SQLiteQueryBuilder(this.driver, [this.table]);
 
   final List<String> _selectColumns = [];
+
+  void _reset() {
+    _whereList.clear();
+    _limitQuery = null;
+    _orderByQuery = null;
+    _selectColumns.clear();
+  }
 
   @override
   QueryBuilder select(dynamic columns) {
@@ -36,10 +45,92 @@ class SQLiteQueryBuilder implements QueryBuilder {
       : column; // TODO: Improve this to clean up input.
 
   @override
-  QueryResult get() {
+  RecordSet get() {
     late final query = _buildQuery(QueryType.select);
-    print(query);
+    print(query); // TODO: Remove this.
+    _reset();
     return driver.select(query)!;
+  }
+
+  @override
+  Record? first() {
+    final result = get();
+    return result.isNotEmpty ? result.first : null;
+  }
+
+  @override
+  Record firstOrFail() {
+    final result = first();
+    if (result == null) {
+      throw RecordNotFoundException();
+    }
+    return result;
+  }
+
+  @override
+  QueryBuilder limit(int limit, [int? offset]) {
+    _limitQuery = 'LIMIT ${offset != null ? '$offset, ' : ''}$limit';
+    return this;
+  }
+
+  @override
+  Object? value(String column) {
+    return first()?[column];
+  }
+
+  @override
+  Record? find(dynamic id) {
+    return where('id', id).first();
+  }
+
+  @override
+  List<Object?> pluck(String column) {
+    select(column);
+    final result = get();
+    return result.map((record) => record[column]).toList();
+  }
+
+  @override
+  void chunk(int size, bool? Function(RecordSet records) callback) {
+    RecordSet? records;
+    int offset = 0;
+    limit(size, offset);
+    String query = _buildQuery(QueryType.select);
+    do {
+      records = driver.select(query)!;
+      if (callback(records) == false) {
+        break;
+      }
+      offset += size;
+      query = query.replaceFirst(
+          'LIMIT ${offset - size}, $size', 'LIMIT $offset, $size');
+    } while (records.isNotEmpty);
+    _reset();
+  }
+
+  @override
+  void chunkById(int size, bool? Function(RecordSet records) callback) {
+    RecordSet? records;
+    int offset = 0;
+    where('id', '>', offset).limit(size, offset);
+    String query = _buildQuery(QueryType.select);
+    do {
+      records = driver.select(query)!;
+      if (callback(records) == false) {
+        break;
+      }
+      offset += size;
+      query = query.replaceFirst(
+          'LIMIT ${offset - size}, $size', 'LIMIT $offset, $size');
+      print("+++ $query");
+    } while (records.isNotEmpty);
+    _reset();
+  }
+
+  @override
+  QueryBuilder orderBy(String column, [String direction = 'ASC']) {
+    _orderByQuery = 'ORDER BY $column $direction';
+    return this;
   }
 
   String _buildQuery(QueryType type) {
@@ -65,24 +156,34 @@ class SQLiteQueryBuilder implements QueryBuilder {
     } else {
       query.write(_selectColumns.join(', '));
     }
-    // LIMIT clause.
     query.write(' FROM $table');
-    if (_limitQuery != null) {
-      query.write(' $_limitQuery');
-    }
     // WHERE clause.
     if (_whereList.isNotEmpty) {
       query.write(' WHERE ');
       for (var i = 0; i < _whereList.length; i++) {
         final entry = _whereList[i];
-        query.write('${entry[0]} ${entry[1]} ${entry[2]}');
-        if (i < _whereList.length - 1) {
-          query.write(' ${entry[3]} ');
-        }
+        _writeWhereClause(query, entry, i);
       }
+    }
+    // ORDER BY clause.
+    if (_orderByQuery != null) {
+      query.write(' $_orderByQuery');
+    }
+    // LIMIT clause.
+    if (_limitQuery != null) {
+      query.write(' $_limitQuery');
     }
     query.write(';');
     return query.toString();
+  }
+
+  void _writeWhereClause(
+      StringBuffer query, WhereClause whereClause, int listIndex) {
+    query.write(
+        '${whereClause.column} ${whereClause.operator} ${whereClause.value}');
+    if (listIndex < _whereList.length - 1) {
+      query.write(' ${whereClause.concatenator} ');
+    }
   }
 
   String _buildInsertQuery() {
@@ -108,18 +209,31 @@ class SQLiteQueryBuilder implements QueryBuilder {
       [dynamic value]) {
     // Add logic concatenator to the last entry.
     if (_whereList.isNotEmpty) {
-      _whereList[_whereList.length - 1].add(logicConcatenator);
+      _whereList[_whereList.length - 1].concatenator = logicConcatenator;
     }
     // Add new entry.
     if (operatorOrValue is String && isSqlOperator(operatorOrValue)) {
-      _whereList.add([column, operatorOrValue, prepareSqlValue(value)]);
+      _whereList.add(
+        WhereClause(
+          column: column,
+          operator: operatorOrValue,
+          value: prepareSqlValue(value),
+        ),
+      );
     } else {
-      _whereList.add([column, '=', prepareSqlValue(operatorOrValue)]);
+      _whereList.add(
+        WhereClause(
+          column: column,
+          operator: '=',
+          value: prepareSqlValue(operatorOrValue),
+        ),
+      );
     }
   }
 
   @override
-  QueryBuilder where(String column, operatorOrValue, [value]) {
+  QueryBuilder where(dynamic column, operatorOrValue, [value]) {
+    if (column is Function) {}
     _addWhere('AND', column, operatorOrValue, value);
     return this;
   }

@@ -1,7 +1,9 @@
 import 'package:daravel_core/daravel_core.dart';
 import 'package:daravel_core/database/concerns/query_builder.dart';
 import 'package:daravel_core/database/db_connection.dart';
-import 'package:daravel_core/database/concerns/query_result.dart';
+import 'package:daravel_core/database/concerns/record_set.dart';
+import 'package:daravel_core/exceptions/component_not_booted.dart';
+import 'package:daravel_core/exceptions/db_connection_not_found.dart';
 
 class DB {
   /// Main instance of the database connection.
@@ -17,8 +19,7 @@ class DB {
 
   Map<String, DatabaseConnection>? connections;
 
-  static QueryResult? select(String query,
-          [List<dynamic> bindings = const []]) =>
+  static RecordSet? select(String query, [List<dynamic> bindings = const []]) =>
       _mainInstance!._dbConnection!.select(query, bindings);
 
   static bool statement(String query, [List<dynamic> bindings = const []]) =>

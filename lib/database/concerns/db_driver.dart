@@ -1,10 +1,10 @@
 import 'package:daravel_core/database/concerns/query_builder.dart';
-import 'package:daravel_core/database/concerns/query_result.dart';
+import 'package:daravel_core/database/concerns/record_set.dart';
 import 'package:daravel_core/database/schema/blueprint.dart';
 
 abstract class DBDriver {
   /// Execute a select query
-  QueryResult? select(String query, [List<dynamic> bindings = const []]);
+  RecordSet? select(String query, [List<dynamic> bindings = const []]);
 
   /// Execute an insert query
   bool insert(String query, [List<dynamic> bindings = const []]);

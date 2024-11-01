@@ -29,8 +29,4 @@ export 'config/database_connection.dart';
 export 'database/db.dart';
 export 'database/schema.dart';
 
-// Exceptions
-export 'exceptions/component_not_booted.dart';
-export 'exceptions/db_connection_not_found.dart';
-
 export 'core.dart';
