@@ -38,6 +38,8 @@ abstract class QueryBuilder {
       [dynamic operatorOrValue, dynamic value]);
 
   QueryBuilder select(dynamic columns);
+
+  LazyRecordSetGenerator lazy();
 }
 
 enum QueryType { select, insert, update, delete }
@@ -60,4 +62,14 @@ class WhereClause {
     this.isCloseBracket = false,
     this.concatenator = 'AND',
   });
+}
+
+abstract class LazyRecordSetGenerator {
+  String selectQuery;
+
+  DBDriver driver;
+
+  LazyRecordSetGenerator(this.driver, this.selectQuery);
+
+  void each(bool? Function(Record record) callback);
 }

@@ -1,5 +1,5 @@
 import 'package:daravel_core/config/database_connection.dart';
-import 'package:daravel_core/database/concerns/db_driver.dart';
+import 'package:daravel_core/database/concerns/db_driver.dart' as daravel;
 import 'package:daravel_core/database/concerns/query_builder.dart';
 import 'package:daravel_core/database/concerns/record_set.dart';
 import 'package:daravel_core/database/drivers/sqlite/sqlite_record_set.dart';
@@ -9,7 +9,7 @@ import 'package:daravel_core/database/drivers/sqlite/sqlite_schema_builder.dart'
 import 'package:daravel_core/database/schema/blueprint.dart';
 import 'package:sqlite3/sqlite3.dart';
 
-class SQLiteDriver extends DBDriver {
+class SQLiteDriver extends daravel.DBDriver {
   late final Database? _db;
 
   late final SqliteSchemaBuilder _schemaBuilder = SqliteSchemaBuilder(this);
@@ -108,4 +108,20 @@ class SQLiteDriver extends DBDriver {
 
   @override
   int? get affectedRows => _db?.updatedRows;
+
+  @override
+  daravel.PreparedStatement getPreparedStatement(String query,
+          [List bindings = const []]) =>
+      SqlitePreparedStatement(_db!.prepare(query), bindings);
+}
+
+class SqlitePreparedStatement extends daravel.PreparedStatement {
+  SqlitePreparedStatement(super.preparedStatement, super.bindings);
+
+  @override
+  Object? select() {
+    return (preparedStatement as PreparedStatement).selectWith(
+      StatementParameters(bindings),
+    );
+  }
 }

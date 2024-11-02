@@ -1,16 +1,18 @@
-import 'package:daravel_core/database/concerns/db_driver.dart';
+import 'package:daravel_core/database/concerns/db_driver.dart' as daravel;
 import 'package:daravel_core/database/concerns/query_builder.dart';
 import 'package:daravel_core/database/concerns/record_set.dart';
+import 'package:daravel_core/database/drivers/sqlite/sqlite_record_set.dart';
 import 'package:daravel_core/exceptions/query.dart';
 import 'package:daravel_core/exceptions/record_not_found.dart';
 import 'package:daravel_core/helpers/database.dart';
+import 'package:sqlite3/sqlite3.dart';
 
 class SQLiteQueryBuilder implements QueryBuilder {
   @override
   String? table;
 
   @override
-  DBDriver driver;
+  daravel.DBDriver driver;
 
   final List<WhereClause> _whereList = [];
 
@@ -129,7 +131,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
   List<Object?> pluck(String column) {
     select(column);
     final result = get();
-    return result.map((record) => record[column]).toList();
+    return result.map((record) => (record as Row)[column]).toList();
   }
 
   @override
@@ -316,5 +318,31 @@ class SQLiteQueryBuilder implements QueryBuilder {
     }
     _addWhere('OR', false, false, column, operatorOrValue, value);
     return this;
+  }
+
+  @override
+  LazyRecordSetGenerator lazy() {
+    final query = _buildQuery(QueryType.select);
+    _reset();
+    return SqliteLazyRecordSetGenerator(driver, query);
+  }
+}
+
+class SqliteLazyRecordSetGenerator extends LazyRecordSetGenerator {
+  SqliteLazyRecordSetGenerator(
+    super.driver,
+    super.selectQuery,
+  );
+
+  @override
+  void each(bool? Function(Record record) callback) {
+    daravel.PreparedStatement statement =
+        driver.getPreparedStatement(selectQuery);
+    final ResultSet result = statement.select() as ResultSet;
+    for (final row in result) {
+      if (callback(SqliteRecord(row)) == false) {
+        break;
+      }
+    }
   }
 }

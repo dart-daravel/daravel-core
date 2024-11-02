@@ -4,7 +4,7 @@ abstract class RecordSet {
   bool get isNotEmpty;
   int get length;
   Record? get first;
-  Iterable<T> map<T>(T Function(Record) toElement);
+  Iterable<T> map<T>(T Function(Object) toElement);
 }
 
 abstract class Record {

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:daravel_core/daravel_core.dart';
+import 'package:daravel_core/database/drivers/sqlite/sqlite_record_set.dart';
 import 'package:daravel_core/exceptions/component_not_booted.dart';
 import 'package:daravel_core/exceptions/record_not_found.dart';
 import 'package:test/test.dart';
@@ -469,5 +470,52 @@ void main() {
 
     expect(result[0]!['email'], 'tok@gmail.com');
     expect(result[1]!['email'], 'jack@gmail.com');
+  });
+
+  test('lazy.each()', () async {
+    final table = 'users_14';
+
+    Schema.create(table, (table) {
+      table.increments('id');
+      table.string('email');
+      table.string('password');
+      table.string('name');
+      table.string('address');
+      table.integer('age');
+    });
+
+    await DB.table(table).insert({
+      'email': 'tok@gmail.com',
+      'password': 'password',
+      'name': 'Jon',
+      'address': 'Earth',
+      'age': 20
+    });
+
+    await DB.table(table).insert({
+      'email': 'tak@gmail.com',
+      'password': 'password',
+      'name': 'Tak',
+      'address': 'Mars',
+      'age': 25
+    });
+
+    await DB.table(table).insert({
+      'email': 'jack@gmail.com',
+      'password': 'password',
+      'name': 'Jack',
+      'address': 'Pluto',
+      'age': 19
+    });
+
+    int rowCount = 0;
+
+    DB.table(table).lazy().each((record) {
+      expect(record, isA<SqliteRecord>());
+      rowCount++;
+      return null;
+    });
+
+    expect(rowCount, 3);
   });
 }
