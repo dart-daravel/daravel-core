@@ -15,6 +15,11 @@ abstract class DBDriver {
   /// since we use a single connection to the database.
   late final DBMutex updateMutex = DBMutex();
 
+  /// Database delete mutex that allows deletes to be run in
+  /// sequence so number of affected rows don't get mixed up
+  /// since we use a single connection to the database.
+  late final DBMutex deleteMutex = DBMutex();
+
   /// Execute a select query
   RecordSet? select(String query, [List<dynamic> bindings = const []]);
 

@@ -111,6 +111,24 @@ class SQLiteQueryBuilder implements QueryBuilder {
   }
 
   @override
+  Future<int> delete([Object? id]) async {
+    if (id != null) {
+      where('id', id);
+    }
+    final query = _buildQuery(QueryType.delete);
+    late final int affectedRows;
+    await driver.deleteMutex.acquire();
+    try {
+      driver.delete(query);
+      affectedRows = driver.affectedRows!;
+    } finally {
+      driver.deleteMutex.release();
+    }
+    _reset();
+    return affectedRows;
+  }
+
+  @override
   QueryBuilder limit(int limit, [int? offset]) {
     _limitQuery = 'LIMIT ${offset != null ? '$offset, ' : ''}$limit';
     return this;
@@ -268,6 +286,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
   String _buildDeleteQuery([bool terminate = true]) {
     final query = StringBuffer();
     query.write('DELETE FROM $table');
+    _writeWhereClause(query);
     if (terminate) {
       query.write(';');
     }

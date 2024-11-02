@@ -757,4 +757,61 @@ void main() {
     expect(DB.table(table).where('address', 'Earth').doesntExist(), false);
     expect(DB.table(table).where('address', 'Venus').doesntExist(), true);
   });
+
+  test('delete()', () async {
+    final table = 'users_18';
+
+    Schema.create(table, (table) {
+      table.increments('id');
+      table.string('email').unique();
+      table.string('password');
+      table.string('name').nullable();
+      table.string('address');
+      table.integer('age');
+    });
+
+    await DB.table(table).insert({
+      'email': 'tok@gmail.com',
+      'password': 'password',
+      'name': 'Jon',
+      'address': 'Earth',
+      'age': 1
+    });
+
+    await DB.table(table).insert({
+      'email': 'ta@gmail.com',
+      'password': 'password',
+      'name': 'Jon',
+      'address': 'Earth',
+      'age': 2
+    });
+
+    await DB.table(table).insert({
+      'email': 'take@gmail.com',
+      'password': 'password',
+      'address': 'Earth',
+      'age': 3
+    });
+
+    await DB.table(table).insert({
+      'email': 'tk@gmail.com',
+      'password': 'password',
+      'name': 'Jon',
+      'address': 'Earth',
+      'age': 4
+    });
+
+    expect(DB.table(table).count(), 4);
+
+    int deletedRows =
+        await DB.table(table).where('email', 'tok@gmail.com').delete();
+
+    expect(deletedRows, 1);
+    expect(DB.table(table).count(), 3);
+
+    deletedRows = await DB.table(table).delete();
+
+    expect(deletedRows, 3);
+    expect(DB.table(table).count(), 0);
+  });
 }
