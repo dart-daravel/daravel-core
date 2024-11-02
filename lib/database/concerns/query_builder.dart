@@ -32,10 +32,10 @@ abstract class QueryBuilder {
 
   void chunkById(int size, bool? Function(RecordSet records) callback);
 
-  QueryBuilder where(dynamic column, dynamic operatorOrValue, [dynamic value]);
+  QueryBuilder where(dynamic column, [dynamic operatorOrValue, dynamic value]);
 
-  QueryBuilder orWhere(dynamic column, dynamic operatorOrValue,
-      [dynamic value]);
+  QueryBuilder orWhere(dynamic column,
+      [dynamic operatorOrValue, dynamic value]);
 
   QueryBuilder select(dynamic columns);
 }

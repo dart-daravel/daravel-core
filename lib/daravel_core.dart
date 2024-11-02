@@ -28,5 +28,6 @@ export 'config/database_connection.dart';
 // Database
 export 'database/db.dart';
 export 'database/schema.dart';
+export 'database/concerns/query_builder.dart';
 
 export 'core.dart';

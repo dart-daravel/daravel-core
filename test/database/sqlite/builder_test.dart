@@ -423,4 +423,51 @@ void main() {
 
     expect(affectedRows, 2);
   });
+
+  test('Bracket grouped where clause', () async {
+    final table = 'users_13';
+
+    Schema.create(table, (table) {
+      table.increments('id');
+      table.string('email');
+      table.string('password');
+      table.string('name');
+      table.string('address');
+      table.integer('age');
+    });
+
+    await DB.table(table).insert({
+      'email': 'tok@gmail.com',
+      'password': 'password',
+      'name': 'Jon',
+      'address': 'Earth',
+      'age': 20
+    });
+
+    await DB.table(table).insert({
+      'email': 'tak@gmail.com',
+      'password': 'password',
+      'name': 'Tak',
+      'address': 'Mars',
+      'age': 25
+    });
+
+    await DB.table(table).insert({
+      'email': 'jack@gmail.com',
+      'password': 'password',
+      'name': 'Jack',
+      'address': 'Pluto',
+      'age': 19
+    });
+
+    final result =
+        DB.table(table).where('age', '<=', 20).where((QueryBuilder query) {
+      query.where('address', 'Pluto').orWhere('address', 'Earth');
+    }).get();
+
+    expect(result.length, 2);
+
+    expect(result[0]!['email'], 'tok@gmail.com');
+    expect(result[1]!['email'], 'jack@gmail.com');
+  });
 }

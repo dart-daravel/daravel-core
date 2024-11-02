@@ -223,8 +223,15 @@ class SQLiteQueryBuilder implements QueryBuilder {
       query.write(' WHERE ');
       for (var i = 0; i < _whereList.length; i++) {
         final entry = _whereList[i];
+        if (entry.isOpenBracket) {
+          query.write('(');
+          continue;
+        } else if (entry.isCloseBracket) {
+          query.write(')');
+          continue;
+        }
         query.write('${entry.column} ${entry.operator} ${entry.value}');
-        if (i < _whereList.length - 1) {
+        if (i < _whereList.length - 1 && !_whereList[i + 1].isCloseBracket) {
           query.write(' ${entry.concatenator} ');
         }
       }
@@ -284,7 +291,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
   }
 
   @override
-  QueryBuilder where(dynamic column, operatorOrValue, [value]) {
+  QueryBuilder where(dynamic column, [operatorOrValue, value]) {
     if (column is Function) {
       _resultSafe = false;
       _addWhere('AND', true, false);
@@ -298,7 +305,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
   }
 
   @override
-  QueryBuilder orWhere(dynamic column, operatorOrValue, [value]) {
+  QueryBuilder orWhere(dynamic column, [operatorOrValue, value]) {
     if (column is Function) {
       _resultSafe = false;
       _addWhere('OR', true, false);
