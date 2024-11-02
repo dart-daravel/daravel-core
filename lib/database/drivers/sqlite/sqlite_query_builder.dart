@@ -69,6 +69,9 @@ class SQLiteQueryBuilder implements QueryBuilder {
 
   @override
   Future<int> insert(Map<String, dynamic> values) async {
+    if (values.isEmpty) {
+      throw Exception('Values cannot be empty');
+    }
     final query = _buildQuery(QueryType.insert, values);
     await driver.insertMutex.acquire();
     try {
@@ -79,6 +82,25 @@ class SQLiteQueryBuilder implements QueryBuilder {
     }
     _reset();
     return _lastInsertId!;
+  }
+
+  @override
+  Future<int> update(Map<String, dynamic> values) async {
+    if (values.isEmpty) {
+      throw Exception('Values cannot be empty');
+    }
+    final query = _buildQuery(QueryType.update, values);
+    late final int affectedRows;
+    await driver.updateMutex.acquire();
+    try {
+      print(query);
+      driver.update(query, values.values.toList());
+      affectedRows = driver.affectedRows!;
+    } finally {
+      driver.updateMutex.release();
+    }
+    _reset();
+    return affectedRows;
   }
 
   @override
@@ -136,7 +158,6 @@ class SQLiteQueryBuilder implements QueryBuilder {
       offset += size;
       query = query.replaceFirst(
           'LIMIT ${offset - size}, $size', 'LIMIT $offset, $size');
-      print("+++ $query");
     } while (records.isNotEmpty);
     _reset();
   }
@@ -154,7 +175,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
       case QueryType.insert:
         return _buildInsertQuery(values);
       case QueryType.update:
-        return _buildUpdateQuery();
+        return _buildUpdateQuery(values);
       case QueryType.delete:
         return _buildDeleteQuery();
     }
@@ -172,13 +193,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
     }
     query.write(' FROM $table');
     // WHERE clause.
-    if (_whereList.isNotEmpty) {
-      query.write(' WHERE ');
-      for (var i = 0; i < _whereList.length; i++) {
-        final entry = _whereList[i];
-        _writeWhereClause(query, entry, i);
-      }
-    }
+    _writeWhereClause(query);
     // ORDER BY clause.
     if (_orderByQuery != null) {
       query.write(' $_orderByQuery');
@@ -191,12 +206,16 @@ class SQLiteQueryBuilder implements QueryBuilder {
     return query.toString();
   }
 
-  void _writeWhereClause(
-      StringBuffer query, WhereClause whereClause, int listIndex) {
-    query.write(
-        '${whereClause.column} ${whereClause.operator} ${whereClause.value}');
-    if (listIndex < _whereList.length - 1) {
-      query.write(' ${whereClause.concatenator} ');
+  void _writeWhereClause(StringBuffer query) {
+    if (_whereList.isNotEmpty) {
+      query.write(' WHERE ');
+      for (var i = 0; i < _whereList.length; i++) {
+        final entry = _whereList[i];
+        query.write('${entry.column} ${entry.operator} ${entry.value}');
+        if (i < _whereList.length - 1) {
+          query.write(' ${entry.concatenator} ');
+        }
+      }
     }
   }
 
@@ -207,9 +226,11 @@ class SQLiteQueryBuilder implements QueryBuilder {
     return query.toString();
   }
 
-  String _buildUpdateQuery() {
+  String _buildUpdateQuery(Map<String, dynamic> values) {
     final query = StringBuffer();
-    query.write('UPDATE $table');
+    query.write('UPDATE $table SET ');
+    query.write(values.keys.map((key) => '$key = ?').join(', '));
+    _writeWhereClause(query);
     return query.toString();
   }
 

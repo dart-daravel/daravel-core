@@ -22,6 +22,8 @@ abstract class QueryBuilder {
 
   Future<int> insert(Map<String, dynamic> values);
 
+  Future<int> update(Map<String, dynamic> values);
+
   List<Object?> pluck(String column);
 
   QueryBuilder orderBy(String column, [String direction = 'ASC']);

@@ -360,7 +360,7 @@ void main() {
     });
   });
 
-  test('update()', () async {
+  test('insert()', () async {
     final table = 'users_11';
 
     Schema.create(table, (table) {
@@ -382,5 +382,45 @@ void main() {
         .insert({'email': 'tak@gmail.com', 'password': 'password'});
 
     expect(2, insertId);
+  });
+
+  test('update()', () async {
+    final table = 'users_12';
+
+    Schema.create(table, (table) {
+      table.increments('id');
+      table.string('email');
+      table.string('password');
+    });
+
+    int? affectedRows;
+
+    await DB
+        .table(table)
+        .insert({'email': 'tok@gmail.com', 'password': 'password'});
+
+    await DB
+        .table(table)
+        .insert({'email': 'tak@gmail.com', 'password': 'password'});
+
+    affectedRows = await DB
+        .table(table)
+        .where('email', 'tok@gmail.com')
+        .update({'password': 'edited'});
+
+    expect(affectedRows, 1);
+
+    final result = DB.table(table).where('email', 'tok@gmail.com').first();
+
+    expect(result?['password'], 'edited');
+
+    affectedRows = await DB.table(table).update({'password': 'edited-again'});
+
+    final allRecords = DB.table(table).get();
+
+    expect(allRecords[0]?['password'], 'edited-again');
+    expect(allRecords[1]?['password'], 'edited-again');
+
+    expect(affectedRows, 2);
   });
 }

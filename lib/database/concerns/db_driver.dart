@@ -8,7 +8,12 @@ abstract class DBDriver {
   /// Database insert mutex that allows inserts to be run in
   /// sequence so lastInsertIds don't get mixed up since we
   /// use a single connection to the database.
-  late final DBInsertMutex insertMutex = DBInsertMutex();
+  late final DBMutex insertMutex = DBMutex();
+
+  /// Database update mutex that allows updates to be run in
+  /// sequence so number of affected rows don't get mixed up
+  /// since we use a single connection to the database.
+  late final DBMutex updateMutex = DBMutex();
 
   /// Execute a select query
   RecordSet? select(String query, [List<dynamic> bindings = const []]);
@@ -34,6 +39,8 @@ abstract class DBDriver {
 
   int? get lastInsertId;
 
+  int? get affectedRows;
+
   String renameTable(String from, String to);
 
   String drop(String table);
@@ -47,10 +54,10 @@ abstract class DBDriver {
   void executeAlterBlueprint(Blueprint blueprint) {}
 }
 
-class DBInsertMutex {
+class DBMutex {
   final _lock = Completer<void>();
 
-  DBInsertMutex() {
+  DBMutex() {
     _lock.complete();
   }
 

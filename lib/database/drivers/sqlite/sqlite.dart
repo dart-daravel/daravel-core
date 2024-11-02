@@ -105,4 +105,7 @@ class SQLiteDriver extends DBDriver {
 
   @override
   int? get lastInsertId => _db?.lastInsertRowId;
+
+  @override
+  int? get affectedRows => _db?.updatedRows;
 }
