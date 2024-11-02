@@ -34,7 +34,8 @@ abstract class QueryBuilder {
 
   QueryBuilder where(dynamic column, dynamic operatorOrValue, [dynamic value]);
 
-  QueryBuilder orWhere(String column, dynamic operatorOrValue, [dynamic value]);
+  QueryBuilder orWhere(dynamic column, dynamic operatorOrValue,
+      [dynamic value]);
 
   QueryBuilder select(dynamic columns);
 }
@@ -42,16 +43,21 @@ abstract class QueryBuilder {
 enum QueryType { select, insert, update, delete }
 
 class WhereClause {
-  final String column;
-  final String operator;
+  final String? column;
+  final String? operator;
   final dynamic value;
+
+  final bool isOpenBracket;
+  final bool isCloseBracket;
 
   String concatenator;
 
   WhereClause({
-    required this.column,
-    required this.operator,
-    required this.value,
+    this.column,
+    this.operator,
+    this.value,
+    this.isOpenBracket = false,
+    this.isCloseBracket = false,
     this.concatenator = 'AND',
   });
 }

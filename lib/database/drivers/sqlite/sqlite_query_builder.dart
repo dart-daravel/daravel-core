@@ -17,6 +17,8 @@ class SQLiteQueryBuilder implements QueryBuilder {
   String? _orderByQuery;
   int? _lastInsertId;
 
+  bool _resultSafe = true;
+
   SQLiteQueryBuilder(this.driver, [this.table]);
 
   final List<String> _selectColumns = [];
@@ -241,8 +243,8 @@ class SQLiteQueryBuilder implements QueryBuilder {
   }
 
   void _addWhere(
-      String logicConcatenator, String column, dynamic operatorOrValue,
-      [dynamic value]) {
+      String logicConcatenator, bool isOpenBracket, bool isCloseBracket,
+      [String? column, dynamic operatorOrValue, dynamic value]) {
     // Add logic concatenator to the last entry.
     if (_whereList.isNotEmpty) {
       _whereList[_whereList.length - 1].concatenator = logicConcatenator;
@@ -251,17 +253,21 @@ class SQLiteQueryBuilder implements QueryBuilder {
     if (operatorOrValue is String && isSqlOperator(operatorOrValue)) {
       _whereList.add(
         WhereClause(
+          isOpenBracket: isOpenBracket,
           column: column,
           operator: operatorOrValue,
           value: prepareSqlValue(value),
+          isCloseBracket: isCloseBracket,
         ),
       );
     } else {
       _whereList.add(
         WhereClause(
+          isOpenBracket: isOpenBracket,
           column: column,
           operator: '=',
           value: prepareSqlValue(operatorOrValue),
+          isCloseBracket: isCloseBracket,
         ),
       );
     }
@@ -269,14 +275,29 @@ class SQLiteQueryBuilder implements QueryBuilder {
 
   @override
   QueryBuilder where(dynamic column, operatorOrValue, [value]) {
-    if (column is Function) {}
-    _addWhere('AND', column, operatorOrValue, value);
+    if (column is Function) {
+      _resultSafe = false;
+      _addWhere('AND', true, false);
+      column(this);
+      _addWhere('AND', false, true);
+      _resultSafe = true;
+      return this;
+    }
+    _addWhere('AND', false, false, column, operatorOrValue, value);
     return this;
   }
 
   @override
-  QueryBuilder orWhere(String column, operatorOrValue, [value]) {
-    _addWhere('OR', column, operatorOrValue, value);
+  QueryBuilder orWhere(dynamic column, operatorOrValue, [value]) {
+    if (column is Function) {
+      _resultSafe = false;
+      _addWhere('OR', true, false);
+      column(this);
+      _addWhere('OR', false, true);
+      _resultSafe = true;
+      return this;
+    }
+    _addWhere('OR', false, false, column, operatorOrValue, value);
     return this;
   }
 }
