@@ -40,7 +40,7 @@ void main() {
       ),
     );
 
-    expect(logs, ['\x1B[31m', '[ERROR] Config directory not found.']);
+    expect(logs, ['\x1B[31m[ERROR] \x1B[37mConfig directory not found.']);
     logs.clear();
 
     if (!playgroundConfigDirectory.existsSync()) {
@@ -153,8 +153,8 @@ void main() {
       ),
     );
 
-    expect(
-        logs, ['\x1B[33m', '[WARNING] Directory test_project already exists']);
+    expect(logs,
+        ['\x1B[33m[WARNING] \x1B[37mDirectory test_project already exists']);
     logs.clear();
 
     await runZonedGuarded(
@@ -171,7 +171,7 @@ void main() {
       ),
     );
 
-    expect(logs, ['\x1B[33m', '[WARNING] Please provide a project name']);
+    expect(logs, ['\x1B[33m[WARNING] \x1B[37mPlease provide a project name']);
   });
 
   test('Generate Config File', () async {
@@ -219,7 +219,7 @@ void main() {
       ),
     );
 
-    expect(logs, ['\x1B[31m', '[ERROR] Please provide config file name.']);
+    expect(logs, ['\x1B[31m[ERROR] \x1B[37mPlease provide config file name.']);
     logs.clear();
 
     await runZonedGuarded(
@@ -235,6 +235,6 @@ void main() {
       ),
     );
 
-    expect(logs, ['\x1B[31m', '[ERROR] Config directory not found.']);
+    expect(logs, ['\x1B[31m[ERROR] \x1B[37mConfig directory not found.']);
   });
 }

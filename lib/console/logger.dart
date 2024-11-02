@@ -11,28 +11,18 @@ class Logger {
   String? lastColor;
 
   void info(String message) {
-    _switchColor(blue);
-    print('[INFO] $message');
-  }
-
-  void _switchColor(String color) {
-    if (lastColor == color) return;
-    print(color);
-    lastColor = color;
+    print('$blue[INFO] $white$message');
   }
 
   void success(String message) {
-    _switchColor(green);
-    print('[SUCCESS] $message');
+    print('$green[SUCCESS] $white$message');
   }
 
   void warning(String message) {
-    _switchColor(yellow);
-    print('[WARNING] $message');
+    print('$yellow[WARNING] $white$message');
   }
 
   void error(String message) {
-    _switchColor(red);
-    print('[ERROR] $message');
+    print('$red[ERROR] $white$message');
   }
 }
