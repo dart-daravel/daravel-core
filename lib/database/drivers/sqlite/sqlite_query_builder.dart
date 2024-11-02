@@ -1,6 +1,7 @@
 import 'package:daravel_core/database/concerns/db_driver.dart';
 import 'package:daravel_core/database/concerns/query_builder.dart';
 import 'package:daravel_core/database/concerns/record_set.dart';
+import 'package:daravel_core/exceptions/query.dart';
 import 'package:daravel_core/exceptions/record_not_found.dart';
 import 'package:daravel_core/helpers/database.dart';
 
@@ -49,6 +50,9 @@ class SQLiteQueryBuilder implements QueryBuilder {
 
   @override
   RecordSet get() {
+    if (!_resultSafe) {
+      throw QueryException('Query builder is in an illegal state.');
+    }
     final query = _buildQuery(QueryType.select);
     _reset();
     return driver.select(query)!;
@@ -130,6 +134,9 @@ class SQLiteQueryBuilder implements QueryBuilder {
 
   @override
   void chunk(int size, bool? Function(RecordSet records) callback) {
+    if (!_resultSafe) {
+      throw QueryException('Query builder is in an illegal state.');
+    }
     RecordSet? records;
     int offset = 0;
     limit(size, offset);
@@ -148,6 +155,9 @@ class SQLiteQueryBuilder implements QueryBuilder {
 
   @override
   void chunkById(int size, bool? Function(RecordSet records) callback) {
+    if (!_resultSafe) {
+      throw QueryException('Query builder is in an illegal state.');
+    }
     RecordSet? records;
     int offset = 0;
     where('id', '>', offset).limit(size, offset);
