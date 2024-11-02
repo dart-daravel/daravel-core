@@ -489,6 +489,54 @@ void main() {
       'password': 'password',
       'name': 'Jon',
       'address': 'Earth',
+      'age': 1
+    });
+
+    await DB.table(table).insert({
+      'email': 'tak@gmail.com',
+      'password': 'password',
+      'name': 'Tak',
+      'address': 'Mars',
+      'age': 2
+    });
+
+    await DB.table(table).insert({
+      'email': 'jack@gmail.com',
+      'password': 'password',
+      'name': 'Jack',
+      'address': 'Pluto',
+      'age': 0
+    });
+
+    int rowCount = 0;
+
+    await DB.table(table).orderBy('age', 'ASC').lazy().each((record) {
+      expect(record, isA<SqliteRecord>());
+      expect(record['age'], rowCount);
+      rowCount++;
+      return null;
+    });
+
+    expect(rowCount, 3);
+  });
+
+  test('lazyById.each()', () async {
+    final table = 'users_15';
+
+    Schema.create(table, (table) {
+      table.increments('id');
+      table.string('email');
+      table.string('password');
+      table.string('name');
+      table.string('address');
+      table.integer('age');
+    });
+
+    await DB.table(table).insert({
+      'email': 'tok@gmail.com',
+      'password': 'password',
+      'name': 'Jon',
+      'address': 'Earth',
       'age': 20
     });
 
@@ -510,8 +558,9 @@ void main() {
 
     int rowCount = 0;
 
-    await DB.table(table).lazy().each((record) {
+    await DB.table(table).lazyById().each((record) {
       expect(record, isA<SqliteRecord>());
+      expect(record['id'], rowCount + 1);
       rowCount++;
       return null;
     });
