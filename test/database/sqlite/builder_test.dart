@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:daravel_core/daravel_core.dart';
 import 'package:daravel_core/database/drivers/sqlite/sqlite_record_set.dart';
 import 'package:daravel_core/exceptions/component_not_booted.dart';
+import 'package:daravel_core/exceptions/query.dart';
 import 'package:daravel_core/exceptions/record_not_found.dart';
 import 'package:test/test.dart';
 import 'package:path/path.dart' as path;
@@ -42,11 +43,12 @@ void main() {
       table.increments('id');
       table.string('email');
       table.string('password');
+      table.string('name');
     });
 
     DB.insert(
-      'INSERT INTO $table (email, password) VALUES (?, ?)',
-      ['frank@gmail.com', 'password'],
+      'INSERT INTO $table (email, password, name) VALUES (?, ?, ?)',
+      ['frank@gmail.com', 'password', 'Frank'],
     );
 
     final result = DB.table(table).get();
@@ -54,6 +56,12 @@ void main() {
     expect(result.length, 1);
     expect(result.first['email'], 'frank@gmail.com');
     expect(result.first['password'], 'password');
+
+    final result2 = DB.table(table).select(['email', 'password']).get();
+
+    expect(result2.length, 1);
+    expect(result2.first['email'], 'frank@gmail.com');
+    expect(result2.first['password'], 'password');
   });
 
   test('Where clause', () {
@@ -303,6 +311,17 @@ void main() {
       chunkCount++;
       return null;
     });
+
+    // Illegal State
+    expect(
+        () =>
+            DB.table(table).where('age', '<=', 20).where((QueryBuilder query) {
+              query
+                  .where('address', 'Pluto')
+                  .orWhere('address', 'Earth')
+                  .chunk(2, (records) => null);
+            }).get(),
+        throwsA(isA<QueryException>()));
   });
 
   test('chunkById([size]) with orderBy', () {
@@ -359,6 +378,17 @@ void main() {
       chunkCount++;
       return null;
     });
+
+    // Illegal State
+    expect(
+        () =>
+            DB.table(table).where('age', '<=', 20).where((QueryBuilder query) {
+              query
+                  .where('address', 'Pluto')
+                  .orWhere('address', 'Earth')
+                  .chunkById(2, (records) => null);
+            }).get(),
+        throwsA(isA<QueryException>()));
   });
 
   test('insert()', () async {
@@ -383,6 +413,9 @@ void main() {
         .insert({'email': 'tak@gmail.com', 'password': 'password'});
 
     expect(2, insertId);
+
+    // Error case
+    expect(() => DB.table(table).insert({}), throwsA(isA<QueryException>()));
   });
 
   test('update()', () async {
@@ -423,6 +456,9 @@ void main() {
     expect(allRecords[1]['password'], 'edited-again');
 
     expect(affectedRows, 2);
+
+    // Error case
+    expect(() => DB.table(table).update({}), throwsA(isA<QueryException>()));
   });
 
   test('Bracket grouped where clause', () async {
@@ -470,6 +506,21 @@ void main() {
 
     expect(result[0]['email'], 'tok@gmail.com');
     expect(result[1]['email'], 'jack@gmail.com');
+
+    final result2 =
+        DB.table(table).where('age', '<=', 5).orWhere((QueryBuilder query) {
+      query.where('address', 'Pluto').where('name', 'Jack');
+    }).get();
+
+    expect(result2.length, 1);
+
+    // Illegal State
+    expect(
+        () =>
+            DB.table(table).where('age', '<=', 20).where((QueryBuilder query) {
+              query.where('address', 'Pluto').orWhere('address', 'Earth').get();
+            }).get(),
+        throwsA(isA<QueryException>()));
   });
 
   test('lazy.each()', () async {
@@ -518,6 +569,17 @@ void main() {
     });
 
     expect(rowCount, 3);
+
+    // Illegal State
+    expect(
+        () =>
+            DB.table(table).where('age', '<=', 20).where((QueryBuilder query) {
+              query
+                  .where('address', 'Pluto')
+                  .orWhere('address', 'Earth')
+                  .lazy();
+            }).get(),
+        throwsA(isA<QueryException>()));
   });
 
   test('lazyById.each()', () async {
@@ -566,6 +628,17 @@ void main() {
     });
 
     expect(rowCount, 3);
+
+    // Illegal State
+    expect(
+        () =>
+            DB.table(table).where('age', '<=', 20).where((QueryBuilder query) {
+              query
+                  .where('address', 'Pluto')
+                  .orWhere('address', 'Earth')
+                  .lazyById();
+            }).get(),
+        throwsA(isA<QueryException>()));
   });
 
   test('Aggregates', () async {

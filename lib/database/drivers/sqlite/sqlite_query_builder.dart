@@ -77,7 +77,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
   @override
   Future<int> insert(Map<String, dynamic> values) async {
     if (values.isEmpty) {
-      throw Exception('Values cannot be empty');
+      throw QueryException('Values cannot be empty');
     }
     final query = _buildQuery(QueryType.insert, values);
     await driver.insertMutex.acquire();
@@ -94,7 +94,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
   @override
   Future<int> update(Map<String, dynamic> values) async {
     if (values.isEmpty) {
-      throw Exception('Values cannot be empty');
+      throw QueryException('Values cannot be empty');
     }
     final query = _buildQuery(QueryType.update, values);
     late final int affectedRows;
@@ -335,6 +335,9 @@ class SQLiteQueryBuilder implements QueryBuilder {
 
   @override
   LazyRecordSetGenerator lazy() {
+    if (!_resultSafe) {
+      throw QueryException('Query builder is in an illegal state.');
+    }
     limit(50, 0);
     final query = _buildQuery(QueryType.select);
     _reset();
@@ -343,6 +346,9 @@ class SQLiteQueryBuilder implements QueryBuilder {
 
   @override
   LazyRecordSetGenerator lazyById() {
+    if (!_resultSafe) {
+      throw QueryException('Query builder is in an illegal state.');
+    }
     where('id', '>', 0).limit(50, 0);
     final query = _buildQuery(QueryType.select);
     _reset();
