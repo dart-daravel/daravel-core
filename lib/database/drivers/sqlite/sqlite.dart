@@ -14,6 +14,8 @@ class SQLiteDriver extends DBDriver {
 
   late final SqliteSchemaBuilder _schemaBuilder = SqliteSchemaBuilder(this);
 
+  late final DatabaseConnection _configuration;
+
   SQLiteDriver(DatabaseConnection connection) {
     _db = sqlite3
         .open(connection.url ?? connection.database ?? 'database.sqlite');
@@ -23,7 +25,11 @@ class SQLiteDriver extends DBDriver {
     if (connection.busyTimeout != null) {
       _db?.execute('PRAGMA busy_timeout = ${connection.busyTimeout};');
     }
+    _configuration = connection;
   }
+
+  @override
+  bool get logging => _configuration.queryLog;
 
   /// Run a select statement
   @override

@@ -8,7 +8,14 @@ class Logger {
   static const String cyan = '\x1B[36m';
   static const String white = '\x1B[37m';
 
-  String? lastColor;
+  static Logger? _instance;
+
+  Logger._();
+
+  factory Logger() {
+    _instance ??= Logger._();
+    return _instance!;
+  }
 
   void info(String message) {
     print('$blue[INFO] $white$message');
@@ -24,5 +31,9 @@ class Logger {
 
   void error(String message) {
     print('$red[ERROR] $white$message');
+  }
+
+  void debug(String message) {
+    print('$magenta[DEBUG] $white[${DateTime.now()}] $message');
   }
 }

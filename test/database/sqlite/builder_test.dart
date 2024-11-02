@@ -25,6 +25,7 @@ void main() {
               'test/database-sqlite-query-builder-playground/database.sqlite',
           prefix: '',
           foreignKeyConstraints: true,
+          queryLog: true,
         ),
       }
     }));
@@ -813,5 +814,57 @@ void main() {
 
     expect(deletedRows, 3);
     expect(DB.table(table).count(), 0);
+  });
+
+  test('distinct()', () async {
+    final table = 'users_19';
+
+    Schema.create(table, (table) {
+      table.increments('id');
+      table.string('email');
+      table.string('password');
+      table.string('name');
+      table.string('address');
+      table.integer('age');
+    });
+
+    await DB.table(table).insert({
+      'email': 'tok@gmail.com',
+      'password': 'password',
+      'name': 'Jon',
+      'address': 'Earth',
+      'age': 1
+    });
+
+    await DB.table(table).insert({
+      'email': 'ta@gmail.com',
+      'password': 'password',
+      'name': 'Jon',
+      'address': 'Earth',
+      'age': 1
+    });
+
+    await DB.table(table).insert({
+      'email': 'ta@gmail.com',
+      'password': 'password',
+      'address': 'Earth',
+      'name': 'Jon',
+      'age': 1
+    });
+
+    await DB.table(table).insert({
+      'email': 'ta@gmail.com',
+      'password': 'password',
+      'name': 'Jon',
+      'address': 'Earth',
+      'age': 1
+    });
+
+    expect(DB.table(table).count(), 4);
+    final query = DB.table(table).select('email').distinct();
+    query.addSelect('password');
+    expect(query.distinct().get().length, 2);
+
+    expect(DB.table(table).distinct().count('email'), 2);
   });
 }

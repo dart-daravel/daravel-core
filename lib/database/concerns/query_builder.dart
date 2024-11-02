@@ -58,6 +58,10 @@ abstract class QueryBuilder {
   bool exists();
 
   bool doesntExist();
+
+  QueryBuilder distinct();
+
+  QueryBuilder addSelect(String column);
 }
 
 enum QueryType { select, insert, update, delete }

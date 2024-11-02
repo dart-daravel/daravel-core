@@ -7,6 +7,7 @@ class DatabaseConnection {
   int? busyTimeout;
   String? journalMode;
   String? synchronous;
+  bool queryLog;
 
   DatabaseConnection({
     this.driver = 'sqlite',
@@ -17,5 +18,6 @@ class DatabaseConnection {
     this.busyTimeout,
     this.journalMode,
     this.synchronous,
+    this.queryLog = false,
   });
 }

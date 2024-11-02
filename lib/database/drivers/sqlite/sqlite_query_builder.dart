@@ -1,9 +1,10 @@
+import 'package:daravel_core/daravel_core.dart';
 import 'package:daravel_core/database/concerns/db_driver.dart' as daravel;
-import 'package:daravel_core/database/concerns/query_builder.dart';
 import 'package:daravel_core/database/concerns/record_set.dart';
 import 'package:daravel_core/exceptions/query.dart';
 import 'package:daravel_core/exceptions/record_not_found.dart';
 import 'package:daravel_core/helpers/database.dart';
+import 'package:collection/collection.dart';
 import 'package:sqlite3/sqlite3.dart';
 
 class SQLiteQueryBuilder implements QueryBuilder {
@@ -20,6 +21,9 @@ class SQLiteQueryBuilder implements QueryBuilder {
   int? _lastInsertId;
 
   bool _resultSafe = true;
+  bool _distinct = false;
+
+  late final Logger logger = Logger();
 
   SQLiteQueryBuilder(this.driver, [this.table]);
 
@@ -55,6 +59,9 @@ class SQLiteQueryBuilder implements QueryBuilder {
       throw QueryException('Query builder is in an illegal state.');
     }
     final query = _buildQuery(QueryType.select);
+    if (driver.logging) {
+      logger.debug(query);
+    }
     _reset();
     return driver.select(query)!;
   }
@@ -216,6 +223,13 @@ class SQLiteQueryBuilder implements QueryBuilder {
   String _buildSelectQuery([bool terminate = true]) {
     final query = StringBuffer();
     query.write('SELECT ');
+    // We don't want DISTINCT immediately after SELECT if a COUNT(*) select column is present.
+    // We'll have to apply distinct on the COUNT() column itself.
+    if (_distinct &&
+        _selectColumns.firstWhereOrNull((e) => e.startsWith('COUNT(')) ==
+            null) {
+      query.write('DISTINCT ');
+    }
     if (_selectColumns.isEmpty) {
       query.write('*');
     } else if (_selectColumns.length == 1) {
@@ -376,6 +390,9 @@ class SQLiteQueryBuilder implements QueryBuilder {
 
   @override
   num avg(String column) {
+    if (!_resultSafe) {
+      throw QueryException('Query builder is in an illegal state.');
+    }
     List<String> backupSelectColumns = List.from(_selectColumns);
     _selectColumns.clear();
     _selectColumns.add('AVG($column) AS avg');
@@ -387,9 +404,16 @@ class SQLiteQueryBuilder implements QueryBuilder {
 
   @override
   int count([String columns = '*']) {
+    if (!_resultSafe) {
+      throw QueryException('Query builder is in an illegal state.');
+    }
+    if (_distinct && (columns.contains(',') || columns.contains(' '))) {
+      throw QueryException('Cannot use COUNT(DISTINCT) with multiple columns.');
+    }
     List<String> backupSelectColumns = List.from(_selectColumns);
     _selectColumns.clear();
-    _selectColumns.add('COUNT($columns) AS count');
+    _selectColumns
+        .add('COUNT(${_distinct ? 'DISTINCT ' : ''}$columns) AS count');
     final result = get();
     _selectColumns = List.from(backupSelectColumns);
     final count = result.first['count'].toString();
@@ -398,6 +422,9 @@ class SQLiteQueryBuilder implements QueryBuilder {
 
   @override
   int max(String column) {
+    if (!_resultSafe) {
+      throw QueryException('Query builder is in an illegal state.');
+    }
     List<String> backupSelectColumns = List.from(_selectColumns);
     _selectColumns.clear();
     _selectColumns.add('MAX($column) AS max');
@@ -409,6 +436,9 @@ class SQLiteQueryBuilder implements QueryBuilder {
 
   @override
   int min(String column) {
+    if (!_resultSafe) {
+      throw QueryException('Query builder is in an illegal state.');
+    }
     List<String> backupSelectColumns = List.from(_selectColumns);
     _selectColumns.clear();
     _selectColumns.add('MIN($column) AS min');
@@ -420,6 +450,9 @@ class SQLiteQueryBuilder implements QueryBuilder {
 
   @override
   int sum(String column) {
+    if (!_resultSafe) {
+      throw QueryException('Query builder is in an illegal state.');
+    }
     List<String> backupSelectColumns = List.from(_selectColumns);
     _selectColumns.clear();
     _selectColumns.add('SUM($column) AS sum');
@@ -438,6 +471,18 @@ class SQLiteQueryBuilder implements QueryBuilder {
         'SELECT EXISTS(${_buildQuery(QueryType.select, const {}, false)});';
     final result = driver.select(query);
     return result!.first[0] as int == 1;
+  }
+
+  @override
+  QueryBuilder distinct() {
+    _distinct = true;
+    return this;
+  }
+
+  @override
+  QueryBuilder addSelect(String column) {
+    _selectColumns.add(_parseSelectColumn(column));
+    return this;
   }
 }
 
