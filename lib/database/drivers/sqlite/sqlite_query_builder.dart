@@ -15,6 +15,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
 
   String? _limitQuery;
   String? _orderByQuery;
+  int? _lastInsertId;
 
   SQLiteQueryBuilder(this.driver, [this.table]);
 
@@ -46,8 +47,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
 
   @override
   RecordSet get() {
-    late final query = _buildQuery(QueryType.select);
-    print(query); // TODO: Remove this.
+    final query = _buildQuery(QueryType.select);
     _reset();
     return driver.select(query)!;
   }
@@ -65,6 +65,20 @@ class SQLiteQueryBuilder implements QueryBuilder {
       throw RecordNotFoundException();
     }
     return result;
+  }
+
+  @override
+  Future<int> insert(Map<String, dynamic> values) async {
+    final query = _buildQuery(QueryType.insert, values);
+    await driver.insertMutex.acquire();
+    try {
+      driver.insert(query, values.values.toList());
+      _lastInsertId = driver.lastInsertId!;
+    } finally {
+      driver.insertMutex.release();
+    }
+    _reset();
+    return _lastInsertId!;
   }
 
   @override
@@ -133,12 +147,12 @@ class SQLiteQueryBuilder implements QueryBuilder {
     return this;
   }
 
-  String _buildQuery(QueryType type) {
+  String _buildQuery(QueryType type, [Map<String, dynamic> values = const {}]) {
     switch (type) {
       case QueryType.select:
         return _buildSelectQuery();
       case QueryType.insert:
-        return _buildInsertQuery();
+        return _buildInsertQuery(values);
       case QueryType.update:
         return _buildUpdateQuery();
       case QueryType.delete:
@@ -186,9 +200,10 @@ class SQLiteQueryBuilder implements QueryBuilder {
     }
   }
 
-  String _buildInsertQuery() {
+  String _buildInsertQuery(Map<String, dynamic> values) {
     final query = StringBuffer();
-    query.write('INSERT INTO $table');
+    query.write(
+        'INSERT INTO $table (${values.keys.join(', ')}) VALUES (${values.keys.map((_) => '?').join(', ')})');
     return query.toString();
   }
 

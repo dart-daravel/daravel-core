@@ -34,7 +34,7 @@ void main() {
         .deleteSync(recursive: true);
   });
 
-  test('Select all rows', () async {
+  test('Select all rows', () {
     final table = 'users_1';
 
     Schema.create(table, (table) {
@@ -55,7 +55,7 @@ void main() {
     expect(result.first?['password'], 'password');
   });
 
-  test('Where clause', () async {
+  test('Where clause', () {
     final table = 'users_2';
 
     Schema.create(table, (table) {
@@ -80,7 +80,7 @@ void main() {
     expect(result.first?['email'], 'frank@gmail.com');
   });
 
-  test('OrWhere clause', () async {
+  test('OrWhere clause', () {
     final table = 'users_3';
 
     Schema.create(table, (table) {
@@ -109,7 +109,7 @@ void main() {
     expect(result.first?['email'], 'frank@gmail.com');
   });
 
-  test('first()', () async {
+  test('first()', () {
     final table = 'users_4';
 
     Schema.create(table, (table) {
@@ -145,7 +145,7 @@ void main() {
     expect(result2, null);
   });
 
-  test('firstOrFail()', () async {
+  test('firstOrFail()', () {
     final table = 'users_5';
 
     Schema.create(table, (table) {
@@ -170,7 +170,7 @@ void main() {
         throwsA(isA<RecordNotFoundException>()));
   });
 
-  test('value([column])', () async {
+  test('value([column])', () {
     final table = 'users_6';
 
     Schema.create(table, (table) {
@@ -195,7 +195,7 @@ void main() {
     expect(result, 'frank@gmail.com');
   });
 
-  test('find([id])', () async {
+  test('find([id])', () {
     final table = 'users_7';
 
     Schema.create(table, (table) {
@@ -219,7 +219,7 @@ void main() {
     expect(result?['email'], 'frank@gmail.com');
   });
 
-  test('pluck([column])', () async {
+  test('pluck([column])', () {
     final table = 'users_8';
 
     Schema.create(table, (table) {
@@ -248,7 +248,7 @@ void main() {
     expect(result2, ['frank@gmail.com']);
   });
 
-  test('chunk([size]) with orderBy', () async {
+  test('chunk([size]) with orderBy', () {
     final table = 'users_9';
 
     Schema.create(table, (table) {
@@ -304,7 +304,7 @@ void main() {
     });
   });
 
-  test('chunkById([size]) with orderBy', () async {
+  test('chunkById([size]) with orderBy', () {
     final table = 'users_10';
 
     Schema.create(table, (table) {
@@ -358,5 +358,29 @@ void main() {
       chunkCount++;
       return null;
     });
+  });
+
+  test('update()', () async {
+    final table = 'users_11';
+
+    Schema.create(table, (table) {
+      table.increments('id');
+      table.string('email');
+      table.string('password');
+    });
+
+    int? insertId;
+
+    insertId = await DB
+        .table(table)
+        .insert({'email': 'tok@gmail.com', 'password': 'password'});
+
+    expect(1, insertId);
+
+    insertId = await DB
+        .table(table)
+        .insert({'email': 'tak@gmail.com', 'password': 'password'});
+
+    expect(2, insertId);
   });
 }

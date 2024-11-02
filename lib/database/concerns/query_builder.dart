@@ -20,6 +20,8 @@ abstract class QueryBuilder {
 
   Record? find(dynamic id);
 
+  Future<int> insert(Map<String, dynamic> values);
+
   List<Object?> pluck(String column);
 
   QueryBuilder orderBy(String column, [String direction = 'ASC']);
