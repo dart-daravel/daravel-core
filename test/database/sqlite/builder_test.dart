@@ -619,5 +619,69 @@ void main() {
     expect(DB.table(table).count(), 4);
     expect(DB.table(table).where('age', '>', 10).count(), 0);
     expect(DB.table(table).count('name'), 3);
+
+    // Max
+    expect(DB.table(table).max('age'), 4);
+    expect(DB.table(table).where('age', '>', 10).max('age'), 0);
+
+    // Min
+    expect(DB.table(table).min('age'), 1);
+    expect(DB.table(table).where('age', '>', 10).min('age'), 0);
+
+    // Sum
+    expect(DB.table(table).sum('age'), 10);
+    expect(DB.table(table).where('age', '>', 10).sum('age'), 0);
+  });
+
+  test('exists & doesntExist', () async {
+    final table = 'users_17';
+
+    Schema.create(table, (table) {
+      table.increments('id');
+      table.string('email').unique();
+      table.string('password');
+      table.string('name').nullable();
+      table.string('address');
+      table.integer('age');
+    });
+
+    await DB.table(table).insert({
+      'email': 'tok@gmail.com',
+      'password': 'password',
+      'name': 'Jon',
+      'address': 'Earth',
+      'age': 1
+    });
+
+    await DB.table(table).insert({
+      'email': 'ta@gmail.com',
+      'password': 'password',
+      'name': 'Jon',
+      'address': 'Earth',
+      'age': 2
+    });
+
+    await DB.table(table).insert({
+      'email': 'take@gmail.com',
+      'password': 'password',
+      'address': 'Earth',
+      'age': 3
+    });
+
+    await DB.table(table).insert({
+      'email': 'tk@gmail.com',
+      'password': 'password',
+      'name': 'Jon',
+      'address': 'Earth',
+      'age': 4
+    });
+
+    // Exists.
+    expect(DB.table(table).where('address', 'Earth').exists(), true);
+    expect(DB.table(table).where('address', 'Venus').exists(), false);
+
+    // Doesn't Exists
+    expect(DB.table(table).where('address', 'Earth').doesntExist(), false);
+    expect(DB.table(table).where('address', 'Venus').doesntExist(), true);
   });
 }

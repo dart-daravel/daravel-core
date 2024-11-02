@@ -52,6 +52,10 @@ abstract class QueryBuilder {
   int sum(String column);
 
   num avg(String column);
+
+  bool exists();
+
+  bool doesntExist();
 }
 
 enum QueryType { select, insert, update, delete }

@@ -8,5 +8,5 @@ abstract class RecordSet {
 }
 
 abstract class Record {
-  Object? operator [](String key);
+  Object? operator [](Object key);
 }

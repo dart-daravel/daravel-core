@@ -32,5 +32,5 @@ class SqliteRecord implements Record {
   SqliteRecord(this._row);
 
   @override
-  Object? operator [](String key) => _row[key];
+  Object? operator [](Object key) => _row[key];
 }

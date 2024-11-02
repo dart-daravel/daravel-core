@@ -181,20 +181,21 @@ class SQLiteQueryBuilder implements QueryBuilder {
     return this;
   }
 
-  String _buildQuery(QueryType type, [Map<String, dynamic> values = const {}]) {
+  String _buildQuery(QueryType type,
+      [Map<String, dynamic> values = const {}, bool terminate = true]) {
     switch (type) {
       case QueryType.select:
-        return _buildSelectQuery();
+        return _buildSelectQuery(terminate);
       case QueryType.insert:
-        return _buildInsertQuery(values);
+        return _buildInsertQuery(values, terminate);
       case QueryType.update:
-        return _buildUpdateQuery(values);
+        return _buildUpdateQuery(values, terminate);
       case QueryType.delete:
-        return _buildDeleteQuery();
+        return _buildDeleteQuery(terminate);
     }
   }
 
-  String _buildSelectQuery() {
+  String _buildSelectQuery([bool terminate = true]) {
     final query = StringBuffer();
     query.write('SELECT ');
     if (_selectColumns.isEmpty) {
@@ -215,7 +216,9 @@ class SQLiteQueryBuilder implements QueryBuilder {
     if (_limitQuery != null) {
       query.write(' $_limitQuery');
     }
-    query.write(';');
+    if (terminate) {
+      query.write(';');
+    }
     return query.toString();
   }
 
@@ -239,24 +242,35 @@ class SQLiteQueryBuilder implements QueryBuilder {
     }
   }
 
-  String _buildInsertQuery(Map<String, dynamic> values) {
+  String _buildInsertQuery(Map<String, dynamic> values,
+      [bool terminate = true]) {
     final query = StringBuffer();
     query.write(
         'INSERT INTO $table (${values.keys.join(', ')}) VALUES (${values.keys.map((_) => '?').join(', ')})');
+    if (terminate) {
+      query.write(';');
+    }
     return query.toString();
   }
 
-  String _buildUpdateQuery(Map<String, dynamic> values) {
+  String _buildUpdateQuery(Map<String, dynamic> values,
+      [bool terminate = true]) {
     final query = StringBuffer();
     query.write('UPDATE $table SET ');
     query.write(values.keys.map((key) => '$key = ?').join(', '));
     _writeWhereClause(query);
+    if (terminate) {
+      query.write(';');
+    }
     return query.toString();
   }
 
-  String _buildDeleteQuery() {
+  String _buildDeleteQuery([bool terminate = true]) {
     final query = StringBuffer();
     query.write('DELETE FROM $table');
+    if (terminate) {
+      query.write(';');
+    }
     return query.toString();
   }
 
@@ -359,20 +373,46 @@ class SQLiteQueryBuilder implements QueryBuilder {
 
   @override
   int max(String column) {
-    // TODO: implement max
-    throw UnimplementedError();
+    List<String> backupSelectColumns = List.from(_selectColumns);
+    _selectColumns.clear();
+    _selectColumns.add('MAX($column) AS max');
+    final result = get();
+    _selectColumns = List.from(backupSelectColumns);
+    final max = result.first['max'].toString();
+    return int.parse(max == 'null' ? '0' : max);
   }
 
   @override
   int min(String column) {
-    // TODO: implement min
-    throw UnimplementedError();
+    List<String> backupSelectColumns = List.from(_selectColumns);
+    _selectColumns.clear();
+    _selectColumns.add('MIN($column) AS min');
+    final result = get();
+    _selectColumns = List.from(backupSelectColumns);
+    final min = result.first['min'].toString();
+    return int.parse(min == 'null' ? '0' : min);
   }
 
   @override
   int sum(String column) {
-    // TODO: implement sum
-    throw UnimplementedError();
+    List<String> backupSelectColumns = List.from(_selectColumns);
+    _selectColumns.clear();
+    _selectColumns.add('SUM($column) AS sum');
+    final result = get();
+    _selectColumns = List.from(backupSelectColumns);
+    final sum = result.first['sum'].toString();
+    return int.parse(sum == 'null' ? '0' : sum);
+  }
+
+  @override
+  bool doesntExist() => !exists();
+
+  @override
+  bool exists() {
+    final String query =
+        'SELECT EXISTS(${_buildQuery(QueryType.select, const {}, false)});';
+    final result = driver.select(query);
+    return result!.first[0] as int == 1;
   }
 }
 
