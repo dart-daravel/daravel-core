@@ -10,11 +10,3 @@ String prepareSqlValue(dynamic value) {
   }
   return value.toString();
 }
-
-Map<String, dynamic> mapRow(List<String> columns, List<Object?> row) {
-  final map = <String, dynamic>{};
-  for (var i = 0; i < columns.length; i++) {
-    map[columns[i]] = row[i];
-  }
-  return map;
-}

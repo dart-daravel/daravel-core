@@ -6,7 +6,7 @@ abstract class QueryBuilder {
 
   DBDriver driver;
 
-  QueryBuilder(this.driver, [this.table]);
+  QueryBuilder(this.driver, [this.table]); // ignore: coverage
 
   RecordSet get();
 
