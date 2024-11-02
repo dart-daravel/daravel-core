@@ -1,4 +1,4 @@
-class Logger {
+class ConsoleLogger {
   static const String reset = '\x1B[0m';
   static const String red = '\x1B[31m';
   static const String green = '\x1B[32m';
@@ -8,12 +8,12 @@ class Logger {
   static const String cyan = '\x1B[36m';
   static const String white = '\x1B[37m';
 
-  static Logger? _instance;
+  static ConsoleLogger? _instance;
 
-  Logger._();
+  ConsoleLogger._();
 
-  factory Logger() {
-    _instance ??= Logger._();
+  factory ConsoleLogger() {
+    _instance ??= ConsoleLogger._();
     return _instance!;
   }
 

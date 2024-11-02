@@ -14,7 +14,7 @@ export 'annotations/command.dart';
 export 'console/commands/serve.dart';
 
 // Console
-export 'console/logger.dart';
+export 'console/console_logger.dart';
 
 // Extensions
 export 'extensions/string.dart';

@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:archive/archive_io.dart';
 import 'package:args/command_runner.dart';
 import 'package:crypto/crypto.dart';
-import 'package:daravel_core/console/logger.dart';
+import 'package:daravel_core/console/console_logger.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:path/path.dart' as path;
 import 'package:http/http.dart' as http;
@@ -27,7 +27,7 @@ class CreateCommand extends Command {
   final File _projectTemplateFileInfo =
       File(path.join(_cacheDir.path, "project_template.zip.json"));
 
-  late final Logger logger = Logger();
+  late final ConsoleLogger logger = ConsoleLogger();
 
   CreateCommand() {
     argParser.addOption(

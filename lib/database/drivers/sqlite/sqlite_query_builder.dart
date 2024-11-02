@@ -23,7 +23,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
   bool _resultSafe = true;
   bool _distinct = false;
 
-  late final Logger logger = Logger();
+  late final ConsoleLogger logger = ConsoleLogger();
 
   SQLiteQueryBuilder(this.driver, [this.table]);
 

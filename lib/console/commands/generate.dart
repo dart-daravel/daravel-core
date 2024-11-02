@@ -5,7 +5,7 @@ import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:args/command_runner.dart';
-import 'package:daravel_core/console/logger.dart';
+import 'package:daravel_core/console/console_logger.dart';
 import 'package:path/path.dart' as path;
 
 class GenerateCommand extends Command {
@@ -15,7 +15,7 @@ class GenerateCommand extends Command {
   @override
   String get name => 'generate';
 
-  late final Logger logger = Logger();
+  late final ConsoleLogger logger = ConsoleLogger();
 
   @override
   Future<void> run([String? rootPath]) async {
