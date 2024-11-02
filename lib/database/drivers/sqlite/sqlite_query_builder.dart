@@ -23,7 +23,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
 
   SQLiteQueryBuilder(this.driver, [this.table]);
 
-  final List<String> _selectColumns = [];
+  List<String> _selectColumns = [];
 
   void _reset() {
     _whereList.clear();
@@ -333,6 +333,46 @@ class SQLiteQueryBuilder implements QueryBuilder {
     final query = _buildQuery(QueryType.select);
     _reset();
     return SqliteLazyRecordSetGenerator(driver, query, 50);
+  }
+
+  @override
+  num avg(String column) {
+    List<String> backupSelectColumns = List.from(_selectColumns);
+    _selectColumns.clear();
+    _selectColumns.add('AVG($column) AS avg');
+    final result = get();
+    _selectColumns = List.from(backupSelectColumns);
+    final avg = result.first['avg'].toString();
+    return num.parse(avg == 'null' ? '0' : avg);
+  }
+
+  @override
+  int count([String columns = '*']) {
+    List<String> backupSelectColumns = List.from(_selectColumns);
+    _selectColumns.clear();
+    _selectColumns.add('COUNT($columns) AS count');
+    final result = get();
+    _selectColumns = List.from(backupSelectColumns);
+    final count = result.first['count'].toString();
+    return int.parse(count == 'null' ? '0' : count);
+  }
+
+  @override
+  int max(String column) {
+    // TODO: implement max
+    throw UnimplementedError();
+  }
+
+  @override
+  int min(String column) {
+    // TODO: implement min
+    throw UnimplementedError();
+  }
+
+  @override
+  int sum(String column) {
+    // TODO: implement sum
+    throw UnimplementedError();
   }
 }
 

@@ -42,6 +42,16 @@ abstract class QueryBuilder {
   LazyRecordSetGenerator lazy();
 
   LazyRecordSetGenerator lazyById();
+
+  int count([String columns = '*']);
+
+  int max(String column);
+
+  int min(String column);
+
+  int sum(String column);
+
+  num avg(String column);
 }
 
 enum QueryType { select, insert, update, delete }
