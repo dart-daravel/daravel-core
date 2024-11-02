@@ -40,6 +40,8 @@ abstract class QueryBuilder {
   QueryBuilder select(dynamic columns);
 
   LazyRecordSetGenerator lazy();
+
+  LazyRecordSetGenerator lazyById();
 }
 
 enum QueryType { select, insert, update, delete }
@@ -69,7 +71,9 @@ abstract class LazyRecordSetGenerator {
 
   DBDriver driver;
 
-  LazyRecordSetGenerator(this.driver, this.selectQuery);
+  int bufferSize;
 
-  void each(bool? Function(Record record) callback);
+  LazyRecordSetGenerator(this.driver, this.selectQuery, this.bufferSize);
+
+  Future<void> each(bool? Function(Record record) callback);
 }

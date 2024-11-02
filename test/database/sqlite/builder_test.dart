@@ -52,8 +52,8 @@ void main() {
     final result = DB.table(table).get();
 
     expect(result.length, 1);
-    expect(result.first?['email'], 'frank@gmail.com');
-    expect(result.first?['password'], 'password');
+    expect(result.first['email'], 'frank@gmail.com');
+    expect(result.first['password'], 'password');
   });
 
   test('Where clause', () {
@@ -78,7 +78,7 @@ void main() {
     final result = DB.table(table).where('email', 'frank@gmail.com').get();
 
     expect(result.length, 1);
-    expect(result.first?['email'], 'frank@gmail.com');
+    expect(result.first['email'], 'frank@gmail.com');
   });
 
   test('OrWhere clause', () {
@@ -107,7 +107,7 @@ void main() {
         .get();
 
     expect(result.length, 2);
-    expect(result.first?['email'], 'frank@gmail.com');
+    expect(result.first['email'], 'frank@gmail.com');
   });
 
   test('first()', () {
@@ -290,15 +290,15 @@ void main() {
     DB.table(table).orderBy('email', 'DESC').chunk(2, (records) {
       if (chunkCount == 1) {
         expect(records.length, 2);
-        expect(records[0]?['email'], allRecords[0]?['email']);
-        expect(records[1]?['email'], allRecords[1]?['email']);
+        expect(records[0]['email'], allRecords[0]['email']);
+        expect(records[1]['email'], allRecords[1]['email']);
       } else if (chunkCount == 2) {
         expect(records.length, 2);
-        expect(records[0]?['email'], allRecords[2]?['email']);
-        expect(records[1]?['email'], allRecords[3]?['email']);
+        expect(records[0]['email'], allRecords[2]['email']);
+        expect(records[1]['email'], allRecords[3]['email']);
       } else if (chunkCount == 3) {
         expect(records.length, 1);
-        expect(records[0]?['email'], allRecords[4]?['email']);
+        expect(records[0]['email'], allRecords[4]['email']);
       }
       chunkCount++;
       return null;
@@ -346,15 +346,15 @@ void main() {
     DB.table(table).orderBy('id', 'DESC').chunkById(2, (records) {
       if (chunkCount == 1) {
         expect(records.length, 2);
-        expect(records[0]?['email'], allRecords[0]?['email']);
-        expect(records[1]?['email'], allRecords[1]?['email']);
+        expect(records[0]['email'], allRecords[0]['email']);
+        expect(records[1]['email'], allRecords[1]['email']);
       } else if (chunkCount == 2) {
         expect(records.length, 2);
-        expect(records[0]?['email'], allRecords[2]?['email']);
-        expect(records[1]?['email'], allRecords[3]?['email']);
+        expect(records[0]['email'], allRecords[2]['email']);
+        expect(records[1]['email'], allRecords[3]['email']);
       } else if (chunkCount == 3) {
         expect(records.length, 1);
-        expect(records[0]?['email'], allRecords[4]?['email']);
+        expect(records[0]['email'], allRecords[4]['email']);
       }
       chunkCount++;
       return null;
@@ -419,8 +419,8 @@ void main() {
 
     final allRecords = DB.table(table).get();
 
-    expect(allRecords[0]?['password'], 'edited-again');
-    expect(allRecords[1]?['password'], 'edited-again');
+    expect(allRecords[0]['password'], 'edited-again');
+    expect(allRecords[1]['password'], 'edited-again');
 
     expect(affectedRows, 2);
   });
@@ -468,8 +468,8 @@ void main() {
 
     expect(result.length, 2);
 
-    expect(result[0]!['email'], 'tok@gmail.com');
-    expect(result[1]!['email'], 'jack@gmail.com');
+    expect(result[0]['email'], 'tok@gmail.com');
+    expect(result[1]['email'], 'jack@gmail.com');
   });
 
   test('lazy.each()', () async {
@@ -510,7 +510,7 @@ void main() {
 
     int rowCount = 0;
 
-    DB.table(table).lazy().each((record) {
+    await DB.table(table).lazy().each((record) {
       expect(record, isA<SqliteRecord>());
       rowCount++;
       return null;

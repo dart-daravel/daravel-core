@@ -7,7 +7,7 @@ class SqliteRecordSet implements RecordSet {
   SqliteRecordSet(this.result);
 
   @override
-  Record? operator [](int index) => SqliteRecord(result[index]);
+  Record operator [](int index) => SqliteRecord(result[index]);
 
   @override
   bool get isEmpty => result.isEmpty;
@@ -19,7 +19,7 @@ class SqliteRecordSet implements RecordSet {
   int get length => result.length;
 
   @override
-  Record? get first => SqliteRecord(result.first);
+  Record get first => SqliteRecord(result.first);
 
   @override
   Iterable<T> map<T>(T Function(Object record) toElement) =>

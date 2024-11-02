@@ -1,7 +1,6 @@
 import 'package:daravel_core/database/concerns/db_driver.dart' as daravel;
 import 'package:daravel_core/database/concerns/query_builder.dart';
 import 'package:daravel_core/database/concerns/record_set.dart';
-import 'package:daravel_core/database/drivers/sqlite/sqlite_record_set.dart';
 import 'package:daravel_core/exceptions/query.dart';
 import 'package:daravel_core/exceptions/record_not_found.dart';
 import 'package:daravel_core/helpers/database.dart';
@@ -322,27 +321,50 @@ class SQLiteQueryBuilder implements QueryBuilder {
 
   @override
   LazyRecordSetGenerator lazy() {
+    limit(50, 0);
     final query = _buildQuery(QueryType.select);
     _reset();
-    return SqliteLazyRecordSetGenerator(driver, query);
+    return SqliteLazyRecordSetGenerator(driver, query, 50);
+  }
+
+  @override
+  LazyRecordSetGenerator lazyById() {
+    where('id', '>', 0).limit(50, 0);
+    final query = _buildQuery(QueryType.select);
+    _reset();
+    return SqliteLazyRecordSetGenerator(driver, query, 50);
   }
 }
 
 class SqliteLazyRecordSetGenerator extends LazyRecordSetGenerator {
   SqliteLazyRecordSetGenerator(
-    super.driver,
-    super.selectQuery,
-  );
+      super.driver, super.selectQuery, super.bufferSize);
+
+  Stream<RecordSet>? recordSetStream;
 
   @override
-  void each(bool? Function(Record record) callback) {
-    daravel.PreparedStatement statement =
-        driver.getPreparedStatement(selectQuery);
-    final ResultSet result = statement.select() as ResultSet;
-    for (final row in result) {
-      if (callback(SqliteRecord(row)) == false) {
+  Future<void> each(bool? Function(Record record) callback) async {
+    outer:
+    await for (final chunk in _chunkStreamer(selectQuery, bufferSize)) {
+      for (var x = 0; x < chunk.length; x++) {
+        if (callback(chunk[x]) == false) {
+          break outer;
+        }
+      }
+    }
+  }
+
+  Stream<RecordSet> _chunkStreamer(String query, int chunkSize) async* {
+    int offset = 0;
+    while (true) {
+      final result = driver.select(query)!;
+      if (result.isEmpty) {
         break;
       }
+      yield result;
+      offset += chunkSize;
+      query = query.replaceFirst('LIMIT ${offset - chunkSize}, $chunkSize',
+          'LIMIT $offset, $chunkSize');
     }
   }
 }

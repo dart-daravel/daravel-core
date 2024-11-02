@@ -386,13 +386,13 @@ void main() {
 
     expect(selectResult!.length, 1);
 
-    expect(selectResult.first?['id'], 1);
-    expect(selectResult.first?['email'], 'john@gmail.com');
-    expect(selectResult.first?['password'], 'password');
+    expect(selectResult.first['id'], 1);
+    expect(selectResult.first['email'], 'john@gmail.com');
+    expect(selectResult.first['password'], 'password');
 
-    expect(selectResult.first?['id'], 1);
-    expect(selectResult.first?['email'], 'john@gmail.com');
-    expect(selectResult.first?['password'], 'password');
+    expect(selectResult.first['id'], 1);
+    expect(selectResult.first['email'], 'john@gmail.com');
+    expect(selectResult.first['password'], 'password');
   });
 
   test('Delete statement', () {
@@ -452,13 +452,13 @@ void main() {
 
     expect(selectResult!.length, 1);
 
-    expect(selectResult.first?['id'], 1);
-    expect(selectResult.first?['email'], 'john-edited@gmail.com');
-    expect(selectResult.first?['password'], 'new-password');
+    expect(selectResult.first['id'], 1);
+    expect(selectResult.first['email'], 'john-edited@gmail.com');
+    expect(selectResult.first['password'], 'new-password');
 
-    expect(selectResult.first?['id'], 1);
-    expect(selectResult.first?['email'], 'john-edited@gmail.com');
-    expect(selectResult.first?['password'], 'new-password');
+    expect(selectResult.first['id'], 1);
+    expect(selectResult.first['email'], 'john-edited@gmail.com');
+    expect(selectResult.first['password'], 'new-password');
   });
 
   test('Rename table', () {

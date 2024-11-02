@@ -52,9 +52,6 @@ abstract class DBDriver {
   QueryBuilder queryBuilder([String? table]);
 
   void executeAlterBlueprint(Blueprint blueprint) {}
-
-  PreparedStatement getPreparedStatement(String query,
-      [List bindings = const []]);
 }
 
 class DBMutex {
@@ -71,13 +68,4 @@ class DBMutex {
   void release() {
     if (!_lock.isCompleted) _lock.complete();
   }
-}
-
-abstract class PreparedStatement {
-  Object? preparedStatement;
-  List bindings;
-
-  PreparedStatement(this.preparedStatement, [this.bindings = const []]);
-
-  Object? select();
 }
