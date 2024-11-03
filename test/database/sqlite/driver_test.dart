@@ -395,7 +395,7 @@ void main() {
     expect(selectResult.first['password'], 'password');
   });
 
-  test('Delete statement', () {
+  test('Delete statement', () async {
     final table = 'users_17';
 
     Schema.create(table, (table) {
@@ -413,17 +413,17 @@ void main() {
 
     expect(selectResult!.length, 1);
 
-    var result =
-        DB.delete('DELETE FROM $table WHERE email = ?', ['frank@gmail.com']);
+    var result = await DB
+        .delete('DELETE FROM $table WHERE email = ?', ['frank@gmail.com']);
 
-    expect(result, true);
+    expect(result, 1);
 
     selectResult = DB.select('SELECT * FROM $table');
 
     expect(selectResult!.length, 0);
   });
 
-  test('Update statement', () {
+  test('Update statement', () async {
     final table = 'users_18';
 
     Schema.create(table, (table) {
@@ -441,12 +441,12 @@ void main() {
 
     expect(selectResult!.length, 1);
 
-    var result = DB.update(
+    var result = await DB.update(
       'UPDATE $table SET email = ?, password = ? WHERE email = ?',
       ['john-edited@gmail.com', 'new-password', 'john@gmail.com'],
     );
 
-    expect(result, true);
+    expect(result, 1);
 
     selectResult = DB.select('SELECT * FROM $table');
 

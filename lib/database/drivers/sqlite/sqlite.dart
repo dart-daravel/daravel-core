@@ -12,6 +12,10 @@ import 'package:sqlite3/sqlite3.dart';
 class SQLiteDriver extends DBDriver {
   late final Database? _db;
 
+  late final Database? _insertDb;
+  late final Database? _updateDb;
+  late final Database? _deleteDb;
+
   late final SqliteSchemaBuilder _schemaBuilder = SqliteSchemaBuilder(this);
 
   late final DatabaseConnection _configuration;
@@ -19,6 +23,13 @@ class SQLiteDriver extends DBDriver {
   SQLiteDriver(DatabaseConnection connection) {
     _db = sqlite3
         .open(connection.url ?? connection.database ?? 'database.sqlite');
+    _insertDb = sqlite3
+        .open(connection.url ?? connection.database ?? 'database.sqlite');
+    _updateDb = sqlite3
+        .open(connection.url ?? connection.database ?? 'database.sqlite');
+    _deleteDb = sqlite3
+        .open(connection.url ?? connection.database ?? 'database.sqlite');
+
     if (connection.foreignKeyConstraints ?? false) {
       _db?.execute('PRAGMA foreign_keys = ON;');
     }
@@ -35,8 +46,6 @@ class SQLiteDriver extends DBDriver {
   @override
   RecordSet select(String query, [List bindings = const []]) {
     final statement = _db!.prepare(query);
-    print(query);
-    print(bindings);
     return SqliteRecordSet(statement.select(bindings));
   }
 
@@ -44,10 +53,15 @@ class SQLiteDriver extends DBDriver {
   /// Throws [ArgumentError] if length of [bindings] is not equal number of
   /// placeholders in query.
   @override
-  bool delete(String query, [List bindings = const []]) {
-    final statement = _db!.prepare(query);
-    statement.execute(bindings);
-    return true;
+  Future<int> delete(String query, [List bindings = const []]) async {
+    final statement = _deleteDb!.prepare(query);
+    await deleteMutex.acquire();
+    try {
+      statement.execute(bindings);
+      return _deleteDb.updatedRows;
+    } finally {
+      deleteMutex.release();
+    }
   }
 
   /// Run an insert query.
@@ -58,6 +72,18 @@ class SQLiteDriver extends DBDriver {
     final statement = _db!.prepare(query);
     statement.execute(bindings);
     return true;
+  }
+
+  @override
+  Future<int> insertGetId(String query, [List bindings = const []]) async {
+    final statement = _insertDb!.prepare(query);
+    await insertMutex.acquire();
+    try {
+      statement.execute(bindings);
+      return _insertDb.lastInsertRowId;
+    } finally {
+      insertMutex.release();
+    }
   }
 
   /// Run an SQL statement.
@@ -77,10 +103,15 @@ class SQLiteDriver extends DBDriver {
 
   /// Run an update query.
   @override
-  bool update(String query, [List bindings = const []]) {
-    final statement = _db!.prepare(query);
-    statement.execute(bindings);
-    return true;
+  Future<int> update(String query, [List bindings = const []]) async {
+    final statement = _updateDb!.prepare(query);
+    await updateMutex.acquire();
+    try {
+      statement.execute(bindings);
+      return _updateDb.updatedRows;
+    } finally {
+      updateMutex.release();
+    }
   }
 
   @override

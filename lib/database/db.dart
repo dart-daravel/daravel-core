@@ -28,10 +28,12 @@ class DB {
   static bool insert(String query, [List<dynamic> bindings = const []]) =>
       _mainInstance!._dbConnection!.insert(query, bindings);
 
-  static bool delete(String query, [List<dynamic> bindings = const []]) =>
+  static Future<int> delete(String query,
+          [List<dynamic> bindings = const []]) =>
       _mainInstance!._dbConnection!.delete(query, bindings);
 
-  static bool update(String query, [List<dynamic> bindings = const []]) =>
+  static Future<int> update(String query,
+          [List<dynamic> bindings = const []]) =>
       _mainInstance!._dbConnection!.update(query, bindings);
 
   /// Execute an unprepared statement.
@@ -86,6 +88,8 @@ class DB {
   /// Gets a query builder.
   static QueryBuilder table(String table) =>
       _mainInstance!._dbConnection!.driver.queryBuilder(table);
+
+  static raw(String query) => RawQueryComponent(query);
 }
 
 class _ConfigKeys {

@@ -405,13 +405,13 @@ void main() {
 
     insertId = await DB
         .table(table)
-        .insert({'email': 'tok@gmail.com', 'password': 'password'});
+        .insertGetId({'email': 'tok@gmail.com', 'password': 'password'});
 
     expect(1, insertId);
 
     insertId = await DB
         .table(table)
-        .insert({'email': 'tak@gmail.com', 'password': 'password'});
+        .insertGetId({'email': 'tak@gmail.com', 'password': 'password'});
 
     expect(2, insertId);
 
@@ -430,13 +430,9 @@ void main() {
 
     int? affectedRows;
 
-    await DB
-        .table(table)
-        .insert({'email': 'tok@gmail.com', 'password': 'password'});
+    DB.table(table).insert({'email': 'tok@gmail.com', 'password': 'password'});
 
-    await DB
-        .table(table)
-        .insert({'email': 'tak@gmail.com', 'password': 'password'});
+    DB.table(table).insert({'email': 'tak@gmail.com', 'password': 'password'});
 
     affectedRows = await DB
         .table(table)
@@ -474,7 +470,7 @@ void main() {
       table.integer('age');
     });
 
-    await DB.table(table).insert({
+    DB.table(table).insert({
       'email': 'tok@gmail.com',
       'password': 'password',
       'name': 'Jon',
@@ -482,7 +478,7 @@ void main() {
       'age': 20
     });
 
-    await DB.table(table).insert({
+    DB.table(table).insert({
       'email': 'tak@gmail.com',
       'password': 'password',
       'name': 'Tak',
@@ -490,7 +486,7 @@ void main() {
       'age': 25
     });
 
-    await DB.table(table).insert({
+    DB.table(table).insert({
       'email': 'jack@gmail.com',
       'password': 'password',
       'name': 'Jack',
@@ -536,7 +532,7 @@ void main() {
       table.integer('age');
     });
 
-    await DB.table(table).insert({
+    DB.table(table).insert({
       'email': 'tok@gmail.com',
       'password': 'password',
       'name': 'Jon',
@@ -544,7 +540,7 @@ void main() {
       'age': 1
     });
 
-    await DB.table(table).insert({
+    DB.table(table).insert({
       'email': 'tak@gmail.com',
       'password': 'password',
       'name': 'Tak',
@@ -552,7 +548,7 @@ void main() {
       'age': 2
     });
 
-    await DB.table(table).insert({
+    DB.table(table).insert({
       'email': 'jack@gmail.com',
       'password': 'password',
       'name': 'Jack',
@@ -595,7 +591,7 @@ void main() {
       table.integer('age');
     });
 
-    await DB.table(table).insert({
+    DB.table(table).insert({
       'email': 'tok@gmail.com',
       'password': 'password',
       'name': 'Jon',
@@ -603,7 +599,7 @@ void main() {
       'age': 20
     });
 
-    await DB.table(table).insert({
+    DB.table(table).insert({
       'email': 'tak@gmail.com',
       'password': 'password',
       'name': 'Tak',
@@ -611,7 +607,7 @@ void main() {
       'age': 25
     });
 
-    await DB.table(table).insert({
+    DB.table(table).insert({
       'email': 'jack@gmail.com',
       'password': 'password',
       'name': 'Jack',
@@ -654,7 +650,7 @@ void main() {
       table.integer('age');
     });
 
-    await DB.table(table).insert({
+    DB.table(table).insert({
       'email': 'tok@gmail.com',
       'password': 'password',
       'name': 'Jon',
@@ -662,7 +658,7 @@ void main() {
       'age': 1
     });
 
-    await DB.table(table).insert({
+    DB.table(table).insert({
       'email': 'ta@gmail.com',
       'password': 'password',
       'name': 'Jon',
@@ -670,14 +666,14 @@ void main() {
       'age': 2
     });
 
-    await DB.table(table).insert({
+    DB.table(table).insert({
       'email': 'take@gmail.com',
       'password': 'password',
       'address': 'Earth',
       'age': 3
     });
 
-    await DB.table(table).insert({
+    DB.table(table).insert({
       'email': 'tk@gmail.com',
       'password': 'password',
       'name': 'Jon',
@@ -719,7 +715,7 @@ void main() {
       table.integer('age');
     });
 
-    await DB.table(table).insert({
+    DB.table(table).insert({
       'email': 'tok@gmail.com',
       'password': 'password',
       'name': 'Jon',
@@ -727,7 +723,7 @@ void main() {
       'age': 1
     });
 
-    await DB.table(table).insert({
+    DB.table(table).insert({
       'email': 'ta@gmail.com',
       'password': 'password',
       'name': 'Jon',
@@ -735,14 +731,14 @@ void main() {
       'age': 2
     });
 
-    await DB.table(table).insert({
+    DB.table(table).insert({
       'email': 'take@gmail.com',
       'password': 'password',
       'address': 'Earth',
       'age': 3
     });
 
-    await DB.table(table).insert({
+    DB.table(table).insert({
       'email': 'tk@gmail.com',
       'password': 'password',
       'name': 'Jon',
@@ -771,7 +767,7 @@ void main() {
       table.integer('age');
     });
 
-    await DB.table(table).insert({
+    DB.table(table).insert({
       'email': 'tok@gmail.com',
       'password': 'password',
       'name': 'Jon',
@@ -779,7 +775,7 @@ void main() {
       'age': 1
     });
 
-    await DB.table(table).insert({
+    DB.table(table).insert({
       'email': 'ta@gmail.com',
       'password': 'password',
       'name': 'Jon',
@@ -787,14 +783,14 @@ void main() {
       'age': 2
     });
 
-    await DB.table(table).insert({
+    DB.table(table).insert({
       'email': 'take@gmail.com',
       'password': 'password',
       'address': 'Earth',
       'age': 3
     });
 
-    await DB.table(table).insert({
+    DB.table(table).insert({
       'email': 'tk@gmail.com',
       'password': 'password',
       'name': 'Jon',
@@ -828,7 +824,7 @@ void main() {
       table.integer('age');
     });
 
-    await DB.table(table).insert({
+    DB.table(table).insert({
       'email': 'tok@gmail.com',
       'password': 'password',
       'name': 'Jon',
@@ -836,7 +832,7 @@ void main() {
       'age': 1
     });
 
-    await DB.table(table).insert({
+    DB.table(table).insert({
       'email': 'ta@gmail.com',
       'password': 'password',
       'name': 'Jon',
@@ -844,7 +840,7 @@ void main() {
       'age': 1
     });
 
-    await DB.table(table).insert({
+    DB.table(table).insert({
       'email': 'ta@gmail.com',
       'password': 'password',
       'address': 'Earth',
@@ -852,7 +848,7 @@ void main() {
       'age': 1
     });
 
-    await DB.table(table).insert({
+    DB.table(table).insert({
       'email': 'ta@gmail.com',
       'password': 'password',
       'name': 'Jon',
@@ -866,5 +862,157 @@ void main() {
     expect(query.distinct().get().length, 2);
 
     expect(DB.table(table).distinct().count('email'), 2);
+  });
+
+  test('selectRaw()', () async {
+    final table = 'users_20';
+
+    Schema.create(table, (table) {
+      table.increments('id');
+      table.string('email');
+      table.string('password');
+      table.string('name');
+      table.string('address');
+      table.integer('age');
+    });
+
+    DB.table(table).insert({
+      'email': 'tok@gmail.com',
+      'password': 'password',
+      'name': 'Jon',
+      'address': 'Earth',
+      'age': 1
+    });
+
+    DB.table(table).insert({
+      'email': 'ta@gmail.com',
+      'password': 'password',
+      'name': 'Jon',
+      'address': 'Earth',
+      'age': 1
+    });
+
+    DB.table(table).insert({
+      'email': 'ta@gmail.com',
+      'password': 'password',
+      'address': 'Earth',
+      'name': 'Jon',
+      'age': 1
+    });
+
+    DB.table(table).insert({
+      'email': 'ta@gmail.com',
+      'password': 'password',
+      'name': 'Jon',
+      'address': 'Earth',
+      'age': 1
+    });
+
+    final result1 = DB.table(table).select('email, password').get();
+
+    expect(result1.first['password'], null);
+
+    final result2 = DB.table(table).selectRaw('email, password').get();
+
+    expect(result2.first['password'], 'password');
+  });
+
+  test('whereRaw()', () async {
+    final table = 'users_21';
+
+    Schema.create(table, (table) {
+      table.increments('id');
+      table.string('email');
+      table.string('password');
+      table.string('name');
+      table.string('address');
+      table.integer('age');
+    });
+
+    DB.table(table).insert({
+      'email': 'tok@gmail.com',
+      'password': 'password',
+      'name': 'Jon',
+      'address': 'Earth',
+      'age': 1
+    });
+
+    DB.table(table).insert({
+      'email': 'ta2@gmail.com',
+      'password': 'password',
+      'name': 'Jon',
+      'address': 'Earth',
+      'age': 1
+    });
+
+    DB.table(table).insert({
+      'email': 'ta1@gmail.com',
+      'password': 'password',
+      'address': 'Earth',
+      'name': 'Jon',
+      'age': 1
+    });
+
+    DB.table(table).insert({
+      'email': 'ta@gmail.com',
+      'password': 'password',
+      'name': 'Jon',
+      'address': 'Earth',
+      'age': 1
+    });
+
+    final result = DB.table(table).whereRaw("email = 'ta@gmail.com'").get();
+
+    expect(result.length, 1);
+    expect(result.first['email'], 'ta@gmail.com');
+  });
+
+  test('groupBy()', () async {
+    final table = 'users_22';
+
+    Schema.create(table, (table) {
+      table.increments('id');
+      table.string('email');
+      table.string('password');
+      table.string('name');
+      table.string('address');
+      table.integer('age');
+    });
+
+    DB.table(table).insert({
+      'email': 'tok@gmail.com',
+      'password': 'password',
+      'name': 'Jon',
+      'address': 'Earth',
+      'age': 1
+    });
+
+    DB.table(table).insert({
+      'email': 'ta@gmail.com',
+      'password': 'password',
+      'name': 'Jon',
+      'address': 'Earth',
+      'age': 1
+    });
+
+    DB.table(table).insert({
+      'email': 'ta@gmail.com',
+      'password': 'password',
+      'address': 'Earth',
+      'name': 'Jon',
+      'age': 1
+    });
+
+    DB.table(table).insert({
+      'email': 'ta@gmail.com',
+      'password': 'password',
+      'name': 'Jon',
+      'address': 'Earth',
+      'age': 1
+    });
+
+    final result = DB.table(table).where('age', 1).groupBy('email').get();
+
+    expect(result.length, 2);
   });
 }

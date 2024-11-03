@@ -28,12 +28,12 @@ class DBConnection {
     return driver.insert(query, bindings);
   }
 
-  bool delete(String query, [List<dynamic> bindings = const []]) {
+  Future<int> delete(String query, [List<dynamic> bindings = const []]) {
     return driver.delete(query, bindings);
   }
 
-  bool update(String query, [List<dynamic> bindings = const []]) {
-    return driver.update(query, bindings);
+  Future<int> update(String query, [List<dynamic> bindings = const []]) async {
+    return await driver.update(query, bindings);
   }
 
   bool unprepared(String query) {

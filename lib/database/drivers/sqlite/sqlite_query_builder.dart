@@ -14,11 +14,14 @@ class SQLiteQueryBuilder implements QueryBuilder {
   @override
   daravel.DBDriver driver;
 
+  late final SafeQueryBuilderParameterParser safeQueryBuilderParameterParser =
+      SafeQueryBuilderParameterParser();
+
   final List<WhereClause> _whereList = [];
 
   String? _limitQuery;
   String? _orderByQuery;
-  int? _lastInsertId;
+  String? _groupByQuery;
 
   bool _resultSafe = true;
   bool _distinct = false;
@@ -28,23 +31,27 @@ class SQLiteQueryBuilder implements QueryBuilder {
   SQLiteQueryBuilder(this.driver, [this.table]);
 
   List<String> _selectColumns = [];
+  List<String>? _oldSelectColumns;
 
   void _reset() {
     _whereList.clear();
     _limitQuery = null;
     _orderByQuery = null;
+    _oldSelectColumns = List.from(_selectColumns);
     _selectColumns.clear();
   }
 
   @override
   QueryBuilder select(dynamic columns) {
-    assert(columns is List<String> || columns is String);
+    assert(columns is List<String> ||
+        columns is String ||
+        columns is RawQueryComponent);
     if (columns is List<String>) {
       for (final column in columns) {
-        _selectColumns.add(column);
+        _selectColumns.add(safeQueryBuilderParameterParser.parseColumn(column));
       }
     } else if (columns is String) {
-      _selectColumns.add(columns);
+      _selectColumns.add(safeQueryBuilderParameterParser.parseColumn(columns));
     }
     return this;
   }
@@ -76,7 +83,18 @@ class SQLiteQueryBuilder implements QueryBuilder {
   }
 
   @override
-  Future<int> insert(Map<String, dynamic> values) async {
+  bool insert(Map<String, dynamic> values) {
+    if (values.isEmpty) {
+      throw QueryException('Values cannot be empty');
+    }
+    final query = _buildQuery(QueryType.insert, values);
+    driver.insert(query.query, query.bindings);
+    _reset();
+    return true;
+  }
+
+  @override
+  Future<int> insertGetId(Map<String, dynamic> values) async {
     if (values.isEmpty) {
       throw QueryException('Values cannot be empty');
     }
@@ -84,12 +102,11 @@ class SQLiteQueryBuilder implements QueryBuilder {
     await driver.insertMutex.acquire();
     try {
       driver.insert(query.query, query.bindings);
-      _lastInsertId = driver.lastInsertId!;
+      _reset();
+      return driver.lastInsertId!;
     } finally {
       driver.insertMutex.release();
     }
-    _reset();
-    return _lastInsertId!;
   }
 
   @override
@@ -98,17 +115,14 @@ class SQLiteQueryBuilder implements QueryBuilder {
       throw QueryException('Values cannot be empty');
     }
     final query = _buildQuery(QueryType.update, values);
-    late final int affectedRows;
     await driver.updateMutex.acquire();
     try {
       _logQuery(query);
-      driver.update(query.query, query.bindings);
-      affectedRows = driver.affectedRows!;
+      _reset();
+      return driver.update(query.query, query.bindings);
     } finally {
       driver.updateMutex.release();
     }
-    _reset();
-    return affectedRows;
   }
 
   @override
@@ -117,16 +131,13 @@ class SQLiteQueryBuilder implements QueryBuilder {
       where('id', id);
     }
     final query = _buildQuery(QueryType.delete);
-    late final int affectedRows;
     await driver.deleteMutex.acquire();
     try {
-      driver.delete(query.query, query.bindings);
-      affectedRows = driver.affectedRows!;
+      _reset();
+      return driver.delete(query.query, query.bindings);
     } finally {
       driver.deleteMutex.release();
     }
-    _reset();
-    return affectedRows;
   }
 
   _logQuery(QueryStringBinding query) {
@@ -204,11 +215,13 @@ class SQLiteQueryBuilder implements QueryBuilder {
   }
 
   @override
-  QueryBuilder orderBy(String column, [String direction = 'ASC']) {
-    _orderByQuery = 'ORDER BY $column $direction';
+  QueryBuilder orderBy(String column, [String direction = 'DESC']) {
+    _orderByQuery =
+        'ORDER BY $column ${safeQueryBuilderParameterParser.parseSortDirection(direction)}';
     return this;
   }
 
+  /// Build the WHERE clause of the query.
   QueryStringBinding _buildQuery(QueryType type,
       [Map<String, dynamic> values = const {}, bool terminate = true]) {
     switch (type) {
@@ -245,6 +258,10 @@ class SQLiteQueryBuilder implements QueryBuilder {
     query.write(' FROM $table');
     // WHERE clause.
     _writeWhereClause(query, bindings);
+    // GROUP BY clause.
+    if (_groupByQuery != null) {
+      query.write(' $_groupByQuery');
+    }
     // ORDER BY clause.
     if (_orderByQuery != null) {
       query.write(' $_orderByQuery');
@@ -271,8 +288,12 @@ class SQLiteQueryBuilder implements QueryBuilder {
           query.write(')');
           continue;
         }
-        query.write("${entry.column} ${entry.operator} ?");
-        bindings.add(entry.value);
+        if (entry.rawClause != null) {
+          query.write(entry.rawClause);
+        } else {
+          query.write("${entry.column} ${entry.operator} ?");
+          bindings.add(entry.value);
+        }
         if (i < _whereList.length - 1 && !_whereList[i + 1].isCloseBracket) {
           query.write(' ${entry.concatenator} ');
         }
@@ -325,10 +346,22 @@ class SQLiteQueryBuilder implements QueryBuilder {
 
   void _addWhere(
       String logicConcatenator, bool isOpenBracket, bool isCloseBracket,
-      [String? column, dynamic operatorOrValue, dynamic value]) {
+      [String? column,
+      dynamic operatorOrValue,
+      dynamic value,
+      String? rawWhere]) {
     // Add logic concatenator to the last entry.
     if (_whereList.isNotEmpty) {
       _whereList[_whereList.length - 1].concatenator = logicConcatenator;
+    }
+    // Raw where clause.
+    if (rawWhere != null) {
+      _whereList.add(WhereClause(
+        isOpenBracket: isOpenBracket,
+        isCloseBracket: isCloseBracket,
+        rawClause: rawWhere,
+      ));
+      return;
     }
     // Add new entry.
     if (operatorOrValue is String && isSqlOperator(operatorOrValue)) {
@@ -497,7 +530,35 @@ class SQLiteQueryBuilder implements QueryBuilder {
 
   @override
   QueryBuilder addSelect(String column) {
-    _selectColumns.add(column);
+    if (_selectColumns.isEmpty && _oldSelectColumns != null) {
+      _selectColumns = List.from(_oldSelectColumns!);
+      _oldSelectColumns = null;
+    }
+    _selectColumns.add(safeQueryBuilderParameterParser.parseColumn(column));
+    return this;
+  }
+
+  @override
+  QueryBuilder selectRaw(String rawSelect) {
+    select(RawQueryComponent(rawSelect));
+    return this;
+  }
+
+  @override
+  QueryBuilder whereRaw(String rawWhere) {
+    _addWhere('AND', false, false, null, null, null, rawWhere);
+    return this;
+  }
+
+  @override
+  QueryBuilder orWhereRaw(String rawWhere) {
+    _addWhere('OR', false, false, null, null, null, rawWhere);
+    return this;
+  }
+
+  @override
+  QueryBuilder groupBy(String column) {
+    _groupByQuery = 'GROUP BY $column';
     return this;
   }
 }

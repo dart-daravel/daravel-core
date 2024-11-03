@@ -26,11 +26,13 @@ abstract class DBDriver {
   /// Execute an insert query
   bool insert(String query, [List<dynamic> bindings = const []]);
 
+  Future<int> insertGetId(String query, [List<dynamic> bindings = const []]);
+
   /// Execute an update query
-  bool update(String query, [List<dynamic> bindings = const []]);
+  Future<int> update(String query, [List<dynamic> bindings = const []]);
 
   /// Execute a delete query
-  bool delete(String query, [List<dynamic> bindings = const []]);
+  Future<int> delete(String query, [List<dynamic> bindings = const []]);
 
   /// Execute a query
   bool statement(String query, [List<dynamic> bindings = const []]);

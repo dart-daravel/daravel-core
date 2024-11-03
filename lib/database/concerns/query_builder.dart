@@ -20,7 +20,9 @@ abstract class QueryBuilder {
 
   Record? find(dynamic id);
 
-  Future<int> insert(Map<String, dynamic> values);
+  bool insert(Map<String, dynamic> values);
+
+  Future<int> insertGetId(Map<String, dynamic> values);
 
   Future<int> update(Map<String, dynamic> values);
 
@@ -62,6 +64,14 @@ abstract class QueryBuilder {
   QueryBuilder distinct();
 
   QueryBuilder addSelect(String column);
+
+  QueryBuilder selectRaw(String rawSelect);
+
+  QueryBuilder whereRaw(String rawWhere);
+
+  QueryBuilder orWhereRaw(String rawWhere);
+
+  QueryBuilder groupBy(String column);
 }
 
 enum QueryType { select, insert, update, delete }
@@ -70,6 +80,7 @@ class WhereClause {
   final String? column;
   final String? operator;
   final dynamic value;
+  final String? rawClause;
 
   final bool isOpenBracket;
   final bool isCloseBracket;
@@ -80,6 +91,7 @@ class WhereClause {
     this.column,
     this.operator,
     this.value,
+    this.rawClause,
     this.isOpenBracket = false,
     this.isCloseBracket = false,
     this.concatenator = 'AND',
@@ -116,4 +128,24 @@ class QueryStringBinding {
       return value.toString();
     });
   }
+}
+
+class SafeQueryBuilderParameterParser {
+  String parseColumn(Object column) {
+    return column is RawQueryComponent
+        ? column.value
+        : (column as String).split(column.contains(',') ? ',' : ' ').first;
+  }
+
+  String parseSortDirection(String sortMethod) {
+    return ['asc', 'desc'].contains(sortMethod.toLowerCase())
+        ? sortMethod
+        : 'DESC';
+  }
+}
+
+class RawQueryComponent {
+  String value;
+
+  RawQueryComponent(this.value);
 }
