@@ -87,7 +87,7 @@ class WhereClause {
 }
 
 abstract class LazyRecordSetGenerator {
-  String selectQuery;
+  QueryStringBinding selectQuery;
 
   DBDriver driver;
 
@@ -96,4 +96,24 @@ abstract class LazyRecordSetGenerator {
   LazyRecordSetGenerator(this.driver, this.selectQuery, this.bufferSize);
 
   Future<void> each(bool? Function(Record record) callback);
+}
+
+class QueryStringBinding {
+  final String query;
+  final List bindings;
+
+  QueryStringBinding(this.query, this.bindings);
+
+  Future<String> getUnsafeQuery() async {
+    final varPattern = RegExp(r'\?');
+    final tempBindings = List.from(bindings);
+
+    return query.replaceAllMapped(varPattern, (match) {
+      final value = tempBindings.removeAt(0);
+      if (value is String) {
+        return "'$value'";
+      }
+      return value.toString();
+    });
+  }
 }

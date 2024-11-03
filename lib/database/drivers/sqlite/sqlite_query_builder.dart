@@ -41,17 +41,13 @@ class SQLiteQueryBuilder implements QueryBuilder {
     assert(columns is List<String> || columns is String);
     if (columns is List<String>) {
       for (final column in columns) {
-        _selectColumns.add(_parseSelectColumn(column));
+        _selectColumns.add(column);
       }
     } else if (columns is String) {
-      _selectColumns.add(_parseSelectColumn(columns));
+      _selectColumns.add(columns);
     }
     return this;
   }
-
-  String _parseSelectColumn(String column) => column.startsWith('[=]')
-      ? column.substring(3)
-      : column; // TODO: Improve this to clean up input.
 
   @override
   RecordSet get() {
@@ -59,11 +55,9 @@ class SQLiteQueryBuilder implements QueryBuilder {
       throw QueryException('Query builder is in an illegal state.');
     }
     final query = _buildQuery(QueryType.select);
-    if (driver.logging) {
-      logger.debug(query);
-    }
+    _logQuery(query);
     _reset();
-    return driver.select(query)!;
+    return driver.select(query.query, query.bindings)!;
   }
 
   @override
@@ -89,7 +83,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
     final query = _buildQuery(QueryType.insert, values);
     await driver.insertMutex.acquire();
     try {
-      driver.insert(query, values.values.toList());
+      driver.insert(query.query, query.bindings);
       _lastInsertId = driver.lastInsertId!;
     } finally {
       driver.insertMutex.release();
@@ -107,8 +101,8 @@ class SQLiteQueryBuilder implements QueryBuilder {
     late final int affectedRows;
     await driver.updateMutex.acquire();
     try {
-      print(query);
-      driver.update(query, values.values.toList());
+      _logQuery(query);
+      driver.update(query.query, query.bindings);
       affectedRows = driver.affectedRows!;
     } finally {
       driver.updateMutex.release();
@@ -126,13 +120,19 @@ class SQLiteQueryBuilder implements QueryBuilder {
     late final int affectedRows;
     await driver.deleteMutex.acquire();
     try {
-      driver.delete(query);
+      driver.delete(query.query, query.bindings);
       affectedRows = driver.affectedRows!;
     } finally {
       driver.deleteMutex.release();
     }
     _reset();
     return affectedRows;
+  }
+
+  _logQuery(QueryStringBinding query) {
+    if (driver.logging) {
+      query.getUnsafeQuery().then((query) => logger.debug(query));
+    }
   }
 
   @override
@@ -166,14 +166,15 @@ class SQLiteQueryBuilder implements QueryBuilder {
     RecordSet? records;
     int offset = 0;
     limit(size, offset);
-    String query = _buildQuery(QueryType.select);
+    QueryStringBinding query = _buildQuery(QueryType.select);
+    String sqlStatement = query.query;
     do {
-      records = driver.select(query)!;
+      records = driver.select(sqlStatement, query.bindings)!;
       if (callback(records) == false) {
         break;
       }
       offset += size;
-      query = query.replaceFirst(
+      sqlStatement = sqlStatement.replaceFirst(
           'LIMIT ${offset - size}, $size', 'LIMIT $offset, $size');
     } while (records.isNotEmpty);
     _reset();
@@ -187,14 +188,16 @@ class SQLiteQueryBuilder implements QueryBuilder {
     RecordSet? records;
     int offset = 0;
     where('id', '>', offset).limit(size, offset);
-    String query = _buildQuery(QueryType.select);
+    QueryStringBinding query = _buildQuery(QueryType.select);
+    String sqlStatement = query.query;
     do {
-      records = driver.select(query)!;
+      records = driver.select(sqlStatement, query.bindings)!;
+      _logQuery(query);
       if (callback(records) == false) {
         break;
       }
       offset += size;
-      query = query.replaceFirst(
+      sqlStatement = sqlStatement.replaceFirst(
           'LIMIT ${offset - size}, $size', 'LIMIT $offset, $size');
     } while (records.isNotEmpty);
     _reset();
@@ -206,7 +209,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
     return this;
   }
 
-  String _buildQuery(QueryType type,
+  QueryStringBinding _buildQuery(QueryType type,
       [Map<String, dynamic> values = const {}, bool terminate = true]) {
     switch (type) {
       case QueryType.select:
@@ -220,13 +223,15 @@ class SQLiteQueryBuilder implements QueryBuilder {
     }
   }
 
-  String _buildSelectQuery([bool terminate = true]) {
+  QueryStringBinding _buildSelectQuery([bool terminate = true]) {
     final query = StringBuffer();
+    final List bindings = [];
     query.write('SELECT ');
     // We don't want DISTINCT immediately after SELECT if a COUNT(*) select column is present.
     // We'll have to apply distinct on the COUNT() column itself.
     if (_distinct &&
-        _selectColumns.firstWhereOrNull((e) => e.startsWith('COUNT(')) ==
+        _selectColumns.firstWhereOrNull(
+                (e) => e.toUpperCase().startsWith('COUNT(')) ==
             null) {
       query.write('DISTINCT ');
     }
@@ -239,7 +244,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
     }
     query.write(' FROM $table');
     // WHERE clause.
-    _writeWhereClause(query);
+    _writeWhereClause(query, bindings);
     // ORDER BY clause.
     if (_orderByQuery != null) {
       query.write(' $_orderByQuery');
@@ -251,10 +256,10 @@ class SQLiteQueryBuilder implements QueryBuilder {
     if (terminate) {
       query.write(';');
     }
-    return query.toString();
+    return QueryStringBinding(query.toString(), bindings);
   }
 
-  void _writeWhereClause(StringBuffer query) {
+  void _writeWhereClause(StringBuffer query, List bindings) {
     if (_whereList.isNotEmpty) {
       query.write(' WHERE ');
       for (var i = 0; i < _whereList.length; i++) {
@@ -266,7 +271,8 @@ class SQLiteQueryBuilder implements QueryBuilder {
           query.write(')');
           continue;
         }
-        query.write('${entry.column} ${entry.operator} ${entry.value}');
+        query.write("${entry.column} ${entry.operator} ?");
+        bindings.add(entry.value);
         if (i < _whereList.length - 1 && !_whereList[i + 1].isCloseBracket) {
           query.write(' ${entry.concatenator} ');
         }
@@ -274,37 +280,47 @@ class SQLiteQueryBuilder implements QueryBuilder {
     }
   }
 
-  String _buildInsertQuery(Map<String, dynamic> values,
+  QueryStringBinding _buildInsertQuery(Map<String, dynamic> values,
       [bool terminate = true]) {
     final query = StringBuffer();
+    final List bindings = [];
     query.write(
-        'INSERT INTO $table (${values.keys.join(', ')}) VALUES (${values.keys.map((_) => '?').join(', ')})');
+        'INSERT INTO $table (${values.keys.join(', ')}) VALUES (${values.values.map((e) {
+      bindings.add(e);
+      return '?';
+    }).join(', ')})');
     if (terminate) {
       query.write(';');
     }
-    return query.toString();
+    return QueryStringBinding(query.toString(), bindings);
   }
 
-  String _buildUpdateQuery(Map<String, dynamic> values,
+  QueryStringBinding _buildUpdateQuery(Map<String, dynamic> values,
       [bool terminate = true]) {
+    final List bindings = [];
     final query = StringBuffer();
     query.write('UPDATE $table SET ');
-    query.write(values.keys.map((key) => '$key = ?').join(', '));
-    _writeWhereClause(query);
+    query.write(values.keys.map((e) {
+      bindings.add(values[e]);
+      return '$e = ?';
+    }).join(', '));
+    _writeWhereClause(query, bindings);
     if (terminate) {
       query.write(';');
     }
-    return query.toString();
+    print('===++++ ${query.toString()}');
+    return QueryStringBinding(query.toString(), bindings);
   }
 
-  String _buildDeleteQuery([bool terminate = true]) {
+  QueryStringBinding _buildDeleteQuery([bool terminate = true]) {
     final query = StringBuffer();
+    final List bindings = [];
     query.write('DELETE FROM $table');
-    _writeWhereClause(query);
+    _writeWhereClause(query, bindings);
     if (terminate) {
       query.write(';');
     }
-    return query.toString();
+    return QueryStringBinding(query.toString(), bindings);
   }
 
   void _addWhere(
@@ -321,7 +337,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
           isOpenBracket: isOpenBracket,
           column: column,
           operator: operatorOrValue,
-          value: prepareSqlValue(value),
+          value: value,
           isCloseBracket: isCloseBracket,
         ),
       );
@@ -331,7 +347,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
           isOpenBracket: isOpenBracket,
           column: column,
           operator: '=',
-          value: prepareSqlValue(operatorOrValue),
+          value: operatorOrValue,
           isCloseBracket: isCloseBracket,
         ),
       );
@@ -467,9 +483,9 @@ class SQLiteQueryBuilder implements QueryBuilder {
 
   @override
   bool exists() {
-    final String query =
-        'SELECT EXISTS(${_buildQuery(QueryType.select, const {}, false)});';
-    final result = driver.select(query);
+    final queryStringBinding = _buildQuery(QueryType.select, const {}, false);
+    final String query = 'SELECT EXISTS(${queryStringBinding.query});';
+    final result = driver.select(query, queryStringBinding.bindings);
     return result!.first[0] as int == 1;
   }
 
@@ -481,7 +497,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
 
   @override
   QueryBuilder addSelect(String column) {
-    _selectColumns.add(_parseSelectColumn(column));
+    _selectColumns.add(column);
     return this;
   }
 }
@@ -495,7 +511,8 @@ class SqliteLazyRecordSetGenerator extends LazyRecordSetGenerator {
   @override
   Future<void> each(bool? Function(Record record) callback) async {
     outer:
-    await for (final chunk in _chunkStreamer(selectQuery, bufferSize)) {
+    await for (final chunk in _chunkStreamer(
+        selectQuery.query, selectQuery.bindings, bufferSize)) {
       for (var x = 0; x < chunk.length; x++) {
         if (callback(chunk[x]) == false) {
           break outer;
@@ -504,10 +521,11 @@ class SqliteLazyRecordSetGenerator extends LazyRecordSetGenerator {
     }
   }
 
-  Stream<RecordSet> _chunkStreamer(String query, int chunkSize) async* {
+  Stream<RecordSet> _chunkStreamer(
+      String query, List bindings, int chunkSize) async* {
     int offset = 0;
     while (true) {
-      final result = driver.select(query)!;
+      final result = driver.select(query, bindings)!;
       if (result.isEmpty) {
         break;
       }

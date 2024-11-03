@@ -35,6 +35,8 @@ class SQLiteDriver extends DBDriver {
   @override
   RecordSet select(String query, [List bindings = const []]) {
     final statement = _db!.prepare(query);
+    print(query);
+    print(bindings);
     return SqliteRecordSet(statement.select(bindings));
   }
 
