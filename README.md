@@ -23,18 +23,21 @@ dart pub global activate daravel
 
 ## Usage
 
-To create a new Daravel project, run the following
+To create a new Daravel project, run the following:
 
 ```bash
 dartisan new <project-name>
 ```
 
-```dart
-const like = 'sample';
+This will create a Daravel project with <project-name> and will contain a file structure similar to that of Laravel.
+
+To generate important files for your project (this is run automatically after project creation), do the following:
+
+```bash
+dartisan generate
 ```
 
 ## Additional information
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+Contributions in any form, be it documentation, issues, pull requests, etc. are more than welcome.
+For pull requests, please make sure that your commits are signed.
