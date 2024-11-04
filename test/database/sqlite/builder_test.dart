@@ -1056,6 +1056,57 @@ void main() {
     expect(result.first['email'], 'ta@gmail.com');
   });
 
+  test('orWhereRaw()', () async {
+    final table = 'users_21_or_where_raw';
+
+    Schema.create(table, (table) {
+      table.increments('id');
+      table.string('email');
+      table.string('password');
+      table.string('name');
+      table.string('address');
+      table.integer('age').defaultsTo(1);
+    });
+
+    DB.table(table).insert({
+      'email': 'tok@gmail.com',
+      'password': 'password',
+      'name': 'Jon',
+      'address': 'Earth',
+    });
+
+    DB.table(table).insert({
+      'email': 'ta2@gmail.com',
+      'password': 'password',
+      'name': 'Jon',
+      'address': 'Earth',
+    });
+
+    DB.table(table).insert({
+      'email': 'ta1@gmail.com',
+      'password': 'password',
+      'address': 'Earth',
+      'name': 'Jon',
+    });
+
+    DB.table(table).insert({
+      'email': 'ta@gmail.com',
+      'password': 'password',
+      'name': 'Jon',
+      'address': 'Earth',
+    });
+
+    final result = DB
+        .table(table)
+        .whereRaw("email = 'ta@gmail.com'")
+        .orWhereRaw("email = 'ta1@gmail.com'")
+        .get();
+
+    expect(result.length, 2);
+    expect(result.first['email'], 'ta1@gmail.com');
+    expect(result[1]['email'], 'ta@gmail.com');
+  });
+
   test('groupBy()', () async {
     final table = 'users_22';
 
