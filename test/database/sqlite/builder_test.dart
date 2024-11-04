@@ -417,6 +417,8 @@ void main() {
 
     // Error case
     expect(() => DB.table(table).insert({}), throwsA(isA<QueryException>()));
+    expect(
+        () => DB.table(table).insertGetId({}), throwsA(isA<QueryException>()));
   });
 
   test('update()', () async {
@@ -685,22 +687,65 @@ void main() {
     expect(DB.table(table).avg('age'), 2.5);
     expect(DB.table(table).where('age', '>', 10).avg('age'), 0); // Null case.
 
+    // Illegal State
+    expect(
+        () => DB.table(table).where('age', '<=', 4).where((QueryBuilder query) {
+              query.avg('age');
+            }).get(),
+        throwsA(isA<QueryException>()));
+
     // Count
     expect(DB.table(table).count(), 4);
     expect(DB.table(table).where('age', '>', 10).count(), 0);
     expect(DB.table(table).count('name'), 3);
 
+    // Illegal State
+    expect(
+        () => DB.table(table).where('age', '<=', 4).where((QueryBuilder query) {
+              query.count();
+            }).get(),
+        throwsA(isA<QueryException>()));
+    // Distinct with multiple columns.
+    expect(
+        () => DB
+            .table(table)
+            .where('age', '<=', 4)
+            .distinct()
+            .count('name, address'),
+        throwsA(isA<QueryException>()));
+
     // Max
     expect(DB.table(table).max('age'), 4);
     expect(DB.table(table).where('age', '>', 10).max('age'), 0);
+
+    // Illegal State
+    expect(
+        () => DB.table(table).where((QueryBuilder query) {
+              query.max('age');
+            }).get(),
+        throwsA(isA<QueryException>()));
 
     // Min
     expect(DB.table(table).min('age'), 1);
     expect(DB.table(table).where('age', '>', 10).min('age'), 0);
 
+    // Illegal State
+    expect(
+        () => DB.table(table).where((QueryBuilder query) {
+              query.min('age');
+            }).get(),
+        throwsA(isA<QueryException>()));
+
     // Sum
     expect(DB.table(table).sum('age'), 10);
     expect(DB.table(table).where('age', '>', 10).sum('age'), 0);
+
+    // Illegal State
+    expect(
+        () => DB.table(table).where((QueryBuilder query) {
+              query.sum('age');
+            }).get(),
+        throwsA(isA<QueryException>()));
   });
 
   test('exists & doesntExist', () async {
@@ -798,17 +843,35 @@ void main() {
       'age': 4
     });
 
-    expect(DB.table(table).count(), 4);
+    DB.table(table).insert({
+      'email': 'tko@gmail.com',
+      'password': 'password',
+      'name': 'Jon',
+      'address': 'Earth',
+      'age': 11
+    });
+
+    expect(DB.table(table).count(), 5);
 
     int deletedRows =
         await DB.table(table).where('email', 'tok@gmail.com').delete();
 
     expect(deletedRows, 1);
+    expect(DB.table(table).count(), 4);
+
+    deletedRows = await DB.table(table).where('age', '>', 10).delete();
+
+    expect(deletedRows, 1);
     expect(DB.table(table).count(), 3);
+
+    deletedRows = await DB.table(table).delete(4);
+
+    expect(deletedRows, 1);
+    expect(DB.table(table).count(), 2);
 
     deletedRows = await DB.table(table).delete();
 
-    expect(deletedRows, 3);
+    expect(deletedRows, 2);
     expect(DB.table(table).count(), 0);
   });
 
@@ -926,14 +989,25 @@ void main() {
     expect(result3[2]['double_age'], 38);
     expect(result3[3]['double_age'], 200);
 
-    // Using DB.raw()
-    final result4 =
-        DB.table(table).select(DB.raw('age * ? as double_age', [2])).get();
+    // Multiple columns with bindings
+    final result4 = DB
+        .table(table)
+        .select('name')
+        .selectRaw('age * ? as double_age', [2]).get();
 
     expect(result4[0]['double_age'], 6);
     expect(result4[1]['double_age'], 12);
     expect(result4[2]['double_age'], 38);
     expect(result4[3]['double_age'], 200);
+
+    // Using DB.raw()
+    final result5 =
+        DB.table(table).select(DB.raw('age * ? as double_age', [2])).get();
+
+    expect(result5[0]['double_age'], 6);
+    expect(result5[1]['double_age'], 12);
+    expect(result5[2]['double_age'], 38);
+    expect(result5[3]['double_age'], 200);
   });
 
   test('whereRaw()', () async {
