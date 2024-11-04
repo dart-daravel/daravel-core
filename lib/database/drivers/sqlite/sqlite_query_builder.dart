@@ -31,7 +31,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
   SQLiteQueryBuilder(this.driver, [this.table]);
 
   List<String> _selectColumns = [];
-  Map<int, List> _selectBindings = {};
+  final Map<int, List> _selectBindings = {};
   List<String>? _oldSelectColumns;
 
   void _reset() {
@@ -54,7 +54,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
     } else if (columns is String) {
       _selectColumns.add(safeQueryBuilderParameterParser.parseColumn(columns));
     } else if (columns is RawQueryComponent) {
-      _selectColumns.add(columns.value);
+      _selectColumns.add(safeQueryBuilderParameterParser.parseColumn(columns));
       if (columns.bindings != null) {
         _selectBindings[_selectColumns.length - 1] = columns.bindings!;
       }

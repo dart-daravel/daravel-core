@@ -945,7 +945,7 @@ void main() {
       table.string('password');
       table.string('name');
       table.string('address');
-      table.integer('age');
+      table.integer('age').defaultsTo(1);
     });
 
     DB.table(table).insert({
@@ -953,7 +953,6 @@ void main() {
       'password': 'password',
       'name': 'Jon',
       'address': 'Earth',
-      'age': 1
     });
 
     DB.table(table).insert({
@@ -961,7 +960,6 @@ void main() {
       'password': 'password',
       'name': 'Jon',
       'address': 'Earth',
-      'age': 1
     });
 
     DB.table(table).insert({
@@ -969,7 +967,6 @@ void main() {
       'password': 'password',
       'address': 'Earth',
       'name': 'Jon',
-      'age': 1
     });
 
     DB.table(table).insert({
@@ -977,7 +974,6 @@ void main() {
       'password': 'password',
       'name': 'Jon',
       'address': 'Earth',
-      'age': 1
     });
 
     final result = DB.table(table).whereRaw("email = 'ta@gmail.com'").get();
