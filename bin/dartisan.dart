@@ -5,12 +5,12 @@ import 'package:args/command_runner.dart';
 import 'package:path/path.dart' as path;
 
 import 'package:daravel_core/console/commands/generate.dart';
-import 'package:daravel_core/console/commands/create.dart';
+import 'package:daravel_core/console/commands/new.dart';
 import 'package:daravel_core/console/commands/make_config.dart';
 
 void main(List<String> args) async {
   final commandRunner = CommandRunner("dartisan", "The CLI tool for Daravel")
-    ..addCommand(CreateCommand())
+    ..addCommand(NewCommand())
     ..addCommand(GenerateCommand())
     ..addCommand(MakeConfigCommand());
 

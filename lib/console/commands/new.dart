@@ -11,12 +11,12 @@ import 'package:http/http.dart' as http;
 
 import 'generate.dart';
 
-class CreateCommand extends Command {
+class NewCommand extends Command {
   @override
   String get description => "Create a new Daravel project";
 
   @override
-  String get name => "create";
+  String get name => "new";
 
   static final Directory _cacheDir =
       Directory(path.join(_homeDirectory, ".daravel"));
@@ -29,7 +29,7 @@ class CreateCommand extends Command {
 
   late final ConsoleLogger logger = ConsoleLogger();
 
-  CreateCommand() {
+  NewCommand() {
     argParser.addOption(
       "project-name",
       abbr: "p",

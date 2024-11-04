@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:test/test.dart';
 import 'package:path/path.dart' as path;
 
-import 'package:daravel_core/console/commands/create.dart';
+import 'package:daravel_core/console/commands/new.dart';
 import 'package:daravel_core/console/commands/generate.dart';
 import 'package:daravel_core/console/commands/make_config.dart';
 
@@ -132,7 +132,7 @@ void main() {
       playgroundDirectory.createSync();
     }
 
-    await CreateCommand().run(playgroundDirectory.path, 'test_project');
+    await NewCommand().run(playgroundDirectory.path, 'test_project');
 
     final projectDirectory =
         Directory(path.join(playgroundDirectory.path, 'test_project'));
@@ -143,7 +143,7 @@ void main() {
 
     await runZonedGuarded(
       () async {
-        await CreateCommand().run(playgroundDirectory.path, 'test_project');
+        await NewCommand().run(playgroundDirectory.path, 'test_project');
       },
       (e, s) {},
       zoneSpecification: ZoneSpecification(
@@ -159,7 +159,7 @@ void main() {
 
     await runZonedGuarded(
       () async {
-        await CreateCommand().run(
+        await NewCommand().run(
           playgroundDirectory.path,
         );
       },
@@ -185,7 +185,7 @@ void main() {
       playgroundDirectory.createSync();
     }
 
-    await CreateCommand()
+    await NewCommand()
         .run(playgroundDirectory.path, 'make_config_test_project');
 
     final projectDirectory = Directory(
@@ -202,7 +202,7 @@ void main() {
             .existsSync(),
         true);
 
-    await CreateCommand()
+    await NewCommand()
         .run(playgroundDirectory.path, 'error_make_config_test_project');
 
     await runZonedGuarded(
