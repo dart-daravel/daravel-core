@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 import 'package:path/path.dart' as path;
 
-import 'package:daravel_core/console/logger.dart';
+import 'package:daravel_core/console/console_logger.dart';
 import 'package:daravel_core/extensions/string.dart';
 
 class MakeConfigCommand extends Command {
@@ -13,7 +13,7 @@ class MakeConfigCommand extends Command {
   @override
   String get name => 'make:config';
 
-  late final Logger logger = Logger();
+  late final ConsoleLogger logger = ConsoleLogger();
 
   String? configName;
 

@@ -6,28 +6,38 @@ At the core of this framework is the `dart shelf` web server.
 
 ## Features
 
-- Laravel like router
-- Middlewares
-- CORS
-- CLI Tool: `dartisan`
+- Laravel like router.
+- Middlewares.
+- CORS.
+- CLI Tool: `dartisan`.
+- Database Support (SQlite at the moment).
+- Query Builder.
+- Schema Builder.
 - More coming...
 
 ## Getting started
 
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
+```bash
+dart pub global activate daravel
+```
 
 ## Usage
 
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
+To create a new Daravel project, run the following:
 
-```dart
-const like = 'sample';
+```bash
+dartisan new <project-name>
+```
+
+This will create a Daravel project with <project-name> and will contain a file structure similar to that of Laravel.
+
+To generate important files for your project (this is run automatically after project creation), do the following:
+
+```bash
+dartisan generate
 ```
 
 ## Additional information
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+Contributions in any form, be it documentation, issues, pull requests, etc. are more than welcome.
+For pull requests, please make sure that your commits are signed.

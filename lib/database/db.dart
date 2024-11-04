@@ -1,6 +1,9 @@
 import 'package:daravel_core/daravel_core.dart';
+import 'package:daravel_core/database/concerns/query_builder.dart';
 import 'package:daravel_core/database/db_connection.dart';
-import 'package:daravel_core/database/concerns/query_result.dart';
+import 'package:daravel_core/database/concerns/record_set.dart';
+import 'package:daravel_core/exceptions/component_not_booted.dart';
+import 'package:daravel_core/exceptions/db_connection_not_found.dart';
 
 class DB {
   /// Main instance of the database connection.
@@ -16,10 +19,8 @@ class DB {
 
   Map<String, DatabaseConnection>? connections;
 
-  static QueryResult? select(String query,
-      [List<dynamic> bindings = const []]) {
-    return _mainInstance!._dbConnection!.select(query, bindings);
-  }
+  static RecordSet? select(String query, [List<dynamic> bindings = const []]) =>
+      _mainInstance!._dbConnection!.select(query, bindings);
 
   static bool statement(String query, [List<dynamic> bindings = const []]) =>
       _mainInstance!._dbConnection!.statement(query, bindings);
@@ -27,15 +28,22 @@ class DB {
   static bool insert(String query, [List<dynamic> bindings = const []]) =>
       _mainInstance!._dbConnection!.insert(query, bindings);
 
-  static bool delete(String query, [List<dynamic> bindings = const []]) =>
+  static Future<int> delete(String query,
+          [List<dynamic> bindings = const []]) =>
       _mainInstance!._dbConnection!.delete(query, bindings);
 
-  static bool update(String query, [List<dynamic> bindings = const []]) =>
+  static Future<int> update(String query,
+          [List<dynamic> bindings = const []]) =>
       _mainInstance!._dbConnection!.update(query, bindings);
 
+  /// Execute an unprepared statement.
   static bool unprepared(String query) =>
       _mainInstance!._dbConnection!.unprepared(query);
 
+  /// Gets a Database connection instance.
+  ///
+  /// [connection] Optional, the connection instance to obtain based on the
+  /// [connections] list in your database.dart config.
   static DBConnection? connection([String? connection]) {
     if (_mainInstance?._core == null) {
       throw ComponentNotBootedException('Database system not booted.');
@@ -76,6 +84,13 @@ class DB {
             .configMap[_ConfigKeys.connections]
         [core.configMap[_ConfigKeys.defaultConnection]] as DatabaseConnection);
   }
+
+  /// Gets a query builder.
+  static QueryBuilder table(String table) =>
+      _mainInstance!._dbConnection!.driver.queryBuilder(table);
+
+  static raw(String query, [List bindings = const []]) =>
+      RawQueryComponent(query, bindings);
 }
 
 class _ConfigKeys {

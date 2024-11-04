@@ -14,7 +14,7 @@ export 'annotations/command.dart';
 export 'console/commands/serve.dart';
 
 // Console
-export 'console/logger.dart';
+export 'console/console_logger.dart';
 
 // Extensions
 export 'extensions/string.dart';
@@ -27,9 +27,7 @@ export 'config/database_connection.dart';
 
 // Database
 export 'database/db.dart';
-
-// Exceptions
-export 'exceptions/component_not_booted.dart';
-export 'exceptions/db_connection_not_found.dart';
+export 'database/schema.dart';
+export 'database/concerns/query_builder.dart';
 
 export 'core.dart';
