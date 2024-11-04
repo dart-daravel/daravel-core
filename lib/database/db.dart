@@ -1,5 +1,4 @@
 import 'package:daravel_core/daravel_core.dart';
-import 'package:daravel_core/database/concerns/query_builder.dart';
 import 'package:daravel_core/database/db_connection.dart';
 import 'package:daravel_core/database/concerns/record_set.dart';
 import 'package:daravel_core/exceptions/component_not_booted.dart';
