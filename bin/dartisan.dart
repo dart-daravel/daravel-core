@@ -39,6 +39,9 @@ Future<void> passExecutionToDaravelProject(
       commandRunner.printUsage();
       receivePort.close();
       break;
+    } else if (message == -1) {
+      receivePort.close();
+      break;
     }
   }
 }

@@ -14,13 +14,26 @@ class Core {
 
   late final _env = DotEnv(includePlatformEnvironment: true)..load();
 
+  late final Function(Core)? boot;
+  late final Function(Object)? onBootError;
+
   Handler? _rootHandler;
 
   Core({
     this.routers = const [],
     this.globalMiddlewares = const [],
     this.configMap = const {},
-  });
+    this.boot,
+    this.onBootError,
+  }) {
+    try {
+      boot?.call(this);
+    } catch (e) {
+      if (!onBootError?.call(e)) {
+        rethrow;
+      }
+    }
+  }
 
   Future<HttpServer> run({int? port}) async {
     final rootRouter = Router();
