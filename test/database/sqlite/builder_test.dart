@@ -1104,4 +1104,69 @@ void main() {
 
     expect(result.length, 2);
   });
+
+  test('addSelect()', () async {
+    final table = 'users_23';
+
+    Schema.create(table, (table) {
+      table.increments('id');
+      table.string('email');
+      table.string('password');
+      table.string('name');
+      table.string('address');
+      table.integer('age');
+    });
+
+    DB.table(table).insert({
+      'email': 'tok@gmail.com',
+      'password': 'password',
+      'name': 'Jon',
+      'address': 'Earth',
+      'age': 1
+    });
+
+    DB.table(table).insert({
+      'email': 'ta@gmail.com',
+      'password': 'password',
+      'name': 'Jon',
+      'address': 'Earth',
+      'age': 1
+    });
+
+    DB.table(table).insert({
+      'email': 'ta@gmail.com',
+      'password': 'password',
+      'address': 'Earth',
+      'name': 'Jon',
+      'age': 1
+    });
+
+    DB.table(table).insert({
+      'email': 'ta@gmail.com',
+      'password': 'password',
+      'name': 'Jon',
+      'address': 'Earth',
+      'age': 1
+    });
+
+    final query = DB.table(table).select(['email', 'password']);
+
+    final result1 = query.get();
+
+    expect(result1.length, 4);
+
+    expect(result1.first['email'], 'tok@gmail.com');
+    expect(result1.first['password'], 'password');
+    expect(result1.first['name'], null);
+
+    query.addSelect('name');
+
+    final result2 = query.get();
+
+    expect(result2.length, 4);
+
+    expect(result2.first['email'], 'tok@gmail.com');
+    expect(result2.first['password'], 'password');
+    expect(result2.first['name'], 'Jon');
+  });
 }
