@@ -89,7 +89,8 @@ class DB {
   static QueryBuilder table(String table) =>
       _mainInstance!._dbConnection!.driver.queryBuilder(table);
 
-  static raw(String query) => RawQueryComponent(query);
+  static raw(String query, [List bindings = const []]) =>
+      RawQueryComponent(query, bindings);
 }
 
 class _ConfigKeys {

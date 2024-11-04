@@ -925,6 +925,15 @@ void main() {
     expect(result3[1]['double_age'], 12);
     expect(result3[2]['double_age'], 38);
     expect(result3[3]['double_age'], 200);
+
+    // Using DB.raw()
+    final result4 =
+        DB.table(table).select(DB.raw('age * ? as double_age', [2])).get();
+
+    expect(result4[0]['double_age'], 6);
+    expect(result4[1]['double_age'], 12);
+    expect(result4[2]['double_age'], 38);
+    expect(result4[3]['double_age'], 200);
   });
 
   test('whereRaw()', () async {
