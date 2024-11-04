@@ -881,7 +881,7 @@ void main() {
       'password': 'password',
       'name': 'Jon',
       'address': 'Earth',
-      'age': 1
+      'age': 3
     });
 
     DB.table(table).insert({
@@ -889,7 +889,7 @@ void main() {
       'password': 'password',
       'name': 'Jon',
       'address': 'Earth',
-      'age': 1
+      'age': 6
     });
 
     DB.table(table).insert({
@@ -897,7 +897,7 @@ void main() {
       'password': 'password',
       'address': 'Earth',
       'name': 'Jon',
-      'age': 1
+      'age': 19
     });
 
     DB.table(table).insert({
@@ -905,7 +905,7 @@ void main() {
       'password': 'password',
       'name': 'Jon',
       'address': 'Earth',
-      'age': 1
+      'age': 100
     });
 
     final result1 = DB.table(table).select('email, password').get();
@@ -915,6 +915,16 @@ void main() {
     final result2 = DB.table(table).selectRaw('email, password').get();
 
     expect(result2.first['password'], 'password');
+    expect(result2.first['address'], null);
+
+    // With Bindings
+    final result3 =
+        DB.table(table).selectRaw('age * ? as double_age', [2]).get();
+
+    expect(result3[0]['double_age'], 6);
+    expect(result3[1]['double_age'], 12);
+    expect(result3[2]['double_age'], 38);
+    expect(result3[3]['double_age'], 200);
   });
 
   test('whereRaw()', () async {

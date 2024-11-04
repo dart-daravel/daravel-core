@@ -31,6 +31,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
   SQLiteQueryBuilder(this.driver, [this.table]);
 
   List<String> _selectColumns = [];
+  Map<int, List> _selectBindings = {};
   List<String>? _oldSelectColumns;
 
   void _reset() {
@@ -52,6 +53,11 @@ class SQLiteQueryBuilder implements QueryBuilder {
       }
     } else if (columns is String) {
       _selectColumns.add(safeQueryBuilderParameterParser.parseColumn(columns));
+    } else if (columns is RawQueryComponent) {
+      _selectColumns.add(columns.value);
+      if (columns.bindings != null) {
+        _selectBindings[_selectColumns.length - 1] = columns.bindings!;
+      }
     }
     return this;
   }
@@ -252,8 +258,16 @@ class SQLiteQueryBuilder implements QueryBuilder {
       query.write('*');
     } else if (_selectColumns.length == 1) {
       query.write(_selectColumns.first);
+      if (_selectBindings.containsKey(0)) {
+        bindings.addAll(_selectBindings[0]!);
+      }
     } else {
       query.write(_selectColumns.join(', '));
+      for (var i = 0; i < _selectColumns.length; i++) {
+        if (_selectBindings.containsKey(i)) {
+          bindings.addAll(_selectBindings[i]!);
+        }
+      }
     }
     query.write(' FROM $table');
     // WHERE clause.
@@ -290,6 +304,9 @@ class SQLiteQueryBuilder implements QueryBuilder {
         }
         if (entry.rawClause != null) {
           query.write(entry.rawClause);
+          if (entry.rawBindings != null) {
+            bindings.addAll(entry.rawBindings!);
+          }
         } else {
           query.write("${entry.column} ${entry.operator} ?");
           bindings.add(entry.value);
@@ -329,7 +346,6 @@ class SQLiteQueryBuilder implements QueryBuilder {
     if (terminate) {
       query.write(';');
     }
-    print('===++++ ${query.toString()}');
     return QueryStringBinding(query.toString(), bindings);
   }
 
@@ -349,7 +365,8 @@ class SQLiteQueryBuilder implements QueryBuilder {
       [String? column,
       dynamic operatorOrValue,
       dynamic value,
-      String? rawWhere]) {
+      String? rawWhere,
+      List<dynamic>? rawBindings]) {
     // Add logic concatenator to the last entry.
     if (_whereList.isNotEmpty) {
       _whereList[_whereList.length - 1].concatenator = logicConcatenator;
@@ -360,6 +377,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
         isOpenBracket: isOpenBracket,
         isCloseBracket: isCloseBracket,
         rawClause: rawWhere,
+        rawBindings: rawBindings,
       ));
       return;
     }
@@ -539,20 +557,21 @@ class SQLiteQueryBuilder implements QueryBuilder {
   }
 
   @override
-  QueryBuilder selectRaw(String rawSelect) {
-    select(RawQueryComponent(rawSelect));
+  QueryBuilder selectRaw(String rawSelect, [List bindings = const []]) {
+    select(RawQueryComponent(rawSelect, bindings));
     return this;
   }
 
   @override
-  QueryBuilder whereRaw(String rawWhere) {
-    _addWhere('AND', false, false, null, null, null, rawWhere);
+  QueryBuilder whereRaw(String rawWhere, [List<dynamic> bindings = const []]) {
+    _addWhere('AND', false, false, null, null, null, rawWhere, bindings);
     return this;
   }
 
   @override
-  QueryBuilder orWhereRaw(String rawWhere) {
-    _addWhere('OR', false, false, null, null, null, rawWhere);
+  QueryBuilder orWhereRaw(String rawWhere,
+      [List<dynamic> bindings = const []]) {
+    _addWhere('OR', false, false, null, null, null, rawWhere, bindings);
     return this;
   }
 

@@ -65,11 +65,11 @@ abstract class QueryBuilder {
 
   QueryBuilder addSelect(String column);
 
-  QueryBuilder selectRaw(String rawSelect);
+  QueryBuilder selectRaw(String rawSelect, [List bindings]);
 
-  QueryBuilder whereRaw(String rawWhere);
+  QueryBuilder whereRaw(String rawWhere, [List bindings]);
 
-  QueryBuilder orWhereRaw(String rawWhere);
+  QueryBuilder orWhereRaw(String rawWhere, [List bindings]);
 
   QueryBuilder groupBy(String column);
 }
@@ -81,6 +81,7 @@ class WhereClause {
   final String? operator;
   final dynamic value;
   final String? rawClause;
+  final List? rawBindings;
 
   final bool isOpenBracket;
   final bool isCloseBracket;
@@ -92,6 +93,7 @@ class WhereClause {
     this.operator,
     this.value,
     this.rawClause,
+    this.rawBindings,
     this.isOpenBracket = false,
     this.isCloseBracket = false,
     this.concatenator = 'AND',
@@ -146,6 +148,7 @@ class SafeQueryBuilderParameterParser {
 
 class RawQueryComponent {
   String value;
+  List? bindings;
 
-  RawQueryComponent(this.value);
+  RawQueryComponent(this.value, [this.bindings]);
 }
