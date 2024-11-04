@@ -1,5 +1,5 @@
 name: daravel_core
-description: 'A new Flutter package project.'
+description: "A back-end framework for Dart, inspired by PHP's popular back-end framework: Laravel."
 version: 0.0.1
 homepage: https://daravel.dev
 
