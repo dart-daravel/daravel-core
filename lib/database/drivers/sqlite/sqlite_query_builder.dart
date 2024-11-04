@@ -105,14 +105,8 @@ class SQLiteQueryBuilder implements QueryBuilder {
       throw QueryException('Values cannot be empty');
     }
     final query = _buildQuery(QueryType.insert, values);
-    await driver.insertMutex.acquire();
-    try {
-      driver.insert(query.query, query.bindings);
-      _reset();
-      return driver.lastInsertId!;
-    } finally {
-      driver.insertMutex.release();
-    }
+    _reset();
+    return driver.insertGetId(query.query, query.bindings);
   }
 
   @override

@@ -44,10 +44,6 @@ abstract class DBDriver {
     return '';
   }
 
-  int? get lastInsertId;
-
-  int? get affectedRows;
-
   bool get logging;
 
   String renameTable(String from, String to);

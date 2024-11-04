@@ -141,10 +141,4 @@ class SQLiteDriver extends DBDriver {
 
   @override
   QueryBuilder queryBuilder([String? table]) => SQLiteQueryBuilder(this, table);
-
-  @override
-  int? get lastInsertId => _db?.lastInsertRowId;
-
-  @override
-  int? get affectedRows => _db?.updatedRows;
 }
