@@ -1,7 +1,7 @@
 name: daravel_core
 description: 'A new Flutter package project.'
 version: 0.0.1
-homepage:
+homepage: https://daravel.dev
 
 environment:
   sdk: ^3.5.2
