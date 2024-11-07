@@ -1,4 +1,6 @@
 import 'package:daravel_core/database/concerns/record_set.dart';
+import 'package:daravel_core/database/concerns/record.dart';
+import 'package:daravel_core/database/drivers/sqlite/sqlite_record.dart';
 import 'package:sqlite3/sqlite3.dart';
 
 class SqliteRecordSet implements RecordSet {
@@ -24,13 +26,4 @@ class SqliteRecordSet implements RecordSet {
   @override
   Iterable<T> map<T>(T Function(Object record) toElement) =>
       result.map(toElement);
-}
-
-class SqliteRecord implements Record {
-  final Row _row;
-
-  SqliteRecord(this._row);
-
-  @override
-  Object? operator [](Object key) => _row[key];
 }

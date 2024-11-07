@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:daravel_core/daravel_core.dart';
-import 'package:daravel_core/database/drivers/sqlite/sqlite_record_set.dart';
+import 'package:daravel_core/database/drivers/sqlite/sqlite_record.dart';
 import 'package:daravel_core/exceptions/component_not_booted.dart';
 import 'package:daravel_core/exceptions/query.dart';
 import 'package:daravel_core/exceptions/record_not_found.dart';

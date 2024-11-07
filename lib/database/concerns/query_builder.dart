@@ -1,5 +1,6 @@
 import 'package:daravel_core/database/concerns/db_driver.dart';
 import 'package:daravel_core/database/concerns/record_set.dart';
+import 'package:daravel_core/database/concerns/record.dart';
 
 abstract class QueryBuilder {
   String? table;

@@ -19,6 +19,7 @@ dependencies:
   pub_semver: ^2.1.0
   sqlite3: ^2.4.7
   collection: ^1.19.1
+  pluralize: ^0.0.8
 
 dev_dependencies:
   lints: ^4.0.0

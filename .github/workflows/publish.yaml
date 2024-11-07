@@ -23,8 +23,5 @@ jobs:
 
       - uses: flutter-actions/setup-pubdev-credentials@v1
 
-      - name: Delete Documentation
-        run: rm -rf doc
-
       - name: Publish Package
         run: flutter pub publish --force

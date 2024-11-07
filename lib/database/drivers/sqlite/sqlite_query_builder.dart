@@ -2,6 +2,7 @@ import 'package:daravel_core/daravel_core.dart';
 import 'package:daravel_core/database/concerns/db_driver.dart' as daravel;
 import 'package:daravel_core/database/concerns/record_set.dart';
 import 'package:daravel_core/exceptions/query.dart';
+import 'package:daravel_core/database/concerns/record.dart';
 import 'package:daravel_core/exceptions/record_not_found.dart';
 import 'package:daravel_core/helpers/database.dart';
 import 'package:collection/collection.dart';
