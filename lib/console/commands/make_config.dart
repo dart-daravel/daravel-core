@@ -57,7 +57,7 @@ class MakeConfigCommand extends Command {
 import 'package:daravel_core/daravel_core.dart';
 
 @Config()
-class ${configName!.ucfirst()} {
+class ${configName!.classCase()} {
 
 }
 ''';
