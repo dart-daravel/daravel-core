@@ -1,0 +1,3 @@
+class ORMModel {
+  const ORMModel();
+}
