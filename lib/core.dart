@@ -70,7 +70,7 @@ class Core {
 
   Handler? get rootHandler => _rootHandler;
 
-  String? env(String key) => _env[key];
+  T? env<T>(String key) => _env[key] as T;
 
   String? config(String key) => configMap[key];
 }
