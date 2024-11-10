@@ -1,6 +1,6 @@
 name: daravel_core
 description: "A back-end framework for Dart, inspired by PHP's popular back-end framework: Laravel."
-version: 0.0.1
+version: 0.0.2
 homepage: https://daravel.dev
 
 environment:
