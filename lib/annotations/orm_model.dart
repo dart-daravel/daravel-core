@@ -1,3 +1,0 @@
-class ORMModel {
-  const ORMModel();
-}
