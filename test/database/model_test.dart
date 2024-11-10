@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:daravel_core/daravel_core.dart';
+import 'package:daravel_core/database/concerns/record_set.dart';
 import 'package:daravel_core/database/orm/entity.dart';
 import 'package:daravel_core/exceptions/component_not_booted.dart';
 import 'package:test/test.dart';
@@ -10,19 +11,34 @@ class User extends Model {}
 
 class User2 extends Model {
   @override
-  String? get table => 'users_1';
+  String? get table => 'users_2';
 }
 
+// Model hasMany & belongsTo Relationship Models - Start
 class User3 extends Model {
   @override
   String? get table => 'users_3';
+
+  @override
+  Map<String, Function> get relationships => {
+        'posts': () => hasMany(Post, foreignKey: 'user_id'),
+      };
 }
+
+class Post extends Model {
+  @override
+  Map<String, Function> get relationships => {
+        'user': () => belongsTo(User3),
+      };
+}
+// Model hasMany & belongsTo Relationship Models - End
 
 class User4 extends Model {
   @override
   String? get table => 'users_4';
 }
 
+// Model hasOne & belongsTo Relationship Models - Start
 class Employee extends Model {
   @override
   Map<String, Function> get relationships => {
@@ -36,6 +52,7 @@ class Address extends Model {
         'employee': () => belongsTo(Employee),
       };
 }
+// Model hasOne & belongsTo Relationship Models - End
 
 void main() {
   setUpAll(() {
@@ -108,9 +125,9 @@ void main() {
   });
 
   test('Model all() with custom table name', () {
-    final table = 'users_1';
+    final userModel = User2();
 
-    Schema.create(table, (table) {
+    Schema.create(userModel.tableName, (table) {
       table.increments('id');
       table.string('email');
       table.string('password');
@@ -119,7 +136,7 @@ void main() {
       table.integer('age');
     });
 
-    DB.table(table).insert({
+    userModel.create({
       'email': 'tok@gmail.com',
       'password': 'password',
       'name': 'Jon',
@@ -127,7 +144,7 @@ void main() {
       'age': 20
     });
 
-    DB.table(table).insert({
+    userModel.create({
       'email': 'tak@gmail.com',
       'password': 'password',
       'name': 'Tak',
@@ -135,7 +152,7 @@ void main() {
       'age': 25
     });
 
-    DB.table(table).insert({
+    userModel.create({
       'email': 'jack@gmail.com',
       'password': 'password',
       'name': 'Jack',
@@ -172,6 +189,8 @@ void main() {
       table.string('address');
       table.integer('employee_id');
       table.integer('building_floors');
+
+      table.foreign('employee_id').references('id').on(employeeModel.tableName);
     });
 
     employeeModel.create({
@@ -231,5 +250,66 @@ void main() {
 
     expect(address2, isA<Entity>());
     expect(address2!['=employee']['name'], 'Jack');
+  });
+
+  test('Model hasMany & belongsTo Relationship', () {
+    final userModel = User3();
+    final postModel = Post();
+
+    Schema.create(userModel.tableName, (table) {
+      table.increments('id');
+      table.string('email');
+      table.string('password');
+      table.string('name');
+      table.string('address');
+      table.integer('age');
+    });
+
+    Schema.create(postModel.tableName, (table) {
+      table.increments('id');
+      table.string('title');
+      table.string('content');
+      table.integer('user_id');
+      table.integer('likes');
+
+      table.foreign('user_id').references('id').on(userModel.tableName);
+    });
+
+    userModel.create({
+      'email': 'tok@gmail.com',
+      'password': 'password',
+      'name': 'Jon',
+      'address': 'Earth',
+      'age': 20
+    });
+
+    postModel.create({
+      'title': 'Post 1',
+      'content': 'Content 1',
+      'likes': 10,
+      'user_id': 1,
+    });
+
+    postModel.create({
+      'title': 'Post 2',
+      'content': 'Content 2',
+      'likes': 20,
+      'user_id': 1,
+    });
+
+    postModel.create({
+      'title': 'Post 3',
+      'content': 'Content 3',
+      'likes': 30,
+      'user_id': 1,
+    });
+
+    final user = userModel.where('id', 1).first();
+    final posts = user!['=posts'] as RecordSet;
+
+    expect(user, isA<Entity>());
+    expect(posts, isA<RecordSet>());
+    expect(posts.length, 3);
+    expect(posts.first['title'], 'Post 1');
   });
 }

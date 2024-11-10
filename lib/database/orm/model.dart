@@ -7,7 +7,7 @@ abstract class Model extends ORM {
   Model get model => this;
 
   Relationship hasOne(Type related,
-      [String? foreignKey, String? localKey, String? foreignTable]) {
+      {String? foreignKey, String? localKey, String? foreignTable}) {
     return Relationship(
       RelationshipType.hasOne,
       this,
@@ -20,9 +20,22 @@ abstract class Model extends ORM {
   }
 
   Relationship belongsTo(Type related,
-      [String? foreignKey, String? localKey, String? foreignTable]) {
+      {String? foreignKey, String? localKey, String? foreignTable}) {
     return Relationship(
       RelationshipType.belongsTo,
+      this,
+      related,
+      DB.connection(connection)!.driver.queryBuilder(tableName, this),
+      foreignKey,
+      foreignTable,
+      localKey,
+    );
+  }
+
+  Relationship hasMany(Type related,
+      {String? foreignKey, String? localKey, String? foreignTable}) {
+    return Relationship(
+      RelationshipType.hasMany,
       this,
       related,
       DB.connection(connection)!.driver.queryBuilder(tableName, this),
