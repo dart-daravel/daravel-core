@@ -386,5 +386,9 @@ void main() {
     expect(users, isA<RecordSet>());
     expect(users.length, 2);
     expect(users.first['name'], 'A');
+
+    // Invoke
+    final user = status['=users()'].where('name', 'A').first() as Entity;
+    expect(user['name'], 'A');
   });
 }

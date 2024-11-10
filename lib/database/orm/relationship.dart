@@ -36,25 +36,43 @@ class Relationship {
   Object? resolve(Entity primaryEntity) {
     switch (type) {
       case RelationshipType.hasOne:
-        return queryBuilder
-            .where(foreignKey, '=',
-                primaryEntity[localKey ?? primaryModelPrimaryKey])
-            .first();
+        return _getQueryBuilder(primaryEntity).first();
       case RelationshipType.hasMany:
-        return queryBuilder
-            .where(foreignKey, '=',
-                primaryEntity[localKey ?? primaryModelPrimaryKey])
-            .get();
+        return _getQueryBuilder(primaryEntity).get();
       case RelationshipType.belongsTo:
-        return queryBuilder
-            .where(foreignKey, '=',
-                primaryEntity[localKey ?? primaryModelPrimaryKey])
-            .first();
+        return _getQueryBuilder(primaryEntity).first();
       case RelationshipType.belongsToMany:
-        return queryBuilder
-            .where(foreignKey, '=',
-                primaryEntity[localKey ?? primaryModelPrimaryKey])
-            .get();
+        return _getQueryBuilder(primaryEntity).get();
+    }
+  }
+
+  QueryBuilder invoke(Entity primaryEntity) {
+    switch (type) {
+      case RelationshipType.hasOne:
+        return _getQueryBuilder(primaryEntity);
+      case RelationshipType.hasMany:
+        return _getQueryBuilder(primaryEntity);
+      case RelationshipType.belongsTo:
+        return _getQueryBuilder(primaryEntity);
+      case RelationshipType.belongsToMany:
+        return _getQueryBuilder(primaryEntity);
+    }
+  }
+
+  QueryBuilder _getQueryBuilder(Entity primaryEntity) {
+    switch (type) {
+      case RelationshipType.hasOne:
+        return queryBuilder.where(
+            foreignKey, '=', primaryEntity[localKey ?? primaryModelPrimaryKey]);
+      case RelationshipType.hasMany:
+        return queryBuilder.where(
+            foreignKey, '=', primaryEntity[localKey ?? primaryModelPrimaryKey]);
+      case RelationshipType.belongsTo:
+        return queryBuilder.where(
+            foreignKey, '=', primaryEntity[localKey ?? primaryModelPrimaryKey]);
+      case RelationshipType.belongsToMany:
+        return queryBuilder.where(
+            foreignKey, '=', primaryEntity[localKey ?? primaryModelPrimaryKey]);
     }
   }
 

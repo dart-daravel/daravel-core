@@ -27,10 +27,14 @@ class Entity implements Record {
         (relationships?.containsKey(
                 key.toString().substring(1).replaceFirst('()', '')) ??
             false)) {
-      return key.toString().endsWith('()')
-          ? relationships![key.toString().substring(1)]!()
-          : (relationships![key.toString().substring(1)]!() as Relationship)
-              .resolve(this);
+      final relationship =
+          relationships![key.toString().substring(1).replaceFirst('()', '')]!();
+      if (relationship is Relationship) {
+        return key.toString().endsWith('()')
+            ? relationship.invoke(this)
+            : relationship.resolve(this);
+      }
+      return null;
     }
     return data[key];
   }
