@@ -18,7 +18,7 @@ At the core of this framework is the `dart shelf` web server.
 ## Getting started
 
 ```bash
-dart pub global activate daravel
+dart pub global activate daravel_core
 ```
 
 ## Usage
