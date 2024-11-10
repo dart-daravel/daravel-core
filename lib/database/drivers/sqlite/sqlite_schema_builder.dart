@@ -1,6 +1,7 @@
 import 'package:daravel_core/database/concerns/schema_builder.dart';
 import 'package:daravel_core/database/drivers/sqlite/sqlite.dart';
 import 'package:daravel_core/database/schema/blueprint.dart';
+import 'package:daravel_core/database/schema/field_blueprint.dart';
 import 'package:daravel_core/helpers/database.dart';
 
 class SqliteSchemaBuilder extends SchemaBuilder {
@@ -21,7 +22,13 @@ class SqliteSchemaBuilder extends SchemaBuilder {
     final StringBuffer foreignKeyConstraints = StringBuffer();
     final StringBuffer fieldIndices = StringBuffer();
     final StringBuffer query = StringBuffer('CREATE TABLE ${blueprint.name} (');
-    for (final field in blueprint.fields) {
+    final List<FieldBlueprint> tableFields =
+        blueprint.fields.where((e) => e.foreignKey == null).toList();
+    final fields = <FieldBlueprint>[
+      ...tableFields,
+      ...blueprint.fields.where((e) => e.foreignKey != null),
+    ];
+    for (final field in fields) {
       if (field.type.isNotEmpty) {
         query.write('${field.name} ${field.type}');
 
@@ -49,7 +56,7 @@ class SqliteSchemaBuilder extends SchemaBuilder {
           query.write(' DEFAULT ${prepareSqlValue(field.defaultValue)}');
         }
 
-        if (field.name != blueprint.fields.last.name) {
+        if (field.name != tableFields.last.name) {
           query.write(', ');
         }
       }
