@@ -7,3 +7,7 @@
 - Query Builder.
 - Schema Builder.
 - CLI Tool (`dartisan`).
+
+## 0.0.2
+
+- Schema builder bug fix.
