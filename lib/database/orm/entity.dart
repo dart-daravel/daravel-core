@@ -1,12 +1,16 @@
 import 'package:daravel_core/database/concerns/record.dart';
+import 'package:daravel_core/database/orm/relationship.dart';
 
-class Entity {
+class Entity implements Record {
   Record data;
 
-  Entity._(this.data);
+  Map<String, Function>? relationships;
 
-  static Entity? fromRecord(Record? record) {
-    return record != null ? Entity._(record) : null;
+  Entity._(this.data, this.relationships);
+
+  static Entity? fromRecord(Record? record,
+      [Map<String, Function>? relationships]) {
+    return record != null ? Entity._(record, relationships) : null;
   }
 
   Map toJson() {
@@ -16,4 +20,21 @@ class Entity {
     }
     return json;
   }
+
+  @override
+  dynamic operator [](Object key) {
+    if (key.toString().startsWith('=') &&
+        (relationships?.containsKey(
+                key.toString().substring(1).replaceFirst('()', '')) ??
+            false)) {
+      return key.toString().endsWith('()')
+          ? relationships![key.toString().substring(1)]!()
+          : (relationships![key.toString().substring(1)]!() as Relationship)
+              .resolve(this);
+    }
+    return data[key];
+  }
+
+  @override
+  List<String> get keys => data.keys;
 }

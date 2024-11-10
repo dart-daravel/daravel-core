@@ -9,5 +9,6 @@ class SqliteRecord implements Record {
   @override
   Object? operator [](Object key) => _row[key];
 
+  @override
   List<String> get keys => _row.keys;
 }

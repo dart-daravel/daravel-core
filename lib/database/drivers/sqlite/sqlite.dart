@@ -6,6 +6,7 @@ import 'package:daravel_core/database/drivers/sqlite/sqlite_record_set.dart';
 import 'package:daravel_core/database/drivers/sqlite/schema/sqlite_blueprint.dart';
 import 'package:daravel_core/database/drivers/sqlite/sqlite_query_builder.dart';
 import 'package:daravel_core/database/drivers/sqlite/sqlite_schema_builder.dart';
+import 'package:daravel_core/database/orm/orm.dart';
 import 'package:daravel_core/database/schema/blueprint.dart';
 import 'package:sqlite3/sqlite3.dart';
 
@@ -140,5 +141,6 @@ class SQLiteDriver extends DBDriver {
   }
 
   @override
-  QueryBuilder queryBuilder([String? table]) => SQLiteQueryBuilder(this, table);
+  QueryBuilder queryBuilder([String? table, ORM? orm]) =>
+      SQLiteQueryBuilder(this, table, orm);
 }

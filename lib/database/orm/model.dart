@@ -1,9 +1,34 @@
+import 'package:daravel_core/database/db.dart';
 import 'package:daravel_core/database/orm/orm.dart';
+import 'package:daravel_core/database/orm/relationship.dart';
 
 abstract class Model extends ORM {
   @override
-  String? get connection => null;
+  Model get model => this;
 
-  @override
-  String? get table => null;
+  Relationship hasOne(Type related,
+      [String? foreignKey, String? localKey, String? foreignTable]) {
+    return Relationship(
+      RelationshipType.hasOne,
+      this,
+      related,
+      DB.connection(connection)!.driver.queryBuilder(tableName, this),
+      foreignKey,
+      foreignTable,
+      localKey,
+    );
+  }
+
+  Relationship belongsTo(Type related,
+      [String? foreignKey, String? localKey, String? foreignTable]) {
+    return Relationship(
+      RelationshipType.belongsTo,
+      this,
+      related,
+      DB.connection(connection)!.driver.queryBuilder(tableName, this),
+      foreignKey,
+      foreignTable,
+      localKey,
+    );
+  }
 }

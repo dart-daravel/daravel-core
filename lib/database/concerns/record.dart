@@ -1,5 +1,5 @@
 abstract class Record {
-  Object? operator [](Object key);
+  dynamic operator [](Object key);
 
   List<String> get keys;
 }

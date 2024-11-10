@@ -1,6 +1,6 @@
 import 'package:daravel_core/daravel_core.dart';
 import 'package:daravel_core/database/concerns/db_driver.dart';
-import 'package:daravel_core/database/concerns/record_set.dart';
+import 'package:daravel_core/database/concerns/record.dart';
 import 'package:daravel_core/database/orm/entity.dart';
 import 'package:pluralize/pluralize.dart';
 
@@ -9,41 +9,59 @@ abstract class ORM {
 
   String? get table => null;
 
-  Map get attributes => {};
+  String? get primaryKey => 'id';
 
-  String get _tableName =>
-      table ?? Pluralize().plural(runtimeType.toString().underscoreCase());
+  bool get incrementing => true;
+
+  Model get model;
+
+  Map<String, Function>? get relationships => {};
+
+  String get tableName =>
+      table ?? tableFromModelClassName(runtimeType.toString());
+
+  static String tableFromModelClassName(String className) =>
+      Pluralize().plural(className.underscoreCase());
 
   DBDriver get _dbDriver => DB.connection(connection)!.driver;
 
-  RecordSet all() => _dbDriver.queryBuilder(_tableName).get();
+  List<Entity> all() => _dbDriver
+      .queryBuilder(tableName)
+      .get()
+      .map((e) => Entity.fromRecord(e as Record, relationships)!)
+      .toList();
 
-  QueryBuilder query() => _dbDriver.queryBuilder(_tableName);
+  QueryBuilder query() => _dbDriver.queryBuilder(
+        tableName,
+        model,
+      );
 
   QueryBuilder where(dynamic column,
           [dynamic operatorOrValue, dynamic value]) =>
-      _dbDriver.queryBuilder(_tableName).where(column, operatorOrValue, value);
+      _dbDriver
+          .queryBuilder(tableName, model)
+          .where(column, operatorOrValue, value);
 
   QueryBuilder orWhere(dynamic column,
           [dynamic operatorOrValue, dynamic value]) =>
       _dbDriver
-          .queryBuilder(_tableName)
+          .queryBuilder(tableName, model)
           .orWhere(column, operatorOrValue, value);
 
-  Entity? find(dynamic id) =>
-      Entity.fromRecord(_dbDriver.queryBuilder(_tableName).find(id));
+  Entity? find(dynamic id) => Entity.fromRecord(
+      _dbDriver.queryBuilder(tableName, model).find(id), relationships);
 
-  Entity? first() =>
-      Entity.fromRecord(_dbDriver.queryBuilder(_tableName).first());
+  Entity? first() => Entity.fromRecord(
+      _dbDriver.queryBuilder(tableName, model).first(), relationships);
 
-  Entity firstOrFail() =>
-      Entity.fromRecord(_dbDriver.queryBuilder(_tableName).firstOrFail())!;
+  Entity firstOrFail() => Entity.fromRecord(
+      _dbDriver.queryBuilder(tableName, model).firstOrFail(), relationships)!;
 
   Entity create(Map<String, dynamic> values) {
-    _dbDriver.queryBuilder(_tableName).insert(values);
+    _dbDriver.queryBuilder(tableName, model).insert(values);
     return firstOrFail();
   }
 
   Future<int> insertGetId(Map<String, dynamic> values) =>
-      _dbDriver.queryBuilder(_tableName).insertGetId(values);
+      _dbDriver.queryBuilder(tableName, model).insertGetId(values);
 }
