@@ -11,3 +11,7 @@
 ## 0.0.2
 
 - Schema builder bug fix.
+
+## 0.0.3
+
+- README.
