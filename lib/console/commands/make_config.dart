@@ -8,7 +8,7 @@ import 'package:daravel_core/extensions/string.dart';
 
 class MakeConfigCommand extends Command {
   @override
-  String get description => 'Create a config file';
+  String get description => 'Create a Config file';
 
   @override
   String get name => 'make:config';
@@ -21,7 +21,7 @@ class MakeConfigCommand extends Command {
     argParser.addOption(
       "config-name",
       abbr: "n",
-      help: "The name of the config file to create",
+      help: "The name of the Config file to create",
       mandatory: true,
     );
   }
