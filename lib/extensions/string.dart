@@ -13,4 +13,11 @@ extension StringExtension on String {
           .replaceAllMapped(RegExp(r'([a-z0-9])([A-Z])'), (Match match) {
         return '${match.group(1)}_${match.group(2)}';
       }).toLowerCase();
+
+  /// Replace hyphens, space, and underscore, and compacts the text, leaving
+  /// Uppercase characters where there once was hyphens, space, and underscore.
+  String classCase() => replaceAll(RegExp(r'[-_\s]'), ' ')
+      .split(' ')
+      .map((e) => e.ucfirst())
+      .join();
 }
