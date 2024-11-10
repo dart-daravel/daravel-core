@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:daravel_core/http/resources/json/json_resource.dart';
 import 'package:shelf/shelf.dart';
 
@@ -38,7 +40,7 @@ abstract class JsonResourceParser {
     return Response(
       statusCode,
       headers: {'Content-Type': 'application/json'},
-      body: parse(),
+      body: json.encode(parse()),
     );
   }
 

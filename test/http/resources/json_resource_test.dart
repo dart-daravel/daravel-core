@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:daravel_core/daravel_core.dart';
@@ -6,6 +7,8 @@ import 'package:daravel_core/exceptions/component_not_booted.dart';
 import 'package:daravel_core/http/resources/json/json_resource.dart';
 import 'package:test/test.dart';
 import 'package:path/path.dart' as path;
+
+class User extends Model {}
 
 class UserResource extends JsonResource<Entity> {
   UserResource(super.data);
@@ -48,5 +51,34 @@ void main() {
     Directory(path.join(
             Directory.current.path, 'test/database-json-resource-playground'))
         .deleteSync(recursive: true);
+  });
+
+  test('JSON Response', () async {
+    final userModel = User();
+
+    Schema.create(userModel.tableName, (table) {
+      table.increments('id');
+      table.string('email');
+      table.string('password');
+      table.string('name');
+      table.string('address');
+      table.integer('age');
+    });
+
+    User().create({
+      'email': 'tok@gmail.com',
+      'password': 'password',
+      'name': 'Jon',
+      'address': 'Earth',
+      'age': 20
+    });
+
+    final user = userModel.find(1);
+
+    final response =
+        json.decode(await UserResource(user!).toJsonResponse().readAsString());
+
+    expect(response['email'], 'tok@gmail.com');
+    expect(response['password'], null);
   });
 }
