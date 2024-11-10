@@ -6,7 +6,7 @@ class SqliteBlueprint extends Blueprint {
   SqliteBlueprint(super.name, super.modify);
 
   @override
-  SqliteFieldBlueprint increments(String field) {
+  SqliteFieldBlueprint increments([String field = 'id']) {
     final blueprint = SqliteFieldBlueprint(
       name,
       field,

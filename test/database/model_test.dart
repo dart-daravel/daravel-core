@@ -14,7 +14,7 @@ class User2 extends Model {
   String? get table => 'users_2';
 }
 
-// Model hasMany & belongsTo Relationship Models - Start
+// Model hasMany Relationship Models - Start
 class User3 extends Model {
   @override
   String? get table => 'users_3';
@@ -31,12 +31,21 @@ class Post extends Model {
         'user': () => belongsTo(User3),
       };
 }
-// Model hasMany & belongsTo Relationship Models - End
+// Model hasMany Relationship Models - End
 
+// Model belongsToMany Relationship Models - Start
 class User4 extends Model {
   @override
   String? get table => 'users_4';
 }
+
+class Status extends Model {
+  @override
+  Map<String, Function> get relationships => {
+        'users': () => belongsToMany(User4, foreignTable: 'users_4'),
+      };
+}
+// Model belongsToMany Relationship Models - End
 
 // Model hasOne & belongsTo Relationship Models - Start
 class Employee extends Model {
@@ -252,7 +261,7 @@ void main() {
     expect(address2!['=employee']['name'], 'Jack');
   });
 
-  test('Model hasMany & belongsTo Relationship', () {
+  test('Model hasMany Relationship', () {
     final userModel = User3();
     final postModel = Post();
 
@@ -311,5 +320,71 @@ void main() {
     expect(posts, isA<RecordSet>());
     expect(posts.length, 3);
     expect(posts.first['title'], 'Post 1');
+  });
+
+  test('belongsToMany', () {
+    final userModel = User4();
+    final statusModel = Status();
+
+    Schema.create(statusModel.tableName, (table) {
+      table.increments('id');
+      table.string('name');
+    });
+
+    Schema.create(userModel.tableName, (table) {
+      table.increments('id');
+      table.string('email');
+      table.string('password');
+      table.string('name');
+      table.string('address');
+      table.integer('status_id');
+      table.integer('age');
+
+      table.foreign('status_id').references('id').on(statusModel.tableName);
+    });
+
+    statusModel.create({
+      'name': 'Active',
+    });
+
+    statusModel.create({
+      'name': 'Inactive',
+    });
+
+    userModel.create({
+      'email': 'a@gmail.com',
+      'password': 'password',
+      'name': 'A',
+      'address': 'Earth',
+      'status_id': 1,
+      'age': 20
+    });
+
+    userModel.create({
+      'email': 'b@gmail.com',
+      'password': 'password',
+      'name': 'B',
+      'address': 'Mars',
+      'status_id': 1,
+      'age': 25
+    });
+
+    userModel.create({
+      'email': 'c@gmail.com',
+      'password': 'password',
+      'name': 'C',
+      'address': 'Pluto',
+      'status_id': 2,
+      'age': 19
+    });
+
+    final status = statusModel.where('id', 1).first();
+    final users = status!['=users'] as RecordSet;
+
+    expect(status, isA<Entity>());
+
+    expect(users, isA<RecordSet>());
+    expect(users.length, 2);
+    expect(users.first['name'], 'A');
   });
 }

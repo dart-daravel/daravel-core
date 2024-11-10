@@ -44,4 +44,17 @@ abstract class Model extends ORM {
       localKey,
     );
   }
+
+  Relationship belongsToMany(Type related,
+      {String? foreignKey, String? localKey, String? foreignTable}) {
+    return Relationship(
+      RelationshipType.belongsToMany,
+      this,
+      related,
+      DB.connection(connection)!.driver.queryBuilder(tableName, this),
+      foreignKey,
+      foreignTable,
+      localKey,
+    );
+  }
 }

@@ -22,8 +22,14 @@ class Relationship {
     if (type == RelationshipType.hasOne || type == RelationshipType.hasMany) {
       this.foreignKey =
           foreignKey ?? '${Pluralize().singular(primaryModel.tableName)}_id';
+    } else if (type == RelationshipType.belongsToMany) {
+      this.foreignKey =
+          foreignKey ?? '${Pluralize().singular(primaryModel.tableName)}_id';
     } else {
-      this.foreignKey = foreignKey ?? 'id';
+      this.foreignKey = foreignKey ??
+          (type == RelationshipType.belongsToMany
+              ? '${Pluralize().singular(primaryModel.tableName)}_id'
+              : 'id');
     }
   }
 

@@ -18,7 +18,7 @@ abstract class Blueprint {
 
   Blueprint(this.name, this.modify);
 
-  FieldBlueprint increments(String field);
+  FieldBlueprint increments([String field = 'id']);
   FieldBlueprint integer(String field,
       {bool autoIncrement = false, bool unsigned = false});
   FieldBlueprint bigIncrements(String field);
