@@ -325,7 +325,7 @@ void main() {
       'user_id': 1,
     });
 
-    final user = userModel.where('id', 1).first();
+    final user = userModel.first();
     final posts = user!['=posts'] as RecordSet;
 
     expect(user, isA<Entity>());

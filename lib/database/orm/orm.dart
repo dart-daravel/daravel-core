@@ -40,12 +40,6 @@ abstract class ORM {
           .queryBuilder(tableName, model)
           .where(column, operatorOrValue, value);
 
-  QueryBuilder orWhere(dynamic column,
-          [dynamic operatorOrValue, dynamic value]) =>
-      _dbDriver
-          .queryBuilder(tableName, model)
-          .orWhere(column, operatorOrValue, value);
-
   Entity? find(dynamic id) => Entity.fromRecord(
       _dbDriver.queryBuilder(tableName, model).find(id), relationships);
 
