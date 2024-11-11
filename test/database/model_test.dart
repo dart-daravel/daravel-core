@@ -271,6 +271,20 @@ void main() {
 
     expect(address2, isA<Entity>());
     expect(address2!['=employee']['name'], 'Jack');
+
+    // Invoke hasOne
+    final address3 = (user['=address()'] as QueryBuilder)
+        .where('address', 'Mercury')
+        .first();
+
+    expect(address3, null);
+
+    // Invoke belongsTo
+    final user2 =
+        (address2['=employee()'] as QueryBuilder).where('name', 'Jack').first();
+
+    expect(user2, isA<Entity>());
+    expect(user2!['name'], 'Jack');
   });
 
   test('Model hasMany Relationship', () {
@@ -332,6 +346,10 @@ void main() {
     expect(posts, isA<RecordSet>());
     expect(posts.length, 3);
     expect(posts.first['title'], 'Post 1');
+
+    // Invoke
+    final post = user['=posts()'].where('title', 'Post 2').first() as Entity;
+    expect(post['title'], 'Post 2');
   });
 
   test('belongsToMany', () {
