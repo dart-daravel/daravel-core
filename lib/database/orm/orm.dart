@@ -59,7 +59,4 @@ abstract class ORM {
     _dbDriver.queryBuilder(tableName, model).insert(values);
     return firstOrFail();
   }
-
-  Future<int> insertGetId(Map<String, dynamic> values) =>
-      _dbDriver.queryBuilder(tableName, model).insertGetId(values);
 }
