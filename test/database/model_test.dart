@@ -63,6 +63,11 @@ class Address extends Model {
 }
 // Model hasOne & belongsTo Relationship Models - End
 
+class User5 extends Model {
+  @override
+  String? get table => 'users_5';
+}
+
 void main() {
   setUpAll(() {
     Directory(
@@ -420,5 +425,53 @@ void main() {
     // Invoke
     final user = status['=users()'].where('name', 'A').first() as Entity;
     expect(user['name'], 'A');
+  });
+
+  test('chunk', () {
+    final userModel = User5();
+
+    Schema.create(userModel.tableName, (table) {
+      table.increments('id');
+      table.string('email');
+      table.string('password');
+      table.string('name');
+      table.string('address');
+      table.integer('age');
+    });
+
+    userModel.create({
+      'email': 'a@gmail.com',
+      'password': 'password',
+      'name': 'A',
+      'address': 'Earth',
+      'age': 20
+    });
+
+    userModel.create({
+      'email': 'b@gmail.com',
+      'password': 'password',
+      'name': 'B',
+      'address': 'Mars',
+      'age': 25
+    });
+
+    userModel.create({
+      'email': 'c@gmail.com',
+      'password': 'password',
+      'name': 'C',
+      'address': 'Pluto',
+      'age': 19
+    });
+
+    int chunks = 0;
+
+    userModel.chunk(2, (users) {
+      expect(users, isA<RecordSet>());
+      expect(users.length, chunks == 0 ? 2 : 1);
+      chunks++;
+      return true;
+    });
+
+    expect(chunks, 2);
   });
 }

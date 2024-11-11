@@ -161,9 +161,13 @@ class SQLiteQueryBuilder implements QueryBuilder {
     }
   }
 
-  _logQuery(QueryStringBinding query) {
+  _logQuery(Object query) {
     if (driver.logging) {
-      query.getUnsafeQuery().then((query) => logger.debug(query));
+      if (query is QueryStringBinding) {
+        query.getUnsafeQuery().then((query) => logger.debug(query));
+      } else {
+        logger.debug(query.toString());
+      }
     }
   }
 
@@ -202,13 +206,14 @@ class SQLiteQueryBuilder implements QueryBuilder {
     String sqlStatement = query.query;
     do {
       records = driver.select(sqlStatement, query.bindings)!;
-      if (callback(_castRecordSet(records)) == false) {
+      _logQuery(sqlStatement);
+      if (records.isEmpty || callback(_castRecordSet(records)) == false) {
         break;
       }
       offset += size;
       sqlStatement = sqlStatement.replaceFirst(
           'LIMIT ${offset - size}, $size', 'LIMIT $offset, $size');
-    } while (records.isNotEmpty);
+    } while (true);
     _reset();
   }
 
@@ -224,14 +229,14 @@ class SQLiteQueryBuilder implements QueryBuilder {
     String sqlStatement = query.query;
     do {
       records = driver.select(sqlStatement, query.bindings)!;
-      _logQuery(query);
-      if (callback(_castRecordSet(records)) == false) {
+      _logQuery(sqlStatement);
+      if (records.isEmpty || callback(_castRecordSet(records)) == false) {
         break;
       }
       offset += size;
       sqlStatement = sqlStatement.replaceFirst(
           'LIMIT ${offset - size}, $size', 'LIMIT $offset, $size');
-    } while (records.isNotEmpty);
+    } while (true);
     _reset();
   }
 
@@ -601,6 +606,8 @@ class SqliteLazyRecordSetGenerator extends LazyRecordSetGenerator {
   SqliteLazyRecordSetGenerator(
       super.driver, super.selectQuery, super.bufferSize, super.queryBuilder);
 
+  late final ConsoleLogger logger = ConsoleLogger();
+
   @override
   Future<void> each(bool? Function(Record record) callback) async {
     outer:
@@ -619,6 +626,7 @@ class SqliteLazyRecordSetGenerator extends LazyRecordSetGenerator {
     int offset = 0;
     while (true) {
       final result = driver.select(query, bindings)!;
+      _logQuery(query);
       if (result.isEmpty) {
         break;
       }
@@ -635,5 +643,15 @@ class SqliteLazyRecordSetGenerator extends LazyRecordSetGenerator {
       return records;
     }
     return records;
+  }
+
+  _logQuery(Object query) {
+    if (driver.logging) {
+      if (query is QueryStringBinding) {
+        query.getUnsafeQuery().then((query) => logger.debug(query));
+      } else {
+        logger.debug(query.toString());
+      }
+    }
   }
 }

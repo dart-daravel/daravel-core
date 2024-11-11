@@ -1,6 +1,7 @@
 import 'package:daravel_core/daravel_core.dart';
 import 'package:daravel_core/database/concerns/db_driver.dart';
 import 'package:daravel_core/database/concerns/record.dart';
+import 'package:daravel_core/database/concerns/record_set.dart';
 import 'package:daravel_core/database/orm/entity.dart';
 import 'package:pluralize/pluralize.dart';
 
@@ -52,5 +53,9 @@ abstract class ORM {
   Entity create(Map<String, dynamic> values) {
     _dbDriver.queryBuilder(tableName, model).insert(values);
     return firstOrFail();
+  }
+
+  void chunk(int size, bool Function(RecordSet) callback) {
+    _dbDriver.queryBuilder(tableName, model).chunk(size, callback);
   }
 }
