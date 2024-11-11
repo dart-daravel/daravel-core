@@ -14,14 +14,19 @@ class UserResource extends JsonResource<Entity> {
   UserResource(super.data);
 
   @override
-  List<String> get hidden => ['password'];
+  List<String> get hidden => [
+        'password',
+        'user.password',
+      ];
 
   @override
   int get statusCode => 200;
 
   @override
   Map toJson() {
-    return data.toJson();
+    final json = data.toJson();
+    json['user'] = data.toJson();
+    return json;
   }
 }
 
@@ -80,5 +85,7 @@ void main() {
 
     expect(response['email'], 'tok@gmail.com');
     expect(response['password'], null);
+    expect(response['user']['email'], 'tok@gmail.com');
+    expect(response['user']['password'], null);
   });
 }
