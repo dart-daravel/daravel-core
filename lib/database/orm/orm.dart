@@ -11,8 +11,6 @@ abstract class ORM {
 
   String? get primaryKey => 'id';
 
-  bool get incrementing => true;
-
   Model get model;
 
   Map<String, Function>? get relationships => {};

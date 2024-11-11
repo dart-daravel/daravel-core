@@ -19,16 +19,7 @@ abstract class JsonResourceParser {
         for (var i = 0; i < keys.length - 1; i++) {
           map = map[keys[i]];
         }
-        switch (keys.last) {
-          case '{first}':
-            map.remove(map.keys.first);
-            break;
-          case '{last}':
-            map.remove(map.keys.last);
-            break;
-          default:
-            map.remove(keys.last);
-        }
+        map.remove(keys.last);
       } else {
         json.remove(key);
       }

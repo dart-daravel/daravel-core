@@ -131,6 +131,18 @@ void main() {
 
     expect(users, isA<List<Entity>>());
     expect(users.length, 3);
+
+    // orWhere clause
+    final users2 = User().where('id', 1).orWhere('id', 2).get();
+
+    expect(users2, isA<RecordSet>());
+    expect(users2.length, 2);
+
+    // Query Builder
+    final user = User().query().where('id', 1).first();
+
+    expect(user, isA<Entity>());
+    expect(user!['id'], 1);
   });
 
   test('Model all() with custom table name', () {
