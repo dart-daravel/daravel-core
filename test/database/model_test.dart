@@ -345,7 +345,7 @@ void main() {
     expect(user, isA<Entity>());
     expect(posts, isA<RecordSet>());
     expect(posts.length, 3);
-    expect(posts.first['title'], 'Post 1');
+    expect(posts[0]['title'], 'Post 1');
 
     // Invoke
     final post = user['=posts()'].where('title', 'Post 2').first() as Entity;
