@@ -3,9 +3,9 @@ import 'dart:convert';
 import 'package:shelf/shelf.dart';
 
 abstract class JsonResourceParser {
-  List<String> get hidden => []; // ignore: coverage
+  List<String> get hidden => [];
 
-  int get statusCode => 200; // ignore: coverage
+  int get statusCode => 200;
 
   Object toJson();
 
