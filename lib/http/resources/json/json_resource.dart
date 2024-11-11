@@ -12,7 +12,7 @@ class JsonResource<T> extends JsonResourceParser {
   int get statusCode => 200;
 
   @override
-  Map toJson() {
+  Object toJson() {
     return const {};
   }
 }

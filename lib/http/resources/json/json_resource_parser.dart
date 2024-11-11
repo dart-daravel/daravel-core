@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:daravel_core/http/resources/json/json_resource.dart';
 import 'package:shelf/shelf.dart';
 
 abstract class JsonResourceParser {
@@ -8,38 +7,49 @@ abstract class JsonResourceParser {
 
   int get statusCode;
 
-  Map toJson();
+  Object toJson();
 
-  Map parse() {
-    final json = toJson();
+  Object parseJson() {
+    Object json = toJson();
+    if (json is Map) {
+      _parseMap(json);
+    } else if (json is List) {
+      if (json.isNotEmpty && json.first is! Map) {
+        json = json.map((e) => e.toJson()).toList();
+      }
+      for (var i = 0; i < json.length; i++) {
+        _parseMap(json[i]);
+      }
+    }
+    return json;
+  }
+
+  void _parseMap(Map json) {
     for (final key in hidden) {
       if (key.contains('.')) {
         final keys = key.split('.');
         var map = json;
         for (var i = 0; i < keys.length - 1; i++) {
+          if (!map.containsKey(keys[i])) {
+            break;
+          }
           map = map[keys[i]];
+        }
+        if (!map.containsKey(keys.last)) {
+          continue;
         }
         map.remove(keys.last);
       } else {
         json.remove(key);
       }
     }
-    return json;
   }
 
   Response toJsonResponse() {
     return Response(
       statusCode,
       headers: {'Content-Type': 'application/json'},
-      body: json.encode(parse()),
-    );
-  }
-
-  static Response listToJsonResponse(int statusCode, List<Object> list) {
-    return Response(
-      statusCode,
-      body: list.map((e) => JsonResource(e)).toList(),
-      headers: {'Content-Type': 'application/json'},
+      body: json.encode(parseJson()),
     );
   }
 }

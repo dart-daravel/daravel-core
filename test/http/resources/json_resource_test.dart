@@ -30,6 +30,24 @@ class UserResource extends JsonResource<Entity> {
   }
 }
 
+class UserListResource extends JsonResource<List<Entity>> {
+  UserListResource(super.data);
+
+  @override
+  List<String> get hidden => [
+        'password',
+        'user.password',
+      ];
+
+  @override
+  int get statusCode => 200;
+
+  @override
+  Object toJson() {
+    return data;
+  }
+}
+
 void main() {
   setUpAll(() {
     Directory(path.join(
@@ -78,14 +96,41 @@ void main() {
       'age': 20
     });
 
+    User().create({
+      'email': 'tak@gmail.com',
+      'password': 'password',
+      'name': 'Tak',
+      'address': 'Mars',
+      'age': 25
+    });
+
+    User().create({
+      'email': 'latte@gmail.com',
+      'password': 'password',
+      'name': 'Latte',
+      'address': 'Venus',
+      'age': 30
+    });
+
     final user = userModel.find(1);
 
+    expect(UserResource(user!).hidden, ['password', 'user.password']);
+    expect(UserResource(user).statusCode, 200);
+    expect(UserResource(user).toJson()['email'], 'tok@gmail.com');
+
     final response =
-        json.decode(await UserResource(user!).toJsonResponse().readAsString());
+        json.decode(await UserResource(user).toJsonResponse().readAsString());
 
     expect(response['email'], 'tok@gmail.com');
     expect(response['password'], null);
     expect(response['user']['email'], 'tok@gmail.com');
     expect(response['user']['password'], null);
+
+    final users = userModel.all();
+
+    final response2 = json
+        .decode(await UserListResource(users).toJsonResponse().readAsString());
+
+    expect(response2.length, 3);
   });
 }
