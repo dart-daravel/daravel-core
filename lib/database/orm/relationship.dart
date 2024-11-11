@@ -26,10 +26,7 @@ class Relationship {
       this.foreignKey =
           foreignKey ?? '${Pluralize().singular(primaryModel.tableName)}_id';
     } else {
-      this.foreignKey = foreignKey ??
-          (type == RelationshipType.belongsToMany
-              ? '${Pluralize().singular(primaryModel.tableName)}_id'
-              : 'id');
+      this.foreignKey = foreignKey ?? 'id';
     }
   }
 
