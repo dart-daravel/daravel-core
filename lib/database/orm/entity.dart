@@ -41,4 +41,9 @@ class Entity implements Record {
 
   @override
   List<String> get keys => data.keys;
+
+  @override
+  void operator []=(String key, value) {
+    data[key] = value;
+  }
 }

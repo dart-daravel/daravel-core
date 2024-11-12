@@ -20,4 +20,21 @@ extension StringExtension on String {
       .split(' ')
       .map((e) => e.ucfirst())
       .join();
+
+  String camelCase() {
+    if (isEmpty) return this;
+
+    final List<String> words = split(RegExp(r'(?=[A-Z])|[\s_\-]+'));
+    final StringBuffer camelCaseString = StringBuffer(words[0].toLowerCase());
+
+    for (int i = 1; i < words.length; i++) {
+      String word = words[i];
+      if (word.isNotEmpty) {
+        camelCaseString.write(
+            words[i][0].toUpperCase() + words[i].substring(1).toLowerCase());
+      }
+    }
+
+    return camelCaseString.toString();
+  }
 }

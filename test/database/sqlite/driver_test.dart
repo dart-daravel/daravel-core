@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:daravel_core/globals.dart';
 import 'package:path/path.dart' as path;
 import 'package:sqlite3/sqlite3.dart';
 import 'package:test/test.dart';
@@ -52,6 +53,7 @@ void main() {
     Directory(path.join(
             Directory.current.path, 'test/database-sqlite-driver-playground'))
         .deleteSync(recursive: true);
+    locator.reset();
   });
 
   test('Unsupported driver', () {

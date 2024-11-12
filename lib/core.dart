@@ -1,5 +1,7 @@
 import 'dart:io';
 
+import 'package:daravel_core/database/orm/orm.dart';
+import 'package:daravel_core/globals.dart';
 import 'package:dotenv/dotenv.dart';
 import 'package:shelf/shelf.dart';
 import 'package:shelf/shelf_io.dart';
@@ -11,6 +13,7 @@ class Core {
   final List<DaravelRouter> routers;
   final List<DaravelMiddleware> globalMiddlewares;
   final Map<String, dynamic> configMap;
+  final Map<Type, ORM> models;
 
   late final _env = DotEnv(includePlatformEnvironment: true)..load();
 
@@ -23,13 +26,15 @@ class Core {
     this.routers = const [],
     this.globalMiddlewares = const [],
     this.configMap = const {},
+    this.models = const {},
     this.boot,
     this.onBootError,
   }) {
     try {
       boot?.call(this);
+      _registerDependencies();
     } catch (e) {
-      if (!onBootError?.call(e)) {
+      if (!(onBootError?.call(e) ?? false)) {
         rethrow;
       }
     }
@@ -73,4 +78,16 @@ class Core {
   T? env<T>(String key) => _env[key] as T;
 
   String? config(String key) => configMap[key];
+
+  void _registerDependencies() {
+    // Register Core
+    // if (!locator.isRegistered<Core>()) {
+    locator.registerSingleton<Core>(this);
+    // }
+    // ORM Models
+    models.forEach((key, value) {
+      locator.registerSingleton<ORM>(value,
+          instanceName: '[orm]${key.toString()}');
+    });
+  }
 }

@@ -5,6 +5,7 @@ import 'package:daravel_core/database/drivers/sqlite/sqlite_record.dart';
 import 'package:daravel_core/exceptions/component_not_booted.dart';
 import 'package:daravel_core/exceptions/query.dart';
 import 'package:daravel_core/exceptions/record_not_found.dart';
+import 'package:daravel_core/globals.dart';
 import 'package:test/test.dart';
 import 'package:path/path.dart' as path;
 
@@ -35,6 +36,7 @@ void main() {
     Directory(path.join(Directory.current.path,
             'test/database-sqlite-query-builder-playground'))
         .deleteSync(recursive: true);
+    locator.reset();
   });
 
   test('Select all rows', () {

@@ -9,6 +9,7 @@ export 'http/middleware/logger.dart';
 // Annotations
 export 'annotations/config.dart';
 export 'annotations/command.dart';
+export 'annotations/orm_model.dart';
 
 // Commands
 export 'console/commands/serve.dart';

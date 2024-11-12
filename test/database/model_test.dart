@@ -4,6 +4,7 @@ import 'package:daravel_core/daravel_core.dart';
 import 'package:daravel_core/database/concerns/record_set.dart';
 import 'package:daravel_core/database/orm/entity.dart';
 import 'package:daravel_core/exceptions/component_not_booted.dart';
+import 'package:daravel_core/globals.dart';
 import 'package:test/test.dart';
 import 'package:path/path.dart' as path;
 
@@ -104,6 +105,8 @@ void main() {
     Directory(
             path.join(Directory.current.path, 'test/database-model-playground'))
         .deleteSync(recursive: true);
+
+    locator.reset();
   });
 
   test('Model all()', () {

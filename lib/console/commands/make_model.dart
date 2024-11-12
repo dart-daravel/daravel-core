@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:daravel_core/console/commands/generate.dart';
 import 'package:path/path.dart' as path;
 
 import 'package:daravel_core/console/console_logger.dart';
@@ -55,6 +56,8 @@ class MakeModelCommand extends Command {
 
     modelFile.writeAsStringSync(template, mode: FileMode.writeOnly);
 
+    await GenerateCommand().run();
+
     logger.success(
         'Model file ${path.join(directory.path, modelName!.underscoreCase())}.dart created.');
   }
@@ -62,6 +65,7 @@ class MakeModelCommand extends Command {
   String get template => '''
 import 'package:daravel_core/daravel_core.dart';
 
+@OrmModel()
 class ${modelName!.classCase()} extends Model {
   @override
   Map<String, Function> get relationships => {};
