@@ -427,7 +427,7 @@ void main() {
     expect(user['name'], 'A');
   });
 
-  test('chunk', () {
+  test('chunk and chunkById', () {
     final userModel = User5();
 
     Schema.create(userModel.tableName, (table) {
@@ -466,6 +466,17 @@ void main() {
     int chunks = 0;
 
     userModel.chunk(2, (users) {
+      expect(users, isA<RecordSet>());
+      expect(users.length, chunks == 0 ? 2 : 1);
+      chunks++;
+      return true;
+    });
+
+    expect(chunks, 2);
+
+    chunks = 0;
+
+    userModel.chunkById(2, (users) {
       expect(users, isA<RecordSet>());
       expect(users.length, chunks == 0 ? 2 : 1);
       chunks++;

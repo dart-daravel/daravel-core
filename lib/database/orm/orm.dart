@@ -58,4 +58,8 @@ abstract class ORM {
   void chunk(int size, bool Function(RecordSet) callback) {
     _dbDriver.queryBuilder(tableName, model).chunk(size, callback);
   }
+
+  void chunkById(int size, bool Function(RecordSet) callback) {
+    _dbDriver.queryBuilder(tableName, model).chunkById(size, callback);
+  }
 }
