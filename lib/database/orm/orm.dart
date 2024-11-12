@@ -55,11 +55,18 @@ abstract class ORM {
     return firstOrFail();
   }
 
-  void chunk(int size, bool Function(RecordSet) callback) {
-    _dbDriver.queryBuilder(tableName, model).chunk(size, callback);
-  }
+  void chunk(int size, bool Function(RecordSet) callback) =>
+      _dbDriver.queryBuilder(tableName, model).chunk(size, callback);
 
-  void chunkById(int size, bool Function(RecordSet) callback) {
-    _dbDriver.queryBuilder(tableName, model).chunkById(size, callback);
-  }
+  void chunkById(int size, bool Function(RecordSet) callback) =>
+      _dbDriver.queryBuilder(tableName, model).chunkById(size, callback);
+
+  Future<int> delete(dynamic id) =>
+      _dbDriver.queryBuilder(tableName, model).delete(id);
+
+  LazyRecordSetGenerator lazy() =>
+      _dbDriver.queryBuilder(tableName, model).lazy();
+
+  LazyRecordSetGenerator lazyById() =>
+      _dbDriver.queryBuilder(tableName, model).lazyById();
 }

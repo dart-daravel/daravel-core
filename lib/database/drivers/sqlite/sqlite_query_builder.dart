@@ -154,8 +154,10 @@ class SQLiteQueryBuilder implements QueryBuilder {
     final query = _buildQuery(QueryType.delete);
     await driver.deleteMutex.acquire();
     try {
+      final deleted = await driver.delete(query.query, query.bindings);
+      _logQuery(query);
       _reset();
-      return driver.delete(query.query, query.bindings);
+      return deleted;
     } finally {
       driver.deleteMutex.release();
     }

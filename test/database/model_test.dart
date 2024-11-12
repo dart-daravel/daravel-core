@@ -68,6 +68,16 @@ class User5 extends Model {
   String? get table => 'users_5';
 }
 
+class User6 extends Model {
+  @override
+  String? get table => 'users_6';
+}
+
+class User7 extends Model {
+  @override
+  String? get table => 'users_7';
+}
+
 void main() {
   setUpAll(() {
     Directory(
@@ -484,5 +494,99 @@ void main() {
     });
 
     expect(chunks, 2);
+  });
+
+  test('delete', () async {
+    final userModel = User6();
+
+    Schema.create(userModel.tableName, (table) {
+      table.increments('id');
+      table.string('email');
+      table.string('password');
+      table.string('name');
+      table.string('address');
+      table.integer('age');
+    });
+
+    userModel.create({
+      'email': 'a@gmail.com',
+      'password': 'password',
+      'name': 'A',
+      'address': 'Earth',
+      'age': 20
+    });
+
+    userModel.create({
+      'email': 'b@gmail.com',
+      'password': 'password',
+      'name': 'B',
+      'address': 'Mars',
+      'age': 25
+    });
+
+    userModel.create({
+      'email': 'c@gmail.com',
+      'password': 'password',
+      'name': 'C',
+      'address': 'Pluto',
+      'age': 19
+    });
+
+    await userModel.delete(1);
+    final users = userModel.all();
+    expect(users.length, 2);
+    await userModel.delete(2);
+    final users2 = userModel.all();
+    expect(users2.length, 1);
+    await userModel.delete(3);
+    final users3 = userModel.all();
+    expect(users3.length, 0);
+  });
+
+  test('lazy and lazyById', () async {
+    final userModel = User7();
+
+    Schema.create(userModel.tableName, (table) {
+      table.increments('id');
+      table.string('email');
+      table.string('password');
+      table.string('name');
+      table.string('address');
+      table.integer('age');
+    });
+
+    userModel.create({
+      'email': 'a@gmail.com',
+      'password': 'password',
+      'name': 'A',
+      'address': 'Earth',
+      'age': 20
+    });
+
+    userModel.create({
+      'email': 'b@gmail.com',
+      'password': 'password',
+      'name': 'B',
+      'address': 'Mars',
+      'age': 25
+    });
+
+    userModel.create({
+      'email': 'c@gmail.com',
+      'password': 'password',
+      'name': 'C',
+      'address': 'Pluto',
+      'age': 19
+    });
+
+    userModel.lazy().each((user) {
+      expect(user, isA<Entity>());
+      return null;
+    });
+
+    userModel.lazyById().each((user) {
+      expect(user, isA<Entity>());
+      return null;
+    });
   });
 }
