@@ -583,6 +583,11 @@ void main() {
     await userModel.delete(3);
     final users3 = userModel.all();
     expect(users3.length, 0);
+
+    // Map from ORM returned RecordSet.
+    final emails = users.map((e) => e['email']);
+
+    expect(emails, ['b@gmail.com', 'c@gmail.com']);
   });
 
   test('lazy and lazyById', () async {
