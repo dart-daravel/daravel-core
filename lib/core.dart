@@ -81,9 +81,7 @@ class Core {
 
   void _registerDependencies() {
     // Register Core
-    // if (!locator.isRegistered<Core>()) {
     locator.registerSingleton<Core>(this);
-    // }
     // ORM Models
     models.forEach((key, value) {
       locator.registerSingleton<ORM>(value,

@@ -87,18 +87,33 @@ void main() {
 
     expect(() => DB.connection(), throwsA(isA<ComponentNotBootedException>()));
 
-    DB.boot(Core(configMap: {
-      'database.defaultConnection': 'sqlite',
-      'database.connections': {
-        'sqlite': DatabaseConnection(
-          driver: 'sqlite',
-          database: 'test/database-model-playground/database.sqlite',
-          prefix: '',
-          foreignKeyConstraints: true,
-          queryLog: true,
-        ),
-      }
-    }));
+    DB.boot(Core(
+      configMap: {
+        'database.defaultConnection': 'sqlite',
+        'database.connections': {
+          'sqlite': DatabaseConnection(
+            driver: 'sqlite',
+            database: 'test/database-model-playground/database.sqlite',
+            prefix: '',
+            foreignKeyConstraints: true,
+            queryLog: true,
+          ),
+        }
+      },
+      models: {
+        User: User(),
+        User2: User2(),
+        User3: User3(),
+        Post: Post(),
+        User4: User4(),
+        Status: Status(),
+        Employee: Employee(),
+        Address: Address(),
+        User5: User5(),
+        User6: User6(),
+        User7: User7(),
+      },
+    ));
   });
 
   tearDownAll(() {
