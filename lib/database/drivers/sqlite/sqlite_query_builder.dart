@@ -649,11 +649,7 @@ class SqliteLazyRecordSetGenerator extends LazyRecordSetGenerator {
 
   _logQuery(Object query) {
     if (driver.logging) {
-      if (query is QueryStringBinding) {
-        query.getUnsafeQuery().then((query) => logger.debug(query));
-      } else {
-        logger.debug(query.toString());
-      }
+      logger.debug(query.toString());
     }
   }
 }
