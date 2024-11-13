@@ -29,7 +29,7 @@ abstract class ORM {
   DBDriver get _dbDriver => DB.connection(connection)!.driver;
 
   List<Entity> all() => _dbDriver
-      .queryBuilder(tableName)
+      .queryBuilder(tableName, model)
       .get()
       .map((e) => Entity.fromRecord(e as Record, runtimeType, relationships)!)
       .toList();
