@@ -15,7 +15,8 @@ class SqliteRecordSet implements RecordSet {
 
   @override
   Record operator [](int index) => orm != null
-      ? Entity.fromRecord(SqliteRecord(result[index]), orm!.relationships)!
+      ? Entity.fromRecord(
+          SqliteRecord(result[index]), orm.runtimeType, orm!.relationships)!
       : SqliteRecord(result[index]);
 
   @override
@@ -32,6 +33,10 @@ class SqliteRecordSet implements RecordSet {
 
   @override
   Iterable<T> map<T>(T Function(Object record) toElement) =>
-      result.map((e) => toElement(
-          orm != null ? Entity.fromRecord(SqliteRecord(e))! : SqliteRecord(e)));
+      result.map((e) => toElement(orm != null
+          ? Entity.fromRecord(
+              SqliteRecord(e),
+              orm.runtimeType,
+            )!
+          : SqliteRecord(e)));
 }

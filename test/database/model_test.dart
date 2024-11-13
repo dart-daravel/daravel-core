@@ -79,6 +79,27 @@ class User7 extends Model {
   String? get table => 'users_7';
 }
 
+class User8 extends Model {
+  @override
+  String? get table => 'users_8';
+
+  @override
+  List<String> get fillable => ['email', 'password', 'name'];
+}
+
+class User9 extends Model {
+  @override
+  String? get table => 'users_9';
+
+  @override
+  List<String> get guarded => ['address', 'age'];
+}
+
+class User10 extends Model {
+  @override
+  String? get table => 'users_10';
+}
+
 void main() {
   setUpAll(() {
     Directory(
@@ -112,6 +133,9 @@ void main() {
         User5: User5(),
         User6: User6(),
         User7: User7(),
+        User8: User8(),
+        User9: User9(),
+        User10: User10(),
       },
     ));
   });
@@ -606,5 +630,99 @@ void main() {
       expect(user, isA<Entity>());
       return null;
     });
+  });
+
+  test('save() and mass assignment vulnerability - fillable', () {
+    final userModel = User8();
+
+    Schema.create(userModel.tableName, (table) {
+      table.increments('id');
+      table.string('email');
+      table.string('password');
+      table.string('name');
+      table.string('address').nullable();
+      table.integer('age').nullable();
+    });
+
+    userModel.create({
+      'email': 'a@gmail.com',
+      'password': 'password',
+      'name': 'A',
+      'address': 'Earth',
+      'age': 20
+    });
+
+    final user = userModel.first();
+
+    expect(user, isA<Entity>());
+    expect(user!['email'], 'a@gmail.com');
+    expect(user['password'], 'password');
+    expect(user['name'], 'A');
+    expect(user['address'], null);
+    expect(user['age'], null);
+  });
+
+  test('save() and mass assignment vulnerability - guarded', () {
+    final userModel = User9();
+
+    Schema.create(userModel.tableName, (table) {
+      table.increments('id');
+      table.string('email');
+      table.string('password');
+      table.string('name');
+      table.string('address').nullable();
+      table.integer('age').nullable();
+    });
+
+    userModel.create({
+      'email': 'a@gmail.com',
+      'password': 'password',
+      'name': 'A',
+      'address': 'Earth',
+      'age': 20
+    });
+
+    final user = userModel.first();
+
+    expect(user, isA<Entity>());
+    expect(user!['email'], 'a@gmail.com');
+    expect(user['password'], 'password');
+    expect(user['name'], 'A');
+    expect(user['address'], null);
+    expect(user['age'], null);
+  });
+
+  test('Model save()', () async {
+    final userModel = User10();
+
+    Schema.create(userModel.tableName, (table) {
+      table.increments('id');
+      table.string('email');
+      table.string('password');
+      table.string('name');
+      table.string('address');
+      table.integer('age');
+    });
+
+    final entity = Entity.fromType(User10);
+
+    entity['email'] = 'a@gmail.com';
+    entity['password'] = 'password';
+    entity['name'] = 'A';
+    entity['address'] = 'Earth';
+    entity['age'] = 20;
+
+    await entity.save();
+
+    expect(userModel.count(), 1);
+
+    final user = userModel.first();
+
+    expect(user, isA<Entity>());
+    expect(user!['email'], 'a@gmail.com');
+    expect(user['password'], 'password');
+    expect(user['name'], 'A');
+    expect(user['address'], 'Earth');
+    expect(user['age'], 20);
   });
 }

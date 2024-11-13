@@ -14,6 +14,10 @@ abstract class ORM {
 
   Model get model;
 
+  List<String> get fillable => [];
+
+  List<String>? guarded = [];
+
   Map<String, Function>? get relationships => {};
 
   String get tableName =>
@@ -27,7 +31,7 @@ abstract class ORM {
   List<Entity> all() => _dbDriver
       .queryBuilder(tableName)
       .get()
-      .map((e) => Entity.fromRecord(e as Record, relationships)!)
+      .map((e) => Entity.fromRecord(e as Record, runtimeType, relationships)!)
       .toList();
 
   QueryBuilder query() => _dbDriver.queryBuilder(
@@ -42,16 +46,24 @@ abstract class ORM {
           .where(column, operatorOrValue, value);
 
   Entity? find(dynamic id) => Entity.fromRecord(
-      _dbDriver.queryBuilder(tableName, model).find(id), relationships);
+      _dbDriver.queryBuilder(tableName, model).find(id),
+      runtimeType,
+      relationships);
 
   Entity? first() => Entity.fromRecord(
-      _dbDriver.queryBuilder(tableName, model).first(), relationships);
+      _dbDriver.queryBuilder(tableName, model).first(),
+      runtimeType,
+      relationships);
 
   Entity firstOrFail() => Entity.fromRecord(
-      _dbDriver.queryBuilder(tableName, model).firstOrFail(), relationships)!;
+      _dbDriver.queryBuilder(tableName, model).firstOrFail(),
+      runtimeType,
+      relationships)!;
 
   Entity create(Map<String, dynamic> values) {
-    _dbDriver.queryBuilder(tableName, model).insert(values);
+    _dbDriver
+        .queryBuilder(tableName, model)
+        .insert(_preventMassAssignment(values));
     return firstOrFail();
   }
 
@@ -69,4 +81,29 @@ abstract class ORM {
 
   LazyRecordSetGenerator lazyById() =>
       _dbDriver.queryBuilder(tableName, model).lazyById();
+
+  int count() => _dbDriver.queryBuilder(tableName, model).count();
+
+  Map<String, dynamic> _preventMassAssignment(Map<String, dynamic> values) {
+    if (guarded == null) {
+      return values;
+    }
+    final valueKeys = values.keys.toList();
+    if (fillable.isNotEmpty) {
+      for (int x = 0; x < valueKeys.length; x++) {
+        if (!fillable.contains(valueKeys.elementAt(x))) {
+          values.remove(valueKeys.elementAt(x));
+        }
+      }
+      return values;
+    }
+
+    for (int x = 0; x < valueKeys.length; x++) {
+      if (guarded!.contains(valueKeys.elementAt(x))) {
+        values.remove(valueKeys.elementAt(x));
+      }
+    }
+
+    return values;
+  }
 }

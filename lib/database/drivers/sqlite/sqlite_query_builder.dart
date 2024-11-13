@@ -70,7 +70,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
 
   Record? _castRecord(Record record) {
     if (orm != null) {
-      return Entity.fromRecord(record, orm!.relationships);
+      return Entity.fromRecord(record, orm.runtimeType, orm!.relationships);
     }
     return record;
   }
