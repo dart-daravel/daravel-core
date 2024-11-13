@@ -1,11 +1,14 @@
 import 'package:daravel_core/daravel_core.dart';
 import 'package:daravel_core/database/concerns/db_driver.dart' as daravel;
 import 'package:daravel_core/database/concerns/record_set.dart';
+import 'package:daravel_core/database/drivers/sqlite/sqlite_record.dart';
+import 'package:daravel_core/database/orm/entity.dart';
+import 'package:daravel_core/database/orm/orm.dart';
 import 'package:daravel_core/exceptions/query.dart';
+import 'package:daravel_core/database/concerns/record.dart';
 import 'package:daravel_core/exceptions/record_not_found.dart';
 import 'package:daravel_core/helpers/database.dart';
 import 'package:collection/collection.dart';
-import 'package:sqlite3/sqlite3.dart';
 
 class SQLiteQueryBuilder implements QueryBuilder {
   @override
@@ -13,6 +16,9 @@ class SQLiteQueryBuilder implements QueryBuilder {
 
   @override
   daravel.DBDriver driver;
+
+  @override
+  ORM? orm;
 
   late final SafeQueryBuilderParameterParser safeQueryBuilderParameterParser =
       SafeQueryBuilderParameterParser();
@@ -28,7 +34,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
 
   late final ConsoleLogger logger = ConsoleLogger();
 
-  SQLiteQueryBuilder(this.driver, [this.table]);
+  SQLiteQueryBuilder(this.driver, [this.table, this.orm]);
 
   List<String> _selectColumns = [];
   final Map<int, List> _selectBindings = {};
@@ -62,6 +68,21 @@ class SQLiteQueryBuilder implements QueryBuilder {
     return this;
   }
 
+  Record? _castRecord(Record record) {
+    if (orm != null) {
+      return Entity.fromRecord(record, orm.runtimeType, orm!.relationships);
+    }
+    return record;
+  }
+
+  RecordSet _castRecordSet(RecordSet records) {
+    if (orm != null) {
+      records.orm = orm;
+      return records;
+    }
+    return records;
+  }
+
   @override
   RecordSet get() {
     if (!_resultSafe) {
@@ -70,13 +91,13 @@ class SQLiteQueryBuilder implements QueryBuilder {
     final query = _buildQuery(QueryType.select);
     _logQuery(query);
     _reset();
-    return driver.select(query.query, query.bindings)!;
+    return _castRecordSet(driver.select(query.query, query.bindings, orm)!);
   }
 
   @override
   Record? first() {
     final result = get();
-    return result.isNotEmpty ? result.first : null;
+    return result.isNotEmpty ? _castRecord(result.first) : null;
   }
 
   @override
@@ -85,7 +106,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
     if (result == null) {
       throw RecordNotFoundException();
     }
-    return result;
+    return _castRecord(result)!;
   }
 
   @override
@@ -133,16 +154,22 @@ class SQLiteQueryBuilder implements QueryBuilder {
     final query = _buildQuery(QueryType.delete);
     await driver.deleteMutex.acquire();
     try {
+      final deleted = await driver.delete(query.query, query.bindings);
+      _logQuery(query);
       _reset();
-      return driver.delete(query.query, query.bindings);
+      return deleted;
     } finally {
       driver.deleteMutex.release();
     }
   }
 
-  _logQuery(QueryStringBinding query) {
+  _logQuery(Object query) {
     if (driver.logging) {
-      query.getUnsafeQuery().then((query) => logger.debug(query));
+      if (query is QueryStringBinding) {
+        query.getUnsafeQuery().then((query) => logger.debug(query));
+      } else {
+        logger.debug(query.toString());
+      }
     }
   }
 
@@ -166,7 +193,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
   List<Object?> pluck(String column) {
     select(column);
     final result = get();
-    return result.map((record) => (record as Row)[column]).toList();
+    return result.map((record) => (record as SqliteRecord)[column]).toList();
   }
 
   @override
@@ -180,14 +207,15 @@ class SQLiteQueryBuilder implements QueryBuilder {
     QueryStringBinding query = _buildQuery(QueryType.select);
     String sqlStatement = query.query;
     do {
-      records = driver.select(sqlStatement, query.bindings)!;
-      if (callback(records) == false) {
+      records = driver.select(sqlStatement, query.bindings, orm)!;
+      _logQuery(sqlStatement);
+      if (records.isEmpty || callback(_castRecordSet(records)) == false) {
         break;
       }
       offset += size;
       sqlStatement = sqlStatement.replaceFirst(
           'LIMIT ${offset - size}, $size', 'LIMIT $offset, $size');
-    } while (records.isNotEmpty);
+    } while (true);
     _reset();
   }
 
@@ -202,15 +230,15 @@ class SQLiteQueryBuilder implements QueryBuilder {
     QueryStringBinding query = _buildQuery(QueryType.select);
     String sqlStatement = query.query;
     do {
-      records = driver.select(sqlStatement, query.bindings)!;
-      _logQuery(query);
-      if (callback(records) == false) {
+      records = driver.select(sqlStatement, query.bindings, orm)!;
+      _logQuery(sqlStatement);
+      if (records.isEmpty || callback(_castRecordSet(records)) == false) {
         break;
       }
       offset += size;
       sqlStatement = sqlStatement.replaceFirst(
           'LIMIT ${offset - size}, $size', 'LIMIT $offset, $size');
-    } while (records.isNotEmpty);
+    } while (true);
     _reset();
   }
 
@@ -435,7 +463,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
     limit(50, 0);
     final query = _buildQuery(QueryType.select);
     _reset();
-    return SqliteLazyRecordSetGenerator(driver, query, 50);
+    return SqliteLazyRecordSetGenerator(driver, query, 50, this);
   }
 
   @override
@@ -446,7 +474,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
     where('id', '>', 0).limit(50, 0);
     final query = _buildQuery(QueryType.select);
     _reset();
-    return SqliteLazyRecordSetGenerator(driver, query, 50);
+    return SqliteLazyRecordSetGenerator(driver, query, 50, this);
   }
 
   @override
@@ -530,7 +558,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
   bool exists() {
     final queryStringBinding = _buildQuery(QueryType.select, const {}, false);
     final String query = 'SELECT EXISTS(${queryStringBinding.query});';
-    final result = driver.select(query, queryStringBinding.bindings);
+    final result = driver.select(query, queryStringBinding.bindings, orm);
     return result!.first[0] as int == 1;
   }
 
@@ -578,9 +606,9 @@ class SQLiteQueryBuilder implements QueryBuilder {
 
 class SqliteLazyRecordSetGenerator extends LazyRecordSetGenerator {
   SqliteLazyRecordSetGenerator(
-      super.driver, super.selectQuery, super.bufferSize);
+      super.driver, super.selectQuery, super.bufferSize, super.queryBuilder);
 
-  Stream<RecordSet>? recordSetStream;
+  late final ConsoleLogger logger = ConsoleLogger();
 
   @override
   Future<void> each(bool? Function(Record record) callback) async {
@@ -599,14 +627,29 @@ class SqliteLazyRecordSetGenerator extends LazyRecordSetGenerator {
       String query, List bindings, int chunkSize) async* {
     int offset = 0;
     while (true) {
-      final result = driver.select(query, bindings)!;
+      final result = driver.select(query, bindings, queryBuilder.orm)!;
+      _logQuery(query);
       if (result.isEmpty) {
         break;
       }
-      yield result;
+      yield _castRecordSet(result);
       offset += chunkSize;
       query = query.replaceFirst('LIMIT ${offset - chunkSize}, $chunkSize',
           'LIMIT $offset, $chunkSize');
+    }
+  }
+
+  RecordSet _castRecordSet(RecordSet records) {
+    if (queryBuilder.orm != null) {
+      records.orm = queryBuilder.orm;
+      return records;
+    }
+    return records;
+  }
+
+  _logQuery(Object query) {
+    if (driver.logging) {
+      logger.debug(query.toString());
     }
   }
 }

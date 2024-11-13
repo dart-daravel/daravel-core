@@ -40,9 +40,17 @@ jobs:
           format_coverage --packages=.dart_tool/package_config.json --report-on=lib --in=coverage/test/helpers_test.dart.vm.json --lcov --out=coverage/test/helpers_test_lcov.info
           format_coverage --packages=.dart_tool/package_config.json --report-on=lib --in=coverage/test/database/sqlite/driver_test.dart.vm.json --lcov --out=coverage/test/database/sqlite/driver_test_lcov.info
           format_coverage --packages=.dart_tool/package_config.json --report-on=lib --in=coverage/test/database/sqlite/builder_test.dart.vm.json --lcov --out=coverage/test/database/sqlite/builder_test_lcov.info
+          format_coverage --packages=.dart_tool/package_config.json --report-on=lib --in=coverage/test/database/model_test.dart.vm.json --lcov --out=coverage/test/database/model_test_lcov.info
+          format_coverage --packages=.dart_tool/package_config.json --report-on=lib --in=coverage/test/http/resources/json_resource_test.dart.vm.json --lcov --out=coverage/test/http/resources/json_resource_test_lcov.info
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: coverage/test/router_test_lcov.info,coverage/test/middleware_test_lcov.info,coverage/test/config_test_lcov.info,coverage/test/server_test_lcov.info,coverage/test/dartisan_test_lcov.info,coverage/test/core_test_lcov.info,coverage/test/extensions_test_lcov.info,coverage/test/helpers_test_lcov.info,coverage/test/database/sqlite/driver_test_lcov.info,coverage/test/database/sqlite/builder_test_lcov.info
+          files: |
+            coverage/test/router_test_lcov.info,coverage/test/middleware_test_lcov.info,
+            coverage/test/config_test_lcov.info,coverage/test/server_test_lcov.info,
+            coverage/test/dartisan_test_lcov.info,coverage/test/core_test_lcov.info,
+            coverage/test/extensions_test_lcov.info,coverage/test/helpers_test_lcov.info,
+            coverage/test/database/sqlite/driver_test_lcov.info,coverage/test/database/sqlite/builder_test_lcov.info,
+            coverage/test/database/model_test_lcov.info,coverage/test/http/resources/json_resource_test_lcov.info

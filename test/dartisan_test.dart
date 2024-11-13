@@ -14,7 +14,7 @@ void main() {
         .deleteSync(recursive: true);
   });
 
-  test('Code  generation test', () async {
+  test('Code generation test', () async {
     final logs = <String>[];
 
     // Prepare
@@ -27,6 +27,8 @@ void main() {
 
     final playgroundConfigDirectory =
         Directory(path.join(playgroundDirectory.path, 'config'));
+    final playgroundModelDirectory =
+        Directory(path.join(playgroundDirectory.path, 'app/models'));
 
     runZonedGuarded(
       () async {
@@ -47,12 +49,43 @@ void main() {
       playgroundConfigDirectory.createSync();
     }
 
+    runZonedGuarded(
+      () async {
+        await GenerateCommand().run(playgroundDirectory.path);
+      },
+      (e, s) {},
+      zoneSpecification: ZoneSpecification(
+        print: (self, parent, zone, line) {
+          logs.add(line);
+        },
+      ),
+    );
+
+    expect(logs, ['\x1B[31m[ERROR] \x1B[37mModels directory not found.']);
+    logs.clear();
+
+    if (!playgroundModelDirectory.existsSync()) {
+      playgroundModelDirectory.createSync(recursive: true);
+    }
+
     final configDirectory =
         Directory(path.join(Directory.current.path, 'example/config'));
 
+    final modelsDirectory =
+        Directory(path.join(Directory.current.path, 'example/app/models'));
+
+    // Copy config files from example directory
     await for (var entity in configDirectory.list(recursive: false)) {
       var newFile = File(
           '${playgroundConfigDirectory.path}${Platform.pathSeparator}${entity.uri.pathSegments.last}');
+      await newFile.writeAsString(await (entity as File).readAsString(),
+          mode: FileMode.writeOnly);
+    }
+
+    // Copy models from example directory
+    await for (var entity in modelsDirectory.list(recursive: false)) {
+      var newFile = File(
+          '${playgroundModelDirectory.path}${Platform.pathSeparator}${entity.uri.pathSegments.last}');
       await newFile.writeAsString(await (entity as File).readAsString(),
           mode: FileMode.writeOnly);
     }
@@ -72,6 +105,7 @@ void main() {
 
     await generateCommand.run(playgroundDirectory.path);
 
+    // Verify generated config map file.
     final generatedConfigFile =
         File(path.join(playgroundBootstrapDirectory.path, 'config.dart'));
 
@@ -119,6 +153,36 @@ void main() {
         generatedConfigFileContent.contains("config['app.name'] = app.name;"),
         true);
     expect(generatedConfigFileContent.contains('}'), true);
+
+    // Verify generated model map file.
+    final generatedModelFile =
+        File(path.join(playgroundBootstrapDirectory.path, 'models.dart'));
+
+    expect(generatedModelFile.existsSync(), true);
+
+    String generatedModelsFileContent = await generatedModelFile.readAsString();
+
+    expect(
+        generatedModelsFileContent.contains('// Generated code, do not modify'),
+        true);
+
+    expect(
+        generatedModelsFileContent
+            .contains("import '../app/models/user.dart';"),
+        true);
+
+    expect(generatedModelsFileContent.contains('final user = User();'), true);
+
+    expect(
+        generatedModelsFileContent
+            .contains('final Map<Type, ORM> models = {};'),
+        true);
+
+    expect(generatedModelsFileContent.contains('void bootModels() {'), true);
+
+    expect(generatedModelsFileContent.contains('models[User] = User();'), true);
+
+    expect(generatedModelsFileContent.contains('}'), true);
   });
 
   test('Create project test', () async {

@@ -1,11 +1,16 @@
 import 'dart:io';
 
 import 'package:daravel_core/daravel_core.dart';
+import 'package:daravel_core/globals.dart';
 import 'package:shelf/shelf.dart';
 import 'package:test/test.dart';
 
 void main() {
   const host = 'http://localhost';
+  tearDown(() {
+    locator.reset();
+  });
+
   test('Declared config value', () async {
     final router = DaravelRouter();
     late final Core app;

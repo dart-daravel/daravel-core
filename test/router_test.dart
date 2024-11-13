@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:daravel_core/globals.dart';
 import 'package:shelf/shelf.dart';
 import 'package:test/test.dart';
 
@@ -9,6 +10,10 @@ import 'middleware.dart';
 
 void main() {
   const host = 'http://localhost';
+
+  tearDown(() {
+    locator.reset();
+  });
 
   test('Top level routes', () async {
     final router = DaravelRouter();

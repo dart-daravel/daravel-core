@@ -20,4 +20,14 @@ void main() {
     expect('hello123World'.underscoreCase(), 'hello123_world');
     expect('hello 123 World'.underscoreCase(), 'hello_123_world');
   });
+
+  test('String: camelCase', () async {
+    expect('hello_world'.camelCase(), 'helloWorld');
+    expect('hello-world'.camelCase(), 'helloWorld');
+    expect('hello world'.camelCase(), 'helloWorld');
+    expect('hello_world_123'.camelCase(), 'helloWorld123');
+    expect('hello_123_world'.camelCase(), 'hello123World');
+    expect('hello_123_world'.camelCase(), 'hello123World');
+    expect('hello world'.camelCase(), 'helloWorld');
+  });
 }

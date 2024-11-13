@@ -9,6 +9,7 @@ export 'http/middleware/logger.dart';
 // Annotations
 export 'annotations/config.dart';
 export 'annotations/command.dart';
+export 'annotations/orm_model.dart';
 
 // Commands
 export 'console/commands/serve.dart';
@@ -29,5 +30,6 @@ export 'config/database_connection.dart';
 export 'database/db.dart';
 export 'database/schema.dart';
 export 'database/concerns/query_builder.dart';
+export 'database/orm/model.dart';
 
 export 'core.dart';

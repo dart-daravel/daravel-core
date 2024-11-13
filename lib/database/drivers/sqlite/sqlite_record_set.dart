@@ -1,13 +1,23 @@
 import 'package:daravel_core/database/concerns/record_set.dart';
+import 'package:daravel_core/database/concerns/record.dart';
+import 'package:daravel_core/database/drivers/sqlite/sqlite_record.dart';
+import 'package:daravel_core/database/orm/entity.dart';
+import 'package:daravel_core/database/orm/orm.dart';
 import 'package:sqlite3/sqlite3.dart';
 
 class SqliteRecordSet implements RecordSet {
   ResultSet result;
 
-  SqliteRecordSet(this.result);
+  @override
+  ORM? orm;
+
+  SqliteRecordSet(this.result, [this.orm]);
 
   @override
-  Record operator [](int index) => SqliteRecord(result[index]);
+  Record operator [](int index) => orm != null
+      ? Entity.fromRecord(
+          SqliteRecord(result[index]), orm.runtimeType, orm!.relationships)!
+      : SqliteRecord(result[index]);
 
   @override
   bool get isEmpty => result.isEmpty;
@@ -23,14 +33,10 @@ class SqliteRecordSet implements RecordSet {
 
   @override
   Iterable<T> map<T>(T Function(Object record) toElement) =>
-      result.map(toElement);
-}
-
-class SqliteRecord implements Record {
-  final Row _row;
-
-  SqliteRecord(this._row);
-
-  @override
-  Object? operator [](Object key) => _row[key];
+      result.map((e) => toElement(orm != null
+          ? Entity.fromRecord(
+              SqliteRecord(e),
+              orm.runtimeType,
+            )!
+          : SqliteRecord(e)));
 }

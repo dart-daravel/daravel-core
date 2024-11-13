@@ -6,6 +6,7 @@ import 'package:daravel_core/database/drivers/sqlite/sqlite_record_set.dart';
 import 'package:daravel_core/database/drivers/sqlite/schema/sqlite_blueprint.dart';
 import 'package:daravel_core/database/drivers/sqlite/sqlite_query_builder.dart';
 import 'package:daravel_core/database/drivers/sqlite/sqlite_schema_builder.dart';
+import 'package:daravel_core/database/orm/orm.dart';
 import 'package:daravel_core/database/schema/blueprint.dart';
 import 'package:sqlite3/sqlite3.dart';
 
@@ -44,9 +45,9 @@ class SQLiteDriver extends DBDriver {
 
   /// Run a select statement
   @override
-  RecordSet select(String query, [List bindings = const []]) {
+  RecordSet select(String query, [List bindings = const [], ORM? orm]) {
     final statement = _db!.prepare(query);
-    return SqliteRecordSet(statement.select(bindings));
+    return SqliteRecordSet(statement.select(bindings), orm);
   }
 
   /// Run a delete query
@@ -140,5 +141,6 @@ class SQLiteDriver extends DBDriver {
   }
 
   @override
-  QueryBuilder queryBuilder([String? table]) => SQLiteQueryBuilder(this, table);
+  QueryBuilder queryBuilder([String? table, ORM? orm]) =>
+      SQLiteQueryBuilder(this, table, orm);
 }

@@ -1,4 +1,5 @@
 import 'package:daravel_core/daravel_core.dart';
+import 'package:daravel_core/globals.dart';
 import 'package:shelf/shelf.dart' as shelf;
 import 'package:test/test.dart';
 import 'package:http/http.dart';
@@ -6,6 +7,11 @@ import 'package:http/http.dart';
 void main() {
   final port = '8080';
   final host = 'http://localhost:$port';
+
+  tearDown(() {
+    locator.reset();
+  });
+
   test('Test serve command', () async {
     final router = DaravelRouter();
     router.get(
