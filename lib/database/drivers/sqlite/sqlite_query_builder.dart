@@ -91,7 +91,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
     final query = _buildQuery(QueryType.select);
     _logQuery(query);
     _reset();
-    return _castRecordSet(driver.select(query.query, query.bindings)!);
+    return _castRecordSet(driver.select(query.query, query.bindings, orm)!);
   }
 
   @override
@@ -207,7 +207,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
     QueryStringBinding query = _buildQuery(QueryType.select);
     String sqlStatement = query.query;
     do {
-      records = driver.select(sqlStatement, query.bindings)!;
+      records = driver.select(sqlStatement, query.bindings, orm)!;
       _logQuery(sqlStatement);
       if (records.isEmpty || callback(_castRecordSet(records)) == false) {
         break;
@@ -230,7 +230,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
     QueryStringBinding query = _buildQuery(QueryType.select);
     String sqlStatement = query.query;
     do {
-      records = driver.select(sqlStatement, query.bindings)!;
+      records = driver.select(sqlStatement, query.bindings, orm)!;
       _logQuery(sqlStatement);
       if (records.isEmpty || callback(_castRecordSet(records)) == false) {
         break;
@@ -558,7 +558,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
   bool exists() {
     final queryStringBinding = _buildQuery(QueryType.select, const {}, false);
     final String query = 'SELECT EXISTS(${queryStringBinding.query});';
-    final result = driver.select(query, queryStringBinding.bindings);
+    final result = driver.select(query, queryStringBinding.bindings, orm);
     return result!.first[0] as int == 1;
   }
 
@@ -627,7 +627,7 @@ class SqliteLazyRecordSetGenerator extends LazyRecordSetGenerator {
       String query, List bindings, int chunkSize) async* {
     int offset = 0;
     while (true) {
-      final result = driver.select(query, bindings)!;
+      final result = driver.select(query, bindings, queryBuilder.orm)!;
       _logQuery(query);
       if (result.isEmpty) {
         break;

@@ -45,9 +45,9 @@ class SQLiteDriver extends DBDriver {
 
   /// Run a select statement
   @override
-  RecordSet select(String query, [List bindings = const []]) {
+  RecordSet select(String query, [List bindings = const [], ORM? orm]) {
     final statement = _db!.prepare(query);
-    return SqliteRecordSet(statement.select(bindings));
+    return SqliteRecordSet(statement.select(bindings), orm);
   }
 
   /// Run a delete query

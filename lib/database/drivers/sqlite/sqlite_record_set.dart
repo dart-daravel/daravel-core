@@ -11,7 +11,7 @@ class SqliteRecordSet implements RecordSet {
   @override
   ORM? orm;
 
-  SqliteRecordSet(this.result);
+  SqliteRecordSet(this.result, [this.orm]);
 
   @override
   Record operator [](int index) => orm != null
