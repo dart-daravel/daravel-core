@@ -100,6 +100,14 @@ class User10 extends Model {
   String? get table => 'users_10';
 }
 
+class User11 extends Model {
+  @override
+  String? get table => 'users_11';
+
+  @override
+  String? get primaryKey => null;
+}
+
 void main() {
   setUpAll(() {
     Directory(
@@ -136,6 +144,7 @@ void main() {
         User8: User8(),
         User9: User9(),
         User10: User10(),
+        User11: User11(),
       },
     ));
   });
@@ -724,6 +733,40 @@ void main() {
     final user = userModel.first();
 
     expect(user, isA<Entity>());
+    expect(user!['email'], 'a@gmail.com');
+    expect(user['password'], 'password');
+    expect(user['name'], 'A');
+    expect(user['address'], 'Earth');
+    expect(user['age'], 20);
+  });
+
+  test('Non primary key model save()', () async {
+    final userModel = User11();
+
+    Schema.create(userModel.tableName, (table) {
+      table.string('email');
+      table.string('password');
+      table.string('name');
+      table.string('address');
+      table.integer('age');
+    });
+
+    final entity = Entity.fromType(User11);
+
+    entity['email'] = 'a@gmail.com';
+    entity['password'] = 'password';
+    entity['name'] = 'A';
+    entity['address'] = 'Earth';
+    entity['age'] = 20;
+
+    await entity.save();
+
+    expect(userModel.count(), 1);
+
+    final user = userModel.first();
+
+    expect(user, isA<Entity>());
+
     expect(user!['email'], 'a@gmail.com');
     expect(user['password'], 'password');
     expect(user['name'], 'A');
