@@ -11,9 +11,4 @@ class SqliteRecord implements Record {
 
   @override
   List<String> get keys => _row.keys;
-
-  @override
-  void operator []=(String key, value) {
-    _row[key] = value;
-  }
 }

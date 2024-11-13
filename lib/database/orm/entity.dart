@@ -53,9 +53,8 @@ class Entity implements Record {
   @override
   List<String> get keys => data?.keys ?? _toSaveData.keys.toList();
 
-  @override
   void operator []=(String key, value) {
-    data == null ? _toSaveData[key] = value : data![key] = value;
+    _toSaveData[key] = value;
   }
 
   /// Save the entity to the database.
