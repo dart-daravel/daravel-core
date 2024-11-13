@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:daravel_core/database/concerns/query_builder.dart';
 import 'package:daravel_core/database/concerns/record_set.dart';
+import 'package:daravel_core/database/orm/orm.dart';
 import 'package:daravel_core/database/schema/blueprint.dart';
 
 abstract class DBDriver {
@@ -21,7 +22,8 @@ abstract class DBDriver {
   late final DBMutex deleteMutex = DBMutex();
 
   /// Execute a select query
-  RecordSet? select(String query, [List<dynamic> bindings = const []]);
+  RecordSet? select(String query,
+      [List<dynamic> bindings = const [], ORM? orm]);
 
   /// Execute an insert query
   bool insert(String query, [List<dynamic> bindings = const []]);
@@ -54,7 +56,7 @@ abstract class DBDriver {
 
   Blueprint initBlueprint(String name, bool modify);
 
-  QueryBuilder queryBuilder([String? table]);
+  QueryBuilder queryBuilder([String? table, ORM? orm]);
 
   void executeAlterBlueprint(Blueprint blueprint) {}
 }

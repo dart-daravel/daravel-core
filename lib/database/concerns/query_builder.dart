@@ -1,12 +1,16 @@
 import 'package:daravel_core/database/concerns/db_driver.dart';
 import 'package:daravel_core/database/concerns/record_set.dart';
+import 'package:daravel_core/database/concerns/record.dart';
+import 'package:daravel_core/database/orm/orm.dart';
 
 abstract class QueryBuilder {
   String? table;
 
   DBDriver driver;
 
-  QueryBuilder(this.driver, [this.table]); // ignore: coverage
+  ORM? orm;
+
+  QueryBuilder(this.driver, [this.table, this.orm]); // ignore: coverage
 
   RecordSet get();
 
@@ -107,7 +111,10 @@ abstract class LazyRecordSetGenerator {
 
   int bufferSize;
 
-  LazyRecordSetGenerator(this.driver, this.selectQuery, this.bufferSize);
+  QueryBuilder queryBuilder;
+
+  LazyRecordSetGenerator(
+      this.driver, this.selectQuery, this.bufferSize, this.queryBuilder);
 
   Future<void> each(bool? Function(Record record) callback);
 }

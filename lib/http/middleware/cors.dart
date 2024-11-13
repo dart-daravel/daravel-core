@@ -1,7 +1,6 @@
 import 'package:daravel_core/http/middleware/middleware.dart';
 import 'package:shelf/shelf.dart';
 
-// TODO: Test
 class CorsMiddleware implements DaravelMiddleware {
   final List methods;
   final dynamic origin;
