@@ -45,9 +45,12 @@ class SQLiteDriver extends DBDriver {
 
   /// Run a select statement
   @override
-  RecordSet select(String query, [List bindings = const [], ORM? orm]) {
-    final statement = _db!.prepare(query);
-    return SqliteRecordSet(statement.select(bindings), orm);
+  RecordSet select(String query, [Object bindings = const [], ORM? orm]) {
+    if (bindings is List) {
+      final statement = _db!.prepare(query);
+      return SqliteRecordSet(statement.select(bindings), orm);
+    }
+    throw ArgumentError('Bindings must be a list');
   }
 
   /// Run a delete query

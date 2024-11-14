@@ -22,8 +22,8 @@ abstract class DBDriver {
   late final DBMutex deleteMutex = DBMutex();
 
   /// Execute a select query
-  RecordSet? select(String query,
-      [List<dynamic> bindings = const [], ORM? orm]);
+  FutureOr<RecordSet> select(String query,
+      [Object bindings = const [], ORM? orm]);
 
   /// Execute an insert query
   bool insert(String query, [List<dynamic> bindings = const []]);

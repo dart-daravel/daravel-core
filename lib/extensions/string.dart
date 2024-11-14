@@ -37,4 +37,14 @@ extension StringExtension on String {
 
     return camelCaseString.toString();
   }
+
+  /// Removes specified character from the end of the string.
+  ///
+  /// e.g. 'hello'.rtrim('o') -> 'hell'
+  String rtrim(String char) => endsWith(char) ? substring(0, length - 1) : this;
+
+  /// Removes specified character from the start of the string.
+  ///
+  /// e.g. 'hello'.ltrim('h') -> 'ello'
+  String ltrim(String char) => startsWith(char) ? substring(1) : this;
 }

@@ -2,40 +2,23 @@ import 'package:daravel_core/config/database_connection.dart';
 import 'package:daravel_core/database/concerns/db_driver.dart';
 import 'package:daravel_core/database/concerns/query_builder.dart';
 import 'package:daravel_core/database/concerns/record_set.dart';
-import 'package:daravel_core/database/drivers/sqlite/sqlite_record_set.dart';
-import 'package:daravel_core/database/drivers/sqlite/schema/sqlite_blueprint.dart';
 import 'package:daravel_core/database/drivers/mongodb/mongodb_query_builder.dart';
-import 'package:daravel_core/database/drivers/sqlite/sqlite_schema_builder.dart';
+import 'package:daravel_core/extensions/string.dart';
 import 'package:daravel_core/database/schema/blueprint.dart';
-import 'package:sqlite3/sqlite3.dart';
+import 'package:mongo_dart/mongo_dart.dart';
 
 class MongoDBDriver extends DBDriver {
-  late final Database? _db;
-
-  late final Database? _insertDb;
-  late final Database? _updateDb;
-  late final Database? _deleteDb;
+  late final Db? _db;
 
   late final MongoDBSchemaBuilder _schemaBuilder = MongoDBSchemaBuilder(this);
 
   late final DatabaseConnection _configuration;
 
   MongoDBDriver(DatabaseConnection connection) {
-    _db = sqlite3
-        .open(connection.url ?? connection.database ?? 'database.sqlite');
-    _insertDb = sqlite3
-        .open(connection.url ?? connection.database ?? 'database.sqlite');
-    _updateDb = sqlite3
-        .open(connection.url ?? connection.database ?? 'database.sqlite');
-    _deleteDb = sqlite3
-        .open(connection.url ?? connection.database ?? 'database.sqlite');
-
-    if (connection.foreignKeyConstraints ?? false) {
-      _db?.execute('PRAGMA foreign_keys = ON;');
-    }
-    if (connection.busyTimeout != null) {
-      _db?.execute('PRAGMA busy_timeout = ${connection.busyTimeout};');
-    }
+    _db = Db(connection.dsn != null
+        ? '${connection.dsn!.rtrim('/')}/${connection.database}'
+        : 'mongodb://localhost:27017');
+    _db!.open();
     _configuration = connection;
   }
 
@@ -44,9 +27,9 @@ class MongoDBDriver extends DBDriver {
 
   /// Run a select statement
   @override
-  RecordSet select(String query, [List bindings = const []]) {
-    final statement = _db!.prepare(query);
-    return MongoDBRecordSet(statement.select(bindings));
+  RecordSet select(String collection, [List bindings = const []]) {
+    final result = _db!.collection(collection).find().toList();
+    return RecordSet(cursor);
   }
 
   /// Run a delete query

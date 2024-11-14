@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:daravel_core/daravel_core.dart';
 import 'package:daravel_core/database/concerns/db_driver.dart';
 import 'package:daravel_core/database/concerns/record_set.dart';
@@ -16,7 +18,8 @@ class DBConnection {
     }
   }
 
-  RecordSet? select(String query, [List<dynamic> bindings = const []]) {
+  FutureOr<RecordSet?> select(String query,
+      [List<dynamic> bindings = const []]) {
     return driver.select(query, bindings);
   }
 

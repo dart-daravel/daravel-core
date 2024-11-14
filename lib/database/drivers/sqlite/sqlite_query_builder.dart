@@ -84,25 +84,26 @@ class SQLiteQueryBuilder implements QueryBuilder {
   }
 
   @override
-  RecordSet get() {
+  Future<RecordSet> get() async {
     if (!_resultSafe) {
       throw QueryException('Query builder is in an illegal state.');
     }
     final query = _buildQuery(QueryType.select);
     _logQuery(query);
     _reset();
-    return _castRecordSet(driver.select(query.query, query.bindings, orm)!);
+    return _castRecordSet(
+        await driver.select(query.query, query.bindings, orm));
   }
 
   @override
-  Record? first() {
-    final result = get();
+  Future<Record?> first() async {
+    final result = await get();
     return result.isNotEmpty ? _castRecord(result.first) : null;
   }
 
   @override
-  Record firstOrFail() {
-    final result = first();
+  Future<Record> firstOrFail() async {
+    final result = await first();
     if (result == null) {
       throw RecordNotFoundException();
     }
@@ -180,24 +181,25 @@ class SQLiteQueryBuilder implements QueryBuilder {
   }
 
   @override
-  Object? value(String column) {
-    return first()?[column];
+  Future<Object?> value(String column) async {
+    return (await first())![column];
   }
 
   @override
-  Record? find(dynamic id) {
-    return where('id', id).first();
+  Future<Record?> find(dynamic id) async {
+    return await where('id', id).first();
   }
 
   @override
-  List<Object?> pluck(String column) {
+  Future<List<Object?>> pluck(String column) async {
     select(column);
-    final result = get();
+    final result = await get();
     return result.map((record) => (record as SqliteRecord)[column]).toList();
   }
 
   @override
-  void chunk(int size, bool? Function(RecordSet records) callback) {
+  Future<void> chunk(
+      int size, bool? Function(RecordSet records) callback) async {
     if (!_resultSafe) {
       throw QueryException('Query builder is in an illegal state.');
     }
@@ -207,7 +209,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
     QueryStringBinding query = _buildQuery(QueryType.select);
     String sqlStatement = query.query;
     do {
-      records = driver.select(sqlStatement, query.bindings, orm)!;
+      records = await driver.select(sqlStatement, query.bindings, orm);
       _logQuery(sqlStatement);
       if (records.isEmpty || callback(_castRecordSet(records)) == false) {
         break;
@@ -220,7 +222,8 @@ class SQLiteQueryBuilder implements QueryBuilder {
   }
 
   @override
-  void chunkById(int size, bool? Function(RecordSet records) callback) {
+  Future<void> chunkById(
+      int size, bool? Function(RecordSet records) callback) async {
     if (!_resultSafe) {
       throw QueryException('Query builder is in an illegal state.');
     }
@@ -230,7 +233,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
     QueryStringBinding query = _buildQuery(QueryType.select);
     String sqlStatement = query.query;
     do {
-      records = driver.select(sqlStatement, query.bindings, orm)!;
+      records = await driver.select(sqlStatement, query.bindings, orm);
       _logQuery(sqlStatement);
       if (records.isEmpty || callback(_castRecordSet(records)) == false) {
         break;
@@ -478,21 +481,21 @@ class SQLiteQueryBuilder implements QueryBuilder {
   }
 
   @override
-  num avg(String column) {
+  Future<num> avg(String column) async {
     if (!_resultSafe) {
       throw QueryException('Query builder is in an illegal state.');
     }
     List<String> backupSelectColumns = List.from(_selectColumns);
     _selectColumns.clear();
     _selectColumns.add('AVG($column) AS avg');
-    final result = get();
+    final result = await get();
     _selectColumns = List.from(backupSelectColumns);
     final avg = result.first['avg'].toString();
     return num.parse(avg == 'null' ? '0' : avg);
   }
 
   @override
-  int count([String columns = '*']) {
+  Future<int> count([String columns = '*']) async {
     if (!_resultSafe) {
       throw QueryException('Query builder is in an illegal state.');
     }
@@ -503,63 +506,63 @@ class SQLiteQueryBuilder implements QueryBuilder {
     _selectColumns.clear();
     _selectColumns
         .add('COUNT(${_distinct ? 'DISTINCT ' : ''}$columns) AS count');
-    final result = get();
+    final result = await get();
     _selectColumns = List.from(backupSelectColumns);
     final count = result.first['count'].toString();
     return int.parse(count == 'null' ? '0' : count);
   }
 
   @override
-  int max(String column) {
+  Future<int> max(String column) async {
     if (!_resultSafe) {
       throw QueryException('Query builder is in an illegal state.');
     }
     List<String> backupSelectColumns = List.from(_selectColumns);
     _selectColumns.clear();
     _selectColumns.add('MAX($column) AS max');
-    final result = get();
+    final result = await get();
     _selectColumns = List.from(backupSelectColumns);
     final max = result.first['max'].toString();
     return int.parse(max == 'null' ? '0' : max);
   }
 
   @override
-  int min(String column) {
+  Future<int> min(String column) async {
     if (!_resultSafe) {
       throw QueryException('Query builder is in an illegal state.');
     }
     List<String> backupSelectColumns = List.from(_selectColumns);
     _selectColumns.clear();
     _selectColumns.add('MIN($column) AS min');
-    final result = get();
+    final result = await get();
     _selectColumns = List.from(backupSelectColumns);
     final min = result.first['min'].toString();
     return int.parse(min == 'null' ? '0' : min);
   }
 
   @override
-  int sum(String column) {
+  Future<int> sum(String column) async {
     if (!_resultSafe) {
       throw QueryException('Query builder is in an illegal state.');
     }
     List<String> backupSelectColumns = List.from(_selectColumns);
     _selectColumns.clear();
     _selectColumns.add('SUM($column) AS sum');
-    final result = get();
+    final result = await get();
     _selectColumns = List.from(backupSelectColumns);
     final sum = result.first['sum'].toString();
     return int.parse(sum == 'null' ? '0' : sum);
   }
 
   @override
-  bool doesntExist() => !exists();
+  Future<bool> doesntExist() async => !await exists();
 
   @override
-  bool exists() {
+  Future<bool> exists() async {
     final queryStringBinding = _buildQuery(QueryType.select, const {}, false);
     final String query = 'SELECT EXISTS(${queryStringBinding.query});';
-    final result = driver.select(query, queryStringBinding.bindings, orm);
-    return result!.first[0] as int == 1;
+    final result = await driver.select(query, queryStringBinding.bindings, orm);
+    return result.first[0] as int == 1;
   }
 
   @override
@@ -627,7 +630,7 @@ class SqliteLazyRecordSetGenerator extends LazyRecordSetGenerator {
       String query, List bindings, int chunkSize) async* {
     int offset = 0;
     while (true) {
-      final result = driver.select(query, bindings, queryBuilder.orm)!;
+      final result = await driver.select(query, bindings);
       _logQuery(query);
       if (result.isEmpty) {
         break;

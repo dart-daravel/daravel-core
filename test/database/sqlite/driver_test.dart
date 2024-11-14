@@ -439,7 +439,7 @@ void main() {
       ['john@gmail.com', 'password'],
     );
 
-    var selectResult = DB.select('SELECT * FROM $table');
+    var selectResult = await DB.select('SELECT * FROM $table');
 
     expect(selectResult!.length, 1);
 
@@ -450,7 +450,7 @@ void main() {
 
     expect(result, 1);
 
-    selectResult = DB.select('SELECT * FROM $table');
+    selectResult = await DB.select('SELECT * FROM $table');
 
     expect(selectResult!.length, 1);
 
@@ -463,7 +463,7 @@ void main() {
     expect(selectResult.first['password'], 'new-password');
   });
 
-  test('Rename table', () {
+  test('Rename table', () async {
     final table = 'users_19';
     final query =
         'CREATE TABLE $table (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, email VARCHAR(100) NOT NULL, password VARCHAR(100) NOT NULL);';
@@ -474,7 +474,7 @@ void main() {
 
     expect(renameQuery, 'ALTER TABLE $table RENAME TO new_users;');
 
-    final result = DB.select('SELECT * FROM new_users');
+    final result = await DB.select('SELECT * FROM new_users');
 
     expect(result!.length, 0);
   });

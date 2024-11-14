@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:daravel_core/daravel_core.dart';
 import 'package:daravel_core/database/db_connection.dart';
 import 'package:daravel_core/database/concerns/record_set.dart';
@@ -18,7 +20,8 @@ class DB {
 
   Map<String, DatabaseConnection>? connections;
 
-  static RecordSet? select(String query, [List<dynamic> bindings = const []]) =>
+  static FutureOr<RecordSet?> select(String query,
+          [List<dynamic> bindings = const []]) =>
       _mainInstance!._dbConnection!.select(query, bindings);
 
   static bool statement(String query, [List<dynamic> bindings = const []]) =>
