@@ -315,28 +315,28 @@ void main() {
         throwsA(isA<UnimplementedError>()));
   });
 
-  test('Run SQL SELECT statement', () {
+  test('Run SQL SELECT statement', () async {
     final table = 'users_14';
     final query =
         'CREATE TABLE $table (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, email VARCHAR(100) NOT NULL, password VARCHAR(100) NOT NULL);';
 
     DB.connection()!.statement(query);
     // Select from connection.
-    var result = DB.connection()!.select('SELECT * FROM $table');
+    var result = await DB.connection()!.select('SELECT * FROM $table');
 
     expect(result, isA<RecordSet>());
 
-    expect(result!.length, 0);
+    expect(result.length, 0);
 
     // Direct Select
-    result = DB.select('SELECT * FROM $table');
+    result = await DB.select('SELECT * FROM $table');
 
     expect(result, isA<RecordSet>());
 
-    expect(result!.length, 0);
+    expect(result.length, 0);
   });
 
-  test('Secondary Sqlite connection', () {
+  test('Secondary Sqlite connection', () async {
     final table = 'users_15';
     final query =
         'CREATE TABLE $table (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, email VARCHAR(100) NOT NULL, password VARCHAR(100) NOT NULL);';
@@ -344,14 +344,16 @@ void main() {
     DB.connection('sqlite1')!.statement(query);
 
     // Select from connection.
-    final result = DB.connection('sqlite1')!.select('SELECT * FROM $table');
+    final result =
+        await DB.connection('sqlite1')!.select('SELECT * FROM $table');
 
     expect(result, isA<RecordSet>());
 
-    expect(result!.length, 0);
+    expect(result.length, 0);
   });
 
-  test('Test non-existent connection & switching of default connection', () {
+  test('Test non-existent connection & switching of default connection',
+      () async {
     final table = 'users_15';
     final query =
         'CREATE TABLE $table (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, email VARCHAR(100) NOT NULL, password VARCHAR(100) NOT NULL);';
@@ -364,14 +366,14 @@ void main() {
 
     DB.setDefaultConnection('sqlite1');
 
-    final result = DB.select('SELECT * FROM $table');
+    final result = await DB.select('SELECT * FROM $table');
 
     expect(result, isA<RecordSet>());
 
-    expect(result!.length, 0);
+    expect(result.length, 0);
   });
 
-  test('Insert statement', () {
+  test('Insert statement', () async {
     final table = 'users_16';
     final query =
         'CREATE TABLE $table (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, email VARCHAR(100) NOT NULL, password VARCHAR(100) NOT NULL);';
@@ -384,9 +386,9 @@ void main() {
 
     expect(result, true);
 
-    final selectResult = DB.select('SELECT * FROM $table');
+    final selectResult = await DB.select('SELECT * FROM $table');
 
-    expect(selectResult!.length, 1);
+    expect(selectResult.length, 1);
 
     expect(selectResult.first['id'], 1);
     expect(selectResult.first['email'], 'john@gmail.com');
@@ -411,18 +413,18 @@ void main() {
       ['frank@gmail.com', 'password'],
     );
 
-    var selectResult = DB.select('SELECT * FROM $table');
+    var selectResult = await DB.select('SELECT * FROM $table');
 
-    expect(selectResult!.length, 1);
+    expect(selectResult.length, 1);
 
     var result = await DB
         .delete('DELETE FROM $table WHERE email = ?', ['frank@gmail.com']);
 
     expect(result, 1);
 
-    selectResult = DB.select('SELECT * FROM $table');
+    selectResult = await DB.select('SELECT * FROM $table');
 
-    expect(selectResult!.length, 0);
+    expect(selectResult.length, 0);
   });
 
   test('Update statement', () async {
@@ -441,7 +443,7 @@ void main() {
 
     var selectResult = await DB.select('SELECT * FROM $table');
 
-    expect(selectResult!.length, 1);
+    expect(selectResult.length, 1);
 
     var result = await DB.update(
       'UPDATE $table SET email = ?, password = ? WHERE email = ?',
@@ -452,7 +454,7 @@ void main() {
 
     selectResult = await DB.select('SELECT * FROM $table');
 
-    expect(selectResult!.length, 1);
+    expect(selectResult.length, 1);
 
     expect(selectResult.first['id'], 1);
     expect(selectResult.first['email'], 'john-edited@gmail.com');
@@ -476,7 +478,7 @@ void main() {
 
     final result = await DB.select('SELECT * FROM new_users');
 
-    expect(result!.length, 0);
+    expect(result.length, 0);
   });
 
   test('Drop table', () {

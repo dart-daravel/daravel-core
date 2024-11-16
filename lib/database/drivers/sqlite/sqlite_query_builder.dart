@@ -252,7 +252,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
     return this;
   }
 
-  /// Build the WHERE clause of the query.
+  /// Build the SQL query.
   QueryStringBinding _buildQuery(QueryType type,
       [Map<String, dynamic> values = const {}, bool terminate = true]) {
     switch (type) {
@@ -441,6 +441,16 @@ class SQLiteQueryBuilder implements QueryBuilder {
       return this;
     }
     _addWhere('AND', false, false, column, operatorOrValue, value);
+    return this;
+  }
+
+  @override
+  Future<QueryBuilder> whereAsync(Function(QueryBuilder) closure) async {
+    _resultSafe = false;
+    _addWhere('AND', true, false);
+    await closure(this);
+    _addWhere('AND', false, true);
+    _resultSafe = true;
     return this;
   }
 

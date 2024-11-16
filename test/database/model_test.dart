@@ -157,7 +157,7 @@ void main() {
     locator.reset();
   });
 
-  test('Model all()', () {
+  test('Model all()', () async {
     final table = 'users';
 
     Schema.create(table, (table) {
@@ -193,25 +193,25 @@ void main() {
       'age': 19
     });
 
-    final users = User().all();
+    final users = await User().all();
 
     expect(users, isA<List<Entity>>());
     expect(users.length, 3);
 
     // orWhere clause
-    final users2 = User().where('id', 1).orWhere('id', 2).get();
+    final users2 = await User().where('id', 1).orWhere('id', 2).get();
 
     expect(users2, isA<RecordSet>());
     expect(users2.length, 2);
 
     // Query Builder
-    final user = User().query().where('id', 1).first();
+    final user = await User().query().where('id', 1).first();
 
     expect(user, isA<Entity>());
     expect(user!['id'], 1);
   });
 
-  test('Model all() with custom table name', () {
+  test('Model all() with custom table name', () async {
     final userModel = User2();
 
     Schema.create(userModel.tableName, (table) {
@@ -247,18 +247,18 @@ void main() {
       'age': 19
     });
 
-    final users = User2().all();
+    final users = await User2().all();
 
     expect(users, isA<List<Entity>>());
     expect(users.length, 3);
 
     // Where clause
-    final user = User2().where('id', 1).first();
+    final user = await User2().where('id', 1).first();
     expect(user, isA<Entity>());
     expect(user!['id'], 1);
   });
 
-  test('Model hasOne & belongsTo Relationship', () {
+  test('Model hasOne & belongsTo Relationship', () async {
     final employeeModel = Employee();
     final addressModel = Address();
 
@@ -323,8 +323,8 @@ void main() {
     });
 
     // hasOne
-    final user = employeeModel.where('id', 1).first();
-    final address = user!['=address'];
+    final user = await employeeModel.where('id', 1).first();
+    final address = await user!['=address'];
 
     expect(user, isA<Entity>());
     expect(address, isA<Entity>());
@@ -333,27 +333,28 @@ void main() {
     expect(address['building_floors'], 5);
 
     // belongsTo
-    final address2 = addressModel.where('id', 3).first();
+    final address2 = await addressModel.where('id', 3).first();
 
     expect(address2, isA<Entity>());
-    expect(address2!['=employee']['name'], 'Jack');
+    expect((await address2!['=employee'])['name'], 'Jack');
 
     // Invoke hasOne
-    final address3 = (user['=address()'] as QueryBuilder)
+    final address3 = await (user['=address()'] as QueryBuilder)
         .where('address', 'Mercury')
         .first();
 
     expect(address3, null);
 
     // Invoke belongsTo
-    final user2 =
-        (address2['=employee()'] as QueryBuilder).where('name', 'Jack').first();
+    final user2 = await (address2['=employee()'] as QueryBuilder)
+        .where('name', 'Jack')
+        .first();
 
     expect(user2, isA<Entity>());
     expect(user2!['name'], 'Jack');
   });
 
-  test('Model hasMany Relationship', () {
+  test('Model hasMany Relationship', () async {
     final userModel = User3();
     final postModel = Post();
 
@@ -405,8 +406,8 @@ void main() {
       'user_id': 1,
     });
 
-    final user = userModel.first();
-    final posts = user!['=posts'] as RecordSet;
+    final user = await userModel.first();
+    final posts = (await user!['=posts']) as RecordSet;
 
     expect(user, isA<Entity>());
     expect(posts, isA<RecordSet>());
@@ -414,11 +415,12 @@ void main() {
     expect(posts[0]['title'], 'Post 1');
 
     // Invoke
-    final post = user['=posts()'].where('title', 'Post 2').first() as Entity;
+    final post =
+        await user['=posts()'].where('title', 'Post 2').first() as Entity;
     expect(post['title'], 'Post 2');
   });
 
-  test('belongsToMany', () {
+  test('belongsToMany', () async {
     final userModel = User4();
     final statusModel = Status();
 
@@ -474,8 +476,8 @@ void main() {
       'age': 19
     });
 
-    final status = statusModel.where('id', 1).first();
-    final users = status!['=users'] as RecordSet;
+    final status = await statusModel.where('id', 1).first();
+    final users = (await status!['=users']) as RecordSet;
 
     expect(status, isA<Entity>());
 
@@ -484,11 +486,11 @@ void main() {
     expect(users.first['name'], 'A');
 
     // Invoke
-    final user = status['=users()'].where('name', 'A').first() as Entity;
+    final user = await status['=users()'].where('name', 'A').first() as Entity;
     expect(user['name'], 'A');
   });
 
-  test('chunk and chunkById', () {
+  test('chunk and chunkById', () async {
     final userModel = User5();
 
     Schema.create(userModel.tableName, (table) {
@@ -526,7 +528,7 @@ void main() {
 
     int chunks = 0;
 
-    userModel.chunk(2, (users) {
+    await userModel.chunk(2, (users) {
       expect(users, isA<RecordSet>());
       expect(users.length, chunks == 0 ? 2 : 1);
       chunks++;
@@ -537,7 +539,7 @@ void main() {
 
     chunks = 0;
 
-    userModel.chunkById(2, (users) {
+    await userModel.chunkById(2, (users) {
       expect(users, isA<RecordSet>());
       expect(users.length, chunks == 0 ? 2 : 1);
       chunks++;
@@ -584,13 +586,13 @@ void main() {
     });
 
     await userModel.delete(1);
-    final users = userModel.all();
+    final users = await userModel.all();
     expect(users.length, 2);
     await userModel.delete(2);
-    final users2 = userModel.all();
+    final users2 = await userModel.all();
     expect(users2.length, 1);
     await userModel.delete(3);
-    final users3 = userModel.all();
+    final users3 = await userModel.all();
     expect(users3.length, 0);
 
     // Map from ORM returned RecordSet.
@@ -646,7 +648,7 @@ void main() {
     });
   });
 
-  test('save() and mass assignment vulnerability - fillable', () {
+  test('save() and mass assignment vulnerability - fillable', () async {
     final userModel = User8();
 
     Schema.create(userModel.tableName, (table) {
@@ -666,7 +668,7 @@ void main() {
       'age': 20
     });
 
-    final user = userModel.first();
+    final user = await userModel.first();
 
     expect(user, isA<Entity>());
     expect(user!['email'], 'a@gmail.com');
@@ -676,7 +678,7 @@ void main() {
     expect(user['age'], null);
   });
 
-  test('save() and mass assignment vulnerability - guarded', () {
+  test('save() and mass assignment vulnerability - guarded', () async {
     final userModel = User9();
 
     Schema.create(userModel.tableName, (table) {
@@ -696,7 +698,7 @@ void main() {
       'age': 20
     });
 
-    final user = userModel.first();
+    final user = await userModel.first();
 
     expect(user, isA<Entity>());
     expect(user!['email'], 'a@gmail.com');
@@ -728,9 +730,9 @@ void main() {
 
     await entity.save();
 
-    expect(userModel.count(), 1);
+    expect(await userModel.count(), 1);
 
-    final user = userModel.first();
+    final user = await userModel.first();
 
     expect(user, isA<Entity>());
     expect(user!['email'], 'a@gmail.com');
@@ -761,9 +763,9 @@ void main() {
 
     await entity.save();
 
-    expect(userModel.count(), 1);
+    expect(await userModel.count(), 1);
 
-    final user = userModel.first();
+    final user = await userModel.first();
 
     expect(user, isA<Entity>());
 

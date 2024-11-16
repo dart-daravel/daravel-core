@@ -112,7 +112,7 @@ void main() {
       'age': 30
     });
 
-    final user = userModel.find(1);
+    final user = await userModel.find(1);
 
     expect(UserResource(user!).hidden, ['password', 'user.password']);
     expect(UserResource(user).statusCode, 200);
@@ -126,7 +126,7 @@ void main() {
     expect(response['user']['email'], 'tok@gmail.com');
     expect(response['user']['password'], null);
 
-    final users = userModel.all();
+    final users = await userModel.all();
 
     final response2 = json
         .decode(await UserListResource(users).toJsonResponse().readAsString());

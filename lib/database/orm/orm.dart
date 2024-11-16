@@ -67,10 +67,10 @@ abstract class ORM {
     return await firstOrFail();
   }
 
-  void chunk(int size, bool Function(RecordSet) callback) =>
+  Future<void> chunk(int size, bool Function(RecordSet) callback) =>
       _dbDriver.queryBuilder(tableName, model).chunk(size, callback);
 
-  void chunkById(int size, bool Function(RecordSet) callback) =>
+  Future<void> chunkById(int size, bool Function(RecordSet) callback) =>
       _dbDriver.queryBuilder(tableName, model).chunkById(size, callback);
 
   Future<int> delete(dynamic id) =>

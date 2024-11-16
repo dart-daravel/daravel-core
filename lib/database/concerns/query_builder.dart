@@ -44,6 +44,8 @@ abstract class QueryBuilder {
 
   QueryBuilder where(dynamic column, [dynamic operatorOrValue, dynamic value]);
 
+  Future<QueryBuilder> whereAsync(Function(QueryBuilder) where);
+
   QueryBuilder orWhere(dynamic column,
       [dynamic operatorOrValue, dynamic value]);
 
@@ -139,6 +141,22 @@ class QueryStringBinding {
       return value.toString();
     });
   }
+}
+
+class NoSqlQuery {
+  final QueryType type;
+  final List<String>? selectFields;
+  final List<WhereClause>? whereClauses;
+  final Map<String, dynamic>? insertValues;
+  final Map<String, dynamic>? updateValues;
+
+  NoSqlQuery({
+    this.type = QueryType.select,
+    this.selectFields,
+    this.whereClauses,
+    this.insertValues,
+    this.updateValues,
+  });
 }
 
 class SafeQueryBuilderParameterParser {

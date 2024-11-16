@@ -20,7 +20,7 @@ class DB {
 
   Map<String, DatabaseConnection>? connections;
 
-  static FutureOr<RecordSet?> select(String query,
+  static FutureOr<RecordSet> select(String query,
           [List<dynamic> bindings = const []]) =>
       _mainInstance!._dbConnection!.select(query, bindings);
 
