@@ -76,11 +76,8 @@ class MongoDBDriver extends DBDriver {
     return result != null ? MongoDBRecord(result) : null;
   }
 
-  /// Run a delete query
-  /// Throws [ArgumentError] if length of [bindings] is not equal number of
-  /// placeholders in query.
   @override
-  Future<int> delete(String query, [List bindings = const []]) =>
+  Future<int> delete(String query, [Object bindings = const []]) =>
       throw UnimplementedError();
 
   /// Run an insert query.

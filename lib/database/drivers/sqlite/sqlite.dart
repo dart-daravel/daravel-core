@@ -66,16 +66,19 @@ class SQLiteDriver extends DBDriver {
   /// Throws [ArgumentError] if length of [bindings] is not equal number of
   /// placeholders in query.
   @override
-  Future<int> delete(String query, [List bindings = const []]) async {
-    final statement = _deleteDb!.prepare(query);
-    await deleteMutex.acquire();
-    try {
-      statement.execute(bindings);
-      _logQuery(query, bindings);
-      return _deleteDb.updatedRows;
-    } finally {
-      deleteMutex.release();
+  Future<int> delete(String query, [Object bindings = const []]) async {
+    if (bindings is List) {
+      final statement = _deleteDb!.prepare(query);
+      await deleteMutex.acquire();
+      try {
+        statement.execute(bindings);
+        _logQuery(query, bindings);
+        return _deleteDb.updatedRows;
+      } finally {
+        deleteMutex.release();
+      }
     }
+    throw ArgumentError('Bindings must be a list');
   }
 
   /// Run an insert query.

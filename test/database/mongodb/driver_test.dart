@@ -54,96 +54,33 @@ void main() {
     expect(user['_id'], result['_id']);
   });
 
-  // test('Secondary Sqlite connection', () async {
-  //   final table = 'users_15';
-  //   final query =
-  //       'CREATE TABLE $table (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, email VARCHAR(100) NOT NULL, password VARCHAR(100) NOT NULL);';
+  test('Delete statement', () async {
+    final collection = 'users_2';
 
-  //   DB.connection('sqlite1')!.statement(query);
+    final result = await DB.connection()!.insert(
+          collection,
+          NoSqlQuery(
+            type: QueryType.insert,
+            insertValues: {
+              'name': 'A',
+              'email': 'a@gmail.com',
+              'address': 'Earth',
+            },
+          ),
+        ) as Map<String, dynamic>;
 
-  //   // Select from connection.
-  //   final result =
-  //       await DB.connection('sqlite1')!.select('SELECT * FROM $table');
+    final user = await DB.connection()!.findOne(
+        collection,
+        NoSqlQuery(whereMap: {
+          'name': 'A',
+        }));
 
-  //   expect(result, isA<RecordSet>());
+    expect(user!['email'], 'a@gmail.com');
+    expect(user['_id'], result['_id']);
 
-  //   expect(result.length, 0);
-  // });
-
-  // test('Test non-existent connection & switching of default connection',
-  //     () async {
-  //   final table = 'users_15';
-  //   final query =
-  //       'CREATE TABLE $table (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, email VARCHAR(100) NOT NULL, password VARCHAR(100) NOT NULL);';
-
-  //   expect(() => DB.connection('sqlite-non-existent')!.statement(query),
-  //       throwsA(isA<DBConnectionNotFoundException>()));
-
-  //   expect(() => DB.setDefaultConnection('sqlite-non-existent'),
-  //       throwsA(isA<DBConnectionNotFoundException>()));
-
-  //   DB.setDefaultConnection('sqlite1');
-
-  //   final result = await DB.select('SELECT * FROM $table');
-
-  //   expect(result, isA<RecordSet>());
-
-  //   expect(result.length, 0);
-  // });
-
-  // test('Insert statement', () async {
-  //   final table = 'users_16';
-  //   final query =
-  //       'CREATE TABLE $table (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, email VARCHAR(100) NOT NULL, password VARCHAR(100) NOT NULL);';
-
-  //   DB.connection()!.unprepared(query);
-
-  //   final result = DB.insert(
-  //       'INSERT INTO $table (email, password) VALUES (?, ?)',
-  //       ['john@gmail.com', 'password']);
-
-  //   expect(result, true);
-
-  //   final selectResult = await DB.select('SELECT * FROM $table');
-
-  //   expect(selectResult.length, 1);
-
-  //   expect(selectResult.first['id'], 1);
-  //   expect(selectResult.first['email'], 'john@gmail.com');
-  //   expect(selectResult.first['password'], 'password');
-
-  //   expect(selectResult.first['id'], 1);
-  //   expect(selectResult.first['email'], 'john@gmail.com');
-  //   expect(selectResult.first['password'], 'password');
-  // });
-
-  // test('Delete statement', () async {
-  //   final table = 'users_17';
-
-  //   Schema.create(table, (table) {
-  //     table.increments('id');
-  //     table.string('email');
-  //     table.string('password');
-  //   });
-
-  //   DB.insert(
-  //     'INSERT INTO $table (email, password) VALUES (?, ?)',
-  //     ['frank@gmail.com', 'password'],
-  //   );
-
-  //   var selectResult = await DB.select('SELECT * FROM $table');
-
-  //   expect(selectResult.length, 1);
-
-  //   var result = await DB
-  //       .delete('DELETE FROM $table WHERE email = ?', ['frank@gmail.com']);
-
-  //   expect(result, 1);
-
-  //   selectResult = await DB.select('SELECT * FROM $table');
-
-  //   expect(selectResult.length, 0);
-  // });
+    // await DB.connection()!.delete(collection,
+    //     NoSqlQuery(type: QueryType.delete, whereMap: {'_id': user['_id']}));
+  });
 
   // test('Update statement', () async {
   //   final table = 'users_18';

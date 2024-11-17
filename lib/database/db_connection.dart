@@ -46,6 +46,8 @@ class DBConnection {
     return driver.delete(query, bindings);
   }
 
+  // Future<void> deleteOne(String collection, NoSqlQuery query)
+
   Future<int> update(String query, [List<dynamic> bindings = const []]) async {
     return await driver.update(query, bindings);
   }
