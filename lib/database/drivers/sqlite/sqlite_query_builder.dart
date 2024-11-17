@@ -32,8 +32,6 @@ class SQLiteQueryBuilder implements QueryBuilder {
   bool _resultSafe = true;
   bool _distinct = false;
 
-  late final ConsoleLogger logger = ConsoleLogger();
-
   SQLiteQueryBuilder(this.driver, [this.table, this.orm]);
 
   List<String> _selectColumns = [];
@@ -89,7 +87,7 @@ class SQLiteQueryBuilder implements QueryBuilder {
       throw QueryException('Query builder is in an illegal state.');
     }
     final query = _buildQuery(QueryType.select);
-    _logQuery(query);
+
     _reset();
     return _castRecordSet(
         await driver.select(query.query, query.bindings, orm));
@@ -139,7 +137,6 @@ class SQLiteQueryBuilder implements QueryBuilder {
     final query = _buildQuery(QueryType.update, values);
     await driver.updateMutex.acquire();
     try {
-      _logQuery(query);
       _reset();
       return driver.update(query.query, query.bindings);
     } finally {
@@ -156,21 +153,11 @@ class SQLiteQueryBuilder implements QueryBuilder {
     await driver.deleteMutex.acquire();
     try {
       final deleted = await driver.delete(query.query, query.bindings);
-      _logQuery(query);
+
       _reset();
       return deleted;
     } finally {
       driver.deleteMutex.release();
-    }
-  }
-
-  _logQuery(Object query) {
-    if (driver.logging) {
-      if (query is QueryStringBinding) {
-        query.getUnsafeQuery().then((query) => logger.debug(query));
-      } else {
-        logger.debug(query.toString());
-      }
     }
   }
 
@@ -210,7 +197,6 @@ class SQLiteQueryBuilder implements QueryBuilder {
     String sqlStatement = query.query;
     do {
       records = await driver.select(sqlStatement, query.bindings, orm);
-      _logQuery(sqlStatement);
       if (records.isEmpty || callback(_castRecordSet(records)) == false) {
         break;
       }
@@ -234,7 +220,6 @@ class SQLiteQueryBuilder implements QueryBuilder {
     String sqlStatement = query.query;
     do {
       records = await driver.select(sqlStatement, query.bindings, orm);
-      _logQuery(sqlStatement);
       if (records.isEmpty || callback(_castRecordSet(records)) == false) {
         break;
       }
@@ -641,7 +626,6 @@ class SqliteLazyRecordSetGenerator extends LazyRecordSetGenerator {
     int offset = 0;
     while (true) {
       final result = await driver.select(query, bindings);
-      _logQuery(query);
       if (result.isEmpty) {
         break;
       }
@@ -658,11 +642,5 @@ class SqliteLazyRecordSetGenerator extends LazyRecordSetGenerator {
       return records;
     }
     return records;
-  }
-
-  _logQuery(Object query) {
-    if (driver.logging) {
-      logger.debug(query.toString());
-    }
   }
 }

@@ -15,7 +15,9 @@ class MongoDBQueryBuilder implements QueryBuilder {
   DBDriver driver;
 
   final List<String> _selectColumns = [];
-  final List<WhereClause> _whereList = [];
+  final Map<String, Object> _whereMap = {};
+
+  final List<Map<String, Object>> _targetWhereMaps = [];
 
   String? _limitQuery;
   String? _orderByQuery;
@@ -34,7 +36,8 @@ class MongoDBQueryBuilder implements QueryBuilder {
   List<String>? _oldSelectColumns;
 
   void _reset() {
-    _whereList.clear();
+    _targetWhereMaps.clear();
+    _whereMap.clear();
     _limitQuery = null;
     _orderByQuery = null;
     _oldSelectColumns = List.from(_selectColumns);
@@ -60,7 +63,6 @@ class MongoDBQueryBuilder implements QueryBuilder {
       throw QueryException('Query builder is in an illegal state.');
     }
     final query = _buildQuery(QueryType.select);
-    _logQuery(query);
     _reset();
     return await driver.select(table ?? '', query);
   }
@@ -83,7 +85,7 @@ class MongoDBQueryBuilder implements QueryBuilder {
   NoSqlQuery _buildSelectQuery() {
     final query = NoSqlQuery(
       selectFields: _selectColumns,
-      whereClauses: _whereList,
+      whereMap: _whereMap.isNotEmpty ? _whereMap : null,
     );
     return query;
   }
@@ -99,7 +101,7 @@ class MongoDBQueryBuilder implements QueryBuilder {
   NoSqlQuery _buildUpdateQuery(Map<String, dynamic> values) {
     final query = NoSqlQuery(
       type: QueryType.update,
-      whereClauses: _whereList,
+      whereMap: _whereMap.isNotEmpty ? _whereMap : null,
       updateValues: values,
     );
     return query;
@@ -108,53 +110,140 @@ class MongoDBQueryBuilder implements QueryBuilder {
   NoSqlQuery _buildDeleteQuery() {
     final query = NoSqlQuery(
       type: QueryType.delete,
-      whereClauses: _whereList,
+      whereMap: _whereMap.isNotEmpty ? _whereMap : null,
     );
     return query;
   }
 
   void _addWhere(
-      String logicConcatenator, bool isOpenBracket, bool isCloseBracket,
-      [String? column,
-      dynamic operatorOrValue,
-      dynamic value,
-      String? rawWhere,
-      List<dynamic>? rawBindings]) {
-    // Add logic concatenator to the last entry.
-    if (_whereList.isNotEmpty) {
-      _whereList[_whereList.length - 1].concatenator = logicConcatenator;
+    String logicConcatenator,
+    bool isOpenBracket,
+    bool isCloseBracket, [
+    String? column,
+    dynamic operatorOrValue,
+    dynamic value,
+  ]) {
+    if (_targetWhereMaps.isEmpty) {
+      _targetWhereMaps.add(_whereMap);
     }
-    // Raw where clause.
-    if (rawWhere != null) {
-      _whereList.add(WhereClause(
-        isOpenBracket: isOpenBracket,
-        isCloseBracket: isCloseBracket,
-        rawClause: rawWhere,
-        rawBindings: rawBindings,
-      ));
-      return;
-    }
-    // Add new entry.
-    if (operatorOrValue is String && isSqlOperator(operatorOrValue)) {
-      _whereList.add(
-        WhereClause(
-          isOpenBracket: isOpenBracket,
-          column: column,
-          operator: operatorOrValue,
-          value: value,
-          isCloseBracket: isCloseBracket,
-        ),
-      );
+    if (isOpenBracket) {
+      _targetWhereMaps.add(_expandWhereMapWithOpOperand(logicConcatenator)!);
+    } else if (isCloseBracket) {
+      _targetWhereMaps.removeLast();
+    } else if (logicConcatenator != 'AND') {
+      if (!_containsMongoDBConcatenators(_targetWhereMaps.last.keys.toList())) {
+        _expandWhereMapWithOpOperand(
+          logicConcatenator,
+          _getMongoQueryOpOperand(
+              column!,
+              isSqlOperator(operatorOrValue) ? operatorOrValue : '=',
+              !isSqlOperator(operatorOrValue) ? operatorOrValue : value),
+        );
+      } else {
+        (_targetWhereMaps.last[_sqlToBsonConcatenator(logicConcatenator)]
+                as List)
+            .add(_getMongoQueryOpOperand(
+                column!,
+                isSqlOperator(operatorOrValue) ? operatorOrValue : '=',
+                !isSqlOperator(operatorOrValue) ? operatorOrValue : value));
+      }
     } else {
-      _whereList.add(
-        WhereClause(
-          isOpenBracket: isOpenBracket,
-          column: column,
-          operator: '=',
-          value: operatorOrValue,
-          isCloseBracket: isCloseBracket,
-        ),
-      );
+      if (!_containsMongoDBConcatenators(_targetWhereMaps.last.keys.toList())) {
+        _targetWhereMaps.last[column!] = _getMongoQueryOpOperand(
+            null,
+            isSqlOperator(operatorOrValue) ? operatorOrValue : '=',
+            !isSqlOperator(operatorOrValue) ? operatorOrValue : value);
+      } else if (_targetWhereMaps.last
+          .containsKey(_sqlToBsonConcatenator(logicConcatenator))) {
+        (_targetWhereMaps.last[_sqlToBsonConcatenator(logicConcatenator)]
+                as List)
+            .add(_getMongoQueryOpOperand(
+                column!,
+                isSqlOperator(operatorOrValue) ? operatorOrValue : '=',
+                !isSqlOperator(operatorOrValue) ? operatorOrValue : value));
+      } else {
+        _targetWhereMaps.last[_sqlToBsonConcatenator(logicConcatenator)] = [
+          _getMongoQueryOpOperand(
+              column!,
+              isSqlOperator(operatorOrValue) ? operatorOrValue : '=',
+              !isSqlOperator(operatorOrValue) ? operatorOrValue : value)
+        ];
+      }
+    }
+  }
+
+  Map<String, Object>? _expandWhereMapWithOpOperand(String concatenator,
+      [Map<String, Object>? opOperand]) {
+    final andMap = Map.from(_targetWhereMaps.last);
+    _targetWhereMaps.clear();
+    _targetWhereMaps.last[_sqlToBsonConcatenator('AND')] = andMap;
+    if (opOperand != null) {
+      _targetWhereMaps.last[_sqlToBsonConcatenator(concatenator)] = [
+        opOperand,
+      ];
+    } else {
+      final Map<String, Object> newMap = {};
+      if (_targetWhereMaps.last
+          .containsKey(_sqlToBsonConcatenator(concatenator))) {
+        (_targetWhereMaps.last[_sqlToBsonConcatenator(concatenator)] as List)
+            .add(newMap);
+      } else {
+        _targetWhereMaps.last[_sqlToBsonConcatenator(concatenator)] = [newMap];
+      }
+      return newMap;
+    }
+    return null;
+  }
+
+  Map<String, Object> _getMongoQueryOpOperand(
+      String? column, String operator, String value) {
+    switch (operator) {
+      case '>':
+        return column != null
+            ? {
+                column: {'\$gt': value}
+              }
+            : {'\$gt': value};
+      case '<':
+        return column != null
+            ? {
+                column: {'\$lt': value}
+              }
+            : {'\$lt': value};
+      case '!=':
+      case '<>':
+        return column != null
+            ? {
+                column: {'\$ne': value}
+              }
+            : {'\$ne': value};
+      case '=':
+      default:
+        return {column!: value};
+    }
+  }
+
+  bool _containsMongoDBConcatenators(List<String> keys) {
+    for (final key in keys) {
+      if (['\$or', '\$and'].contains(key)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  String _sqlToBsonConcatenator(String concatenator) {
+    switch (concatenator) {
+      case 'AND':
+        return '\$and';
+      case 'OR':
+        return '\$or';
+      case 'NOT':
+        return '\$not';
+      case 'NOR':
+        return '\$nor';
+      default:
+        return '\$and';
     }
   }
 
@@ -380,7 +469,6 @@ class MongoDBQueryBuilder implements QueryBuilder {
 //     final query = _buildQuery(QueryType.update, values);
 //     await driver.updateMutex.acquire();
 //     try {
-//       _logQuery(query);
 //       _reset();
 //       return driver.update(query.query, query.bindings);
 //     } finally {
@@ -402,12 +490,6 @@ class MongoDBQueryBuilder implements QueryBuilder {
 //       driver.deleteMutex.release();
 //     }
 //   }
-
-  _logQuery(NoSqlQuery query) {
-    if (driver.logging) {
-      logger.debug('TODO: Implement MongoDB Driver logging');
-    }
-  }
 
   @override
   Future<QueryBuilder> whereAsync(Function(QueryBuilder p1) where) {
@@ -472,7 +554,6 @@ class MongoDBQueryBuilder implements QueryBuilder {
 //     String sqlStatement = query.query;
 //     do {
 //       records = driver.select(sqlStatement, query.bindings)!;
-//       _logQuery(query);
 //       if (callback(records) == false) {
 //         break;
 //       }

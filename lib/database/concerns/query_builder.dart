@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:daravel_core/database/concerns/db_driver.dart';
 import 'package:daravel_core/database/concerns/record_set.dart';
@@ -146,17 +147,52 @@ class QueryStringBinding {
 class NoSqlQuery {
   final QueryType type;
   final List<String>? selectFields;
-  final List<WhereClause>? whereClauses;
+  final Map<String, Object>? whereMap;
   final Map<String, dynamic>? insertValues;
   final Map<String, dynamic>? updateValues;
+  final bool? bypassDocumentValidation;
+  final bool? findOne;
 
   NoSqlQuery({
     this.type = QueryType.select,
+    this.findOne,
     this.selectFields,
-    this.whereClauses,
+    this.whereMap,
     this.insertValues,
     this.updateValues,
+    this.bypassDocumentValidation,
   });
+
+  @override
+  String toString() {
+    final StringBuffer queryString = StringBuffer();
+    if (type == QueryType.select) {
+      if (findOne ?? false) {
+        queryString.write('db.collection.findOne(');
+      } else {
+        queryString.write('db.collection.find(');
+      }
+    } else if (type == QueryType.insert) {
+      queryString.write('db.collection.insert(');
+    }
+
+    final query = {};
+
+    if (selectFields != null) {
+      query['project'] = selectFields;
+    }
+    if (whereMap != null) {
+      query.addAll(whereMap!);
+    }
+    if (insertValues != null) {
+      query.addAll(insertValues!);
+    }
+
+    queryString.write(json.encode(query));
+    queryString.write(');');
+
+    return queryString.toString();
+  }
 }
 
 class SafeQueryBuilderParameterParser {

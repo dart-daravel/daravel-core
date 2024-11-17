@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:daravel_core/daravel_core.dart';
 import 'package:daravel_core/database/concerns/db_driver.dart';
 import 'package:daravel_core/database/concerns/record_set.dart';
+import 'package:daravel_core/database/concerns/record.dart';
 import 'package:daravel_core/database/drivers/mongodb/mongodb.dart';
 import 'package:daravel_core/database/drivers/sqlite/sqlite.dart';
 
@@ -27,11 +28,17 @@ class DBConnection {
     return driver.select(query, bindings);
   }
 
-  bool statement(String query, [List<dynamic> bindings = const []]) {
-    return driver.statement(query, bindings);
+  Future<Record?> findOne(String collection, NoSqlQuery query) =>
+      driver.findOne(collection, query);
+
+  Future<bool> statement(String query,
+      [List<dynamic> bindings = const []]) async {
+    return await driver.statement(query, bindings);
   }
 
-  bool insert(String query, [List<dynamic> bindings = const []]) {
+  /// If using MongoDB driver, [query] is the name of the collection
+  /// to insert a document into.
+  Future<Object> insert(String query, [Object bindings = const []]) async {
     return driver.insert(query, bindings);
   }
 
@@ -46,4 +53,6 @@ class DBConnection {
   bool unprepared(String query) {
     return driver.unprepared(query);
   }
+
+  Future<void> drop(String database) async {}
 }

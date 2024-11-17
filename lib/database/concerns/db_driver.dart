@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:daravel_core/database/concerns/query_builder.dart';
 import 'package:daravel_core/database/concerns/record_set.dart';
+import 'package:daravel_core/database/concerns/record.dart';
 import 'package:daravel_core/database/orm/orm.dart';
 import 'package:daravel_core/database/schema/blueprint.dart';
 
@@ -21,12 +22,16 @@ abstract class DBDriver {
   /// since we use a single connection to the database.
   late final DBMutex deleteMutex = DBMutex();
 
+  Future<void> boot();
+
   /// Execute a select query
   FutureOr<RecordSet> select(String query,
       [Object bindings = const [], ORM? orm]);
 
+  Future<Record?> findOne(String collection, NoSqlQuery query);
+
   /// Execute an insert query
-  bool insert(String query, [List<dynamic> bindings = const []]);
+  Future<Object> insert(String query, [Object bindings = const []]);
 
   Future<int> insertGetId(String query, [List<dynamic> bindings = const []]);
 
@@ -37,7 +42,7 @@ abstract class DBDriver {
   Future<int> delete(String query, [List<dynamic> bindings = const []]);
 
   /// Execute a query
-  bool statement(String query, [List<dynamic> bindings = const []]);
+  Future<bool> statement(String query, [List<dynamic> bindings = const []]);
 
   /// Execute an unprepared query
   bool unprepared(String query);
@@ -48,11 +53,13 @@ abstract class DBDriver {
 
   bool get logging;
 
+  Object? get nativeConnectionInstance;
+
   String renameTable(String from, String to);
 
-  String drop(String table);
+  String dropTable(String table);
 
-  String dropIfExists(String table);
+  String dropTableIfExists(String table);
 
   Blueprint initBlueprint(String name, bool modify);
 

@@ -1,4 +1,7 @@
-import 'package:collection/collection.dart';
+import 'package:daravel_core/console/console_logger.dart';
+import 'package:daravel_core/database/concerns/record.dart';
+import 'package:daravel_core/database/drivers/mongodb/mongodb_record.dart';
+import 'package:daravel_core/exceptions/query.dart';
 import 'package:mongo_dart/mongo_dart.dart';
 
 import 'package:daravel_core/config/database_connection.dart';
@@ -15,13 +18,23 @@ class MongoDBDriver extends DBDriver {
 
   late final DatabaseConnection _configuration;
 
+  late final ConsoleLogger logger = ConsoleLogger();
+
   /// Initialize the MongoDB driver
   MongoDBDriver(DatabaseConnection connection) {
-    _db = Db(connection.dsn != null
+    final StringBuffer dsn = StringBuffer(connection.dsn != null
         ? '${connection.dsn!.rtrim('/')}/${connection.database}'
         : 'mongodb://localhost:27017');
-    _db!.open();
+    _db = Db(dsn.toString());
     _configuration = connection;
+  }
+
+  @override
+  Future<void> boot() async {
+    if (_db!.isConnected) {
+      return;
+    }
+    await _db.open();
   }
 
   @override
@@ -31,15 +44,36 @@ class MongoDBDriver extends DBDriver {
   @override
   Future<RecordSet> select(String collection,
       [Object query = const {}, ORM? orm]) async {
+    await boot();
     if (query is NoSqlQuery) {
+      if (query.type != QueryType.select) {
+        throw QueryException('Invalid query type');
+      }
       final result = await _db!
           .collection(collection)
           .find(_buildQuery(collection, query))
           .toList();
+      _logQuery(query);
       return MongodbRecordSet(result, orm);
     } else {
       throw ArgumentError('Query must be of type NoSqlQuery');
     }
+  }
+
+  @override
+  Future<Record?> findOne(
+    String collection,
+    NoSqlQuery query,
+  ) async {
+    await boot();
+    if (query.type != QueryType.select) {
+      throw QueryException('Invalid query type');
+    }
+    final result = await _db!
+        .collection(collection)
+        .findOne(_buildQuery(collection, query));
+    _logQuery(query);
+    return result != null ? MongoDBRecord(result) : null;
   }
 
   /// Run a delete query
@@ -50,11 +84,29 @@ class MongoDBDriver extends DBDriver {
       throw UnimplementedError();
 
   /// Run an insert query.
-  /// Throws [ArgumentError] if length of [bindings] is not equal number of
-  /// placeholders in query.
+  ///
+  /// Throws [ArgumentError] if [query] is not of type
+  /// [NoSqlQuery].
+  ///
+  /// Throws [QueryException] if [query] type is not [QueryType.insert].
   @override
-  bool insert(String query, [List bindings = const []]) =>
-      throw UnimplementedError();
+  Future<Map<String, dynamic>> insert(String collection,
+      [Object query = const {}]) async {
+    await boot();
+    if (query is NoSqlQuery) {
+      if (query.type != QueryType.insert) {
+        throw QueryException('Invalid query type');
+      }
+      final result = await _db!.collection(collection).insertOne(
+            query.insertValues!,
+            bypassDocumentValidation: query.bypassDocumentValidation,
+          );
+      _logQuery(query);
+      return result.document!;
+    } else {
+      throw ArgumentError('Query must be of type NoSqlQuery');
+    }
+  }
 
   @override
   Future<int> insertGetId(String query, [List bindings = const []]) =>
@@ -62,12 +114,13 @@ class MongoDBDriver extends DBDriver {
 
   /// Run an SQL statement.
   @override
-  bool statement(String query, [List bindings = const []]) =>
-      throw UnimplementedError();
+  Future<bool> statement(String query, [List bindings = const []]) =>
+      throw UnimplementedError('Operation Not supported with MongoDB driver.');
 
   /// Run an unprepared query.
   @override
-  bool unprepared(String query) => throw UnimplementedError();
+  bool unprepared(String query) =>
+      throw UnimplementedError('Operation Not supported with MongoDB driver.');
 
   /// Run an update query.
   @override
@@ -82,10 +135,10 @@ class MongoDBDriver extends DBDriver {
       throw UnimplementedError();
 
   @override
-  String drop(String table) => throw UnimplementedError();
+  String dropTable(String table) => throw UnimplementedError();
 
   @override
-  String dropIfExists(String table) => throw UnimplementedError();
+  String dropTableIfExists(String table) => throw UnimplementedError();
 
   @override
   String renameTable(String from, String to) => throw UnimplementedError();
@@ -95,81 +148,6 @@ class MongoDBDriver extends DBDriver {
       throw UnimplementedError();
 
   Map<String, Object> _buildQuery(String collection, NoSqlQuery query) {
-    final SelectorBuilder andWhereBuilder = where;
-    final SelectorBuilder orWhereBuilder = where;
-    final List<Map<String, Object?>> groupedWhereBuilder = [];
-    int groupDepth = 0;
-    Map<String, Object?>? lastGroupedWhereBuilder;
-    Map<String, Object?>? lastGroupedOrWhereBuilder;
-
-    if (query.whereClauses != null) {
-      for (final clause in query.whereClauses!) {
-        if (clause.isOpenBracket) {
-          ++groupDepth;
-          if (clause.concatenator == 'AND') {
-            lastGroupedWhereBuilder = {
-              'concatenator': clause.concatenator,
-              'builder': where,
-              'depth': groupDepth,
-              'concatenator_trail':
-                  '${lastGroupedWhereBuilder?['concatenator_trail'] ?? ''}${lastGroupedWhereBuilder?['concatenator_trail'] != null ? ',' : ''}${lastGroupedWhereBuilder?['concatenator']}',
-            };
-            groupedWhereBuilder.add(lastGroupedWhereBuilder);
-          } else if (clause.concatenator == 'OR') {
-            lastGroupedOrWhereBuilder = {
-              'concatenator': clause.concatenator,
-              'builder': where,
-              'depth': groupDepth,
-              'concatenator_trail':
-                  '${lastGroupedOrWhereBuilder?['concatenator_trail'] ?? ''}${lastGroupedOrWhereBuilder?['concatenator_trail'] != null ? ',' : ''}${lastGroupedOrWhereBuilder?['concatenator']}',
-            };
-            groupedWhereBuilder.add(lastGroupedOrWhereBuilder);
-          }
-          continue;
-        } else if (clause.isCloseBracket) {
-          --groupDepth;
-          lastGroupedWhereBuilder = null;
-          lastGroupedOrWhereBuilder = null;
-          for (int x = groupedWhereBuilder.length - 1; x > -1; x--) {
-            if (groupedWhereBuilder[x]['depth'] == groupDepth) {
-              if (groupedWhereBuilder[x]['concatenator'] == 'AND' &&
-                  lastGroupedWhereBuilder == null) {
-                lastGroupedWhereBuilder = groupedWhereBuilder[x];
-                continue;
-              } else if (groupedWhereBuilder[x]['concatenator'] == 'OR' &&
-                  lastGroupedOrWhereBuilder == null) {
-                lastGroupedOrWhereBuilder = groupedWhereBuilder[x];
-                continue;
-              }
-            }
-          }
-          continue;
-        } else if (clause.concatenator == 'AND') {
-          if (lastGroupedWhereBuilder != null) {
-            _buildClauseByOperator(
-                clause.column!,
-                clause.value,
-                clause.operator!,
-                lastGroupedWhereBuilder['builder'] as SelectorBuilder);
-          } else {
-            _buildClauseByOperator(clause.column!, clause.value,
-                clause.operator!, andWhereBuilder);
-          }
-        } else if (clause.concatenator == 'OR') {
-          if (lastGroupedOrWhereBuilder != null) {
-            _buildClauseByOperator(
-                clause.column!,
-                clause.value,
-                clause.operator!,
-                lastGroupedOrWhereBuilder['builder'] as SelectorBuilder);
-          } else {
-            _buildClauseByOperator(
-                clause.column!, clause.value, clause.operator!, orWhereBuilder);
-          }
-        }
-      }
-    }
-
     final Map<String, Object> preparedQuery = {};
 
     if ((query.selectFields ?? []).isNotEmpty) {
@@ -177,68 +155,20 @@ class MongoDBDriver extends DBDriver {
       preparedQuery.addAll(builder.map as Map<String, Object>);
     }
 
-    if (andWhereBuilder.map.isNotEmpty) {
-      preparedQuery['\$and'] = andWhereBuilder.map;
-    }
-    if (orWhereBuilder.map.isNotEmpty) {
-      preparedQuery['\$or'] = orWhereBuilder.map;
-    }
-
-    Map<String, Object> targetMap = {};
-
-    for (final query in groupedWhereBuilder) {
-      targetMap = _getNestedTargetMap(
-          preparedQuery, query['concatenator_trail'] as String);
-      targetMap[_sqlToBsonConcatenator(query['concatenator'] as String)] =
-          (query['builder'] as SelectorBuilder).map;
+    if (query.whereMap != null) {
+      preparedQuery.addAll(query.whereMap!);
     }
 
     return preparedQuery;
   }
 
-  Map<String, Object> _getNestedTargetMap(
-      Map<String, Object> preparedQuery, String concatenatorTrail,
-      [bool createArray = true]) {
-    Map<String, Object> targetMap = preparedQuery;
-    final List<String> concatenatorTrailParts = concatenatorTrail.split(',');
-    concatenatorTrailParts.forEachIndexed((index, part) {
-      if (index == concatenatorTrail.length - 1) {
-        return;
-      }
-      if (targetMap[_sqlToBsonConcatenator(part)] == null) {
-        preparedQuery[_sqlToBsonConcatenator(part)] = createArray ? [] : {};
-        targetMap =
-            preparedQuery[_sqlToBsonConcatenator(part)] as Map<String, Object>;
-      } else {
-        targetMap =
-            targetMap[_sqlToBsonConcatenator(part)] as Map<String, Object>;
-      }
-    });
-    return targetMap;
-  }
+  @override
+  Object? get nativeConnectionInstance => _db;
 
-  String _sqlToBsonConcatenator(String concatenator) {
-    switch (concatenator) {
-      case 'AND':
-        return '\$and';
-      case 'OR':
-        return '\$or';
-      case 'NOT':
-        return '\$not';
-      case 'NOR':
-        return '\$nor';
-      default:
-        return '\$and';
-    }
-  }
-
-  SelectorBuilder _buildClauseByOperator(
-      String field, String value, String operator, SelectorBuilder builder) {
-    switch (operator) {
-      case '>':
-        return builder.gt(field, value);
-      default:
-        return builder.eq(field, value);
+  /// Log BSON query.
+  _logQuery(NoSqlQuery query) {
+    if (_configuration.queryLog) {
+      logger.debug(query.toString());
     }
   }
 }

@@ -26,6 +26,7 @@ void main() {
           database: 'test/database-sqlite-driver-playground/database.sqlite',
           prefix: '',
           foreignKeyConstraints: true,
+          queryLog: true,
         ),
         'sqlite1': DatabaseConnection(
           driver: 'sqlite',
@@ -380,7 +381,7 @@ void main() {
 
     DB.connection()!.unprepared(query);
 
-    final result = DB.insert(
+    final result = await DB.insert(
         'INSERT INTO $table (email, password) VALUES (?, ?)',
         ['john@gmail.com', 'password']);
 
