@@ -19,12 +19,7 @@ class MongoDBQueryBuilder implements QueryBuilder {
 
   final List<Map<String, Object>> _targetWhereMaps = [];
 
-  String? _limitQuery;
-  String? _orderByQuery;
-  String? _groupByQuery;
-
   bool _resultSafe = true;
-  bool _distinct = false;
 
   late final ConsoleLogger logger = ConsoleLogger();
 
@@ -33,14 +28,10 @@ class MongoDBQueryBuilder implements QueryBuilder {
 
   MongoDBQueryBuilder(this.driver, [this.table]);
 
-  List<String>? _oldSelectColumns;
-
   void _reset() {
     _targetWhereMaps.clear();
     _whereMap.clear();
-    _limitQuery = null;
-    _orderByQuery = null;
-    _oldSelectColumns = List.from(_selectColumns);
+    // _oldSelectColumns = List.from(_selectColumns);
     _selectColumns.clear();
   }
 
