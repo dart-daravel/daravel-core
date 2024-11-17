@@ -1,6 +1,8 @@
 import 'package:daravel_core/config/database_connection.dart';
+import 'package:daravel_core/console/console_logger.dart';
 import 'package:daravel_core/database/concerns/db_driver.dart';
 import 'package:daravel_core/database/concerns/query_builder.dart';
+import 'package:daravel_core/database/concerns/record.dart';
 import 'package:daravel_core/database/concerns/record_set.dart';
 import 'package:daravel_core/database/drivers/sqlite/sqlite_record_set.dart';
 import 'package:daravel_core/database/drivers/sqlite/schema/sqlite_blueprint.dart';
@@ -20,6 +22,8 @@ class SQLiteDriver extends DBDriver {
   late final SqliteSchemaBuilder _schemaBuilder = SqliteSchemaBuilder(this);
 
   late final DatabaseConnection _configuration;
+
+  late final ConsoleLogger logger = ConsoleLogger();
 
   SQLiteDriver(DatabaseConnection connection) {
     _db = sqlite3
@@ -43,35 +47,48 @@ class SQLiteDriver extends DBDriver {
   @override
   bool get logging => _configuration.queryLog;
 
+  @override
+  Future<void> boot() async {}
+
   /// Run a select statement
   @override
-  RecordSet select(String query, [List bindings = const [], ORM? orm]) {
-    final statement = _db!.prepare(query);
-    return SqliteRecordSet(statement.select(bindings), orm);
+  RecordSet select(String query, [Object bindings = const [], ORM? orm]) {
+    if (bindings is List) {
+      final statement = _db!.prepare(query);
+      final result = SqliteRecordSet(statement.select(bindings), orm);
+      _logQuery(query, bindings);
+      return result;
+    }
+    throw ArgumentError('Bindings must be a list');
   }
 
   /// Run a delete query
   /// Throws [ArgumentError] if length of [bindings] is not equal number of
   /// placeholders in query.
   @override
-  Future<int> delete(String query, [List bindings = const []]) async {
-    final statement = _deleteDb!.prepare(query);
-    await deleteMutex.acquire();
-    try {
-      statement.execute(bindings);
-      return _deleteDb.updatedRows;
-    } finally {
-      deleteMutex.release();
+  Future<int> delete(String query, [Object bindings = const []]) async {
+    if (bindings is List) {
+      final statement = _deleteDb!.prepare(query);
+      await deleteMutex.acquire();
+      try {
+        statement.execute(bindings);
+        _logQuery(query, bindings);
+        return _deleteDb.updatedRows;
+      } finally {
+        deleteMutex.release();
+      }
     }
+    throw ArgumentError('Bindings must be a list');
   }
 
   /// Run an insert query.
   /// Throws [ArgumentError] if length of [bindings] is not equal number of
   /// placeholders in query.
   @override
-  bool insert(String query, [List bindings = const []]) {
+  Future<bool> insert(String query, [Object bindings = const []]) async {
     final statement = _db!.prepare(query);
-    statement.execute(bindings);
+    statement.execute(bindings as List);
+    _logQuery(query, bindings);
     return true;
   }
 
@@ -81,6 +98,7 @@ class SQLiteDriver extends DBDriver {
     await insertMutex.acquire();
     try {
       statement.execute(bindings);
+      _logQuery(query, bindings);
       return _insertDb.lastInsertRowId;
     } finally {
       insertMutex.release();
@@ -89,9 +107,10 @@ class SQLiteDriver extends DBDriver {
 
   /// Run an SQL statement.
   @override
-  bool statement(String query, [List bindings = const []]) {
+  Future<bool> statement(String query, [List bindings = const []]) async {
     final statement = _db!.prepare(query);
     statement.execute(bindings);
+    _logQuery(query, bindings);
     return true;
   }
 
@@ -99,6 +118,7 @@ class SQLiteDriver extends DBDriver {
   @override
   bool unprepared(String query) {
     _db!.execute(query);
+    _logQuery(query);
     return true;
   }
 
@@ -109,6 +129,7 @@ class SQLiteDriver extends DBDriver {
     await updateMutex.acquire();
     try {
       statement.execute(bindings);
+      _logQuery(query, bindings);
       return _updateDb.updatedRows;
     } finally {
       updateMutex.release();
@@ -126,12 +147,12 @@ class SQLiteDriver extends DBDriver {
   }
 
   @override
-  String drop(String table) {
+  String dropTable(String table) {
     return _schemaBuilder.drop(table);
   }
 
   @override
-  String dropIfExists(String table) {
+  String dropTableIfExists(String table) {
     return _schemaBuilder.dropIfExists(table);
   }
 
@@ -143,4 +164,29 @@ class SQLiteDriver extends DBDriver {
   @override
   QueryBuilder queryBuilder([String? table, ORM? orm]) =>
       SQLiteQueryBuilder(this, table, orm);
+
+  @override
+  Future<Record?> findOne(String collection, NoSqlQuery query) =>
+      throw UnimplementedError('Not supported for SQlite driver.');
+
+  @override
+  Object? get nativeConnectionInstance => _db;
+
+  _logQuery(String query, [List? bindings]) {
+    if (_configuration.queryLog) {
+      if (bindings != null) {
+        final varPattern = RegExp(r'\?');
+        final tempBindings = List.from(bindings);
+        logger.debug(query.replaceAllMapped(varPattern, (match) {
+          final value = tempBindings.removeAt(0);
+          if (value is String) {
+            return "'$value'";
+          }
+          return value.toString();
+        }));
+      } else {
+        logger.debug(query.toString());
+      }
+    }
+  }
 }

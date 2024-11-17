@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:daravel_core/database/concerns/db_driver.dart';
 import 'package:daravel_core/database/concerns/record_set.dart';
 import 'package:daravel_core/database/concerns/record.dart';
@@ -12,17 +15,17 @@ abstract class QueryBuilder {
 
   QueryBuilder(this.driver, [this.table, this.orm]); // ignore: coverage
 
-  RecordSet get();
+  Future<RecordSet> get();
 
-  Record? first();
+  Future<Record?> first();
 
-  Record firstOrFail();
+  Future<Record> firstOrFail();
 
   QueryBuilder limit(int limit, [int? offset]);
 
-  Object? value(String column);
+  Future<Object?> value(String column);
 
-  Record? find(dynamic id);
+  Future<Record?> find(dynamic id);
 
   bool insert(Map<String, dynamic> values);
 
@@ -32,15 +35,17 @@ abstract class QueryBuilder {
 
   Future<int> delete([Object? id]);
 
-  List<Object?> pluck(String column);
+  Future<List<Object?>> pluck(String column);
 
   QueryBuilder orderBy(String column, [String direction = 'ASC']);
 
-  void chunk(int size, bool? Function(RecordSet records) callback);
+  Future<void> chunk(int size, bool? Function(RecordSet records) callback);
 
-  void chunkById(int size, bool? Function(RecordSet records) callback);
+  Future<void> chunkById(int size, bool? Function(RecordSet records) callback);
 
   QueryBuilder where(dynamic column, [dynamic operatorOrValue, dynamic value]);
+
+  Future<QueryBuilder> whereAsync(Function(QueryBuilder) where);
 
   QueryBuilder orWhere(dynamic column,
       [dynamic operatorOrValue, dynamic value]);
@@ -51,19 +56,19 @@ abstract class QueryBuilder {
 
   LazyRecordSetGenerator lazyById();
 
-  int count([String columns = '*']);
+  Future<int> count([String columns = '*']);
 
-  int max(String column);
+  Future<int> max(String column);
 
-  int min(String column);
+  Future<int> min(String column);
 
-  int sum(String column);
+  Future<int> sum(String column);
 
-  num avg(String column);
+  Future<num> avg(String column);
 
-  bool exists();
+  Future<bool> exists();
 
-  bool doesntExist();
+  Future<bool> doesntExist();
 
   QueryBuilder distinct();
 
@@ -136,6 +141,57 @@ class QueryStringBinding {
       }
       return value.toString();
     });
+  }
+}
+
+class NoSqlQuery {
+  final QueryType type;
+  final List<String>? selectFields;
+  final Map<String, Object>? whereMap;
+  final Map<String, dynamic>? insertValues;
+  final Map<String, dynamic>? updateValues;
+  final bool? bypassDocumentValidation;
+  final bool? findOne;
+
+  NoSqlQuery({
+    this.type = QueryType.select,
+    this.findOne,
+    this.selectFields,
+    this.whereMap,
+    this.insertValues,
+    this.updateValues,
+    this.bypassDocumentValidation,
+  });
+
+  @override
+  String toString() {
+    final StringBuffer queryString = StringBuffer();
+    if (type == QueryType.select) {
+      if (findOne ?? false) {
+        queryString.write('db.collection.findOne(');
+      } else {
+        queryString.write('db.collection.find(');
+      }
+    } else if (type == QueryType.insert) {
+      queryString.write('db.collection.insert(');
+    }
+
+    final query = {};
+
+    if (selectFields != null) {
+      query['project'] = selectFields;
+    }
+    if (whereMap != null) {
+      query.addAll(whereMap!);
+    }
+    if (insertValues != null) {
+      query.addAll(insertValues!);
+    }
+
+    queryString.write(json.encode(query));
+    queryString.write(');');
+
+    return queryString.toString();
   }
 }
 

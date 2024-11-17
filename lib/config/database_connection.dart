@@ -8,6 +8,8 @@ class DatabaseConnection {
   String? journalMode;
   String? synchronous;
   bool queryLog;
+  String? dsn;
+  Map<String, dynamic>? options;
 
   DatabaseConnection({
     this.driver = 'sqlite',
@@ -18,6 +20,8 @@ class DatabaseConnection {
     this.busyTimeout,
     this.journalMode,
     this.synchronous,
+    this.dsn,
+    this.options,
     this.queryLog = false,
   });
 }

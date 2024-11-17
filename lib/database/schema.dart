@@ -36,13 +36,13 @@ class Schema {
   ///
   /// [table] is the name of the table to drop.
   static String drop(String table) {
-    return DB.connection()!.driver.drop(table);
+    return DB.connection()!.driver.dropTable(table);
   }
 
   /// Drop table if exists.
   ///
   /// [table] is the name of the table to drop.
   static String dropIfExists(String table) {
-    return DB.connection()!.driver.dropIfExists(table);
+    return DB.connection()!.driver.dropTableIfExists(table);
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:daravel_core/daravel_core.dart';
 import 'package:daravel_core/database/db_connection.dart';
 import 'package:daravel_core/database/concerns/record_set.dart';
@@ -18,13 +20,16 @@ class DB {
 
   Map<String, DatabaseConnection>? connections;
 
-  static RecordSet? select(String query, [List<dynamic> bindings = const []]) =>
+  static FutureOr<RecordSet> select(String query,
+          [List<dynamic> bindings = const []]) =>
       _mainInstance!._dbConnection!.select(query, bindings);
 
-  static bool statement(String query, [List<dynamic> bindings = const []]) =>
-      _mainInstance!._dbConnection!.statement(query, bindings);
+  static Future<bool> statement(String query,
+          [List<dynamic> bindings = const []]) async =>
+      await _mainInstance!._dbConnection!.statement(query, bindings);
 
-  static bool insert(String query, [List<dynamic> bindings = const []]) =>
+  static Future<Object> insert(String query,
+          [List<dynamic> bindings = const []]) =>
       _mainInstance!._dbConnection!.insert(query, bindings);
 
   static Future<int> delete(String query,
@@ -38,6 +43,8 @@ class DB {
   /// Execute an unprepared statement.
   static bool unprepared(String query) =>
       _mainInstance!._dbConnection!.unprepared(query);
+
+  static void drop(String database) => _mainInstance!._dbConnection!;
 
   /// Gets a Database connection instance.
   ///

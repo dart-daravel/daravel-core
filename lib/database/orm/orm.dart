@@ -28,9 +28,9 @@ abstract class ORM {
 
   DBDriver get _dbDriver => DB.connection(connection)!.driver;
 
-  List<Entity> all() => _dbDriver
-      .queryBuilder(tableName, model)
-      .get()
+  Future<List<Entity>> all() async => (await _dbDriver
+          .queryBuilder(tableName, model)
+          .get())
       .map((e) => Entity.fromRecord(e as Record, runtimeType, relationships)!)
       .toList();
 
@@ -45,32 +45,32 @@ abstract class ORM {
           .queryBuilder(tableName, model)
           .where(column, operatorOrValue, value);
 
-  Entity? find(dynamic id) => Entity.fromRecord(
-      _dbDriver.queryBuilder(tableName, model).find(id),
+  Future<Entity?> find(dynamic id) async => Entity.fromRecord(
+      await _dbDriver.queryBuilder(tableName, model).find(id),
       runtimeType,
       relationships);
 
-  Entity? first() => Entity.fromRecord(
-      _dbDriver.queryBuilder(tableName, model).first(),
+  Future<Entity?> first() async => Entity.fromRecord(
+      await _dbDriver.queryBuilder(tableName, model).first(),
       runtimeType,
       relationships);
 
-  Entity firstOrFail() => Entity.fromRecord(
-      _dbDriver.queryBuilder(tableName, model).firstOrFail(),
+  Future<Entity> firstOrFail() async => Entity.fromRecord(
+      await _dbDriver.queryBuilder(tableName, model).firstOrFail(),
       runtimeType,
       relationships)!;
 
-  Entity create(Map<String, dynamic> values) {
+  Future<Entity> create(Map<String, dynamic> values) async {
     _dbDriver
         .queryBuilder(tableName, model)
         .insert(_preventMassAssignment(values));
-    return firstOrFail();
+    return await firstOrFail();
   }
 
-  void chunk(int size, bool Function(RecordSet) callback) =>
+  Future<void> chunk(int size, bool Function(RecordSet) callback) =>
       _dbDriver.queryBuilder(tableName, model).chunk(size, callback);
 
-  void chunkById(int size, bool Function(RecordSet) callback) =>
+  Future<void> chunkById(int size, bool Function(RecordSet) callback) =>
       _dbDriver.queryBuilder(tableName, model).chunkById(size, callback);
 
   Future<int> delete(dynamic id) =>
@@ -82,7 +82,7 @@ abstract class ORM {
   LazyRecordSetGenerator lazyById() =>
       _dbDriver.queryBuilder(tableName, model).lazyById();
 
-  int count() => _dbDriver.queryBuilder(tableName, model).count();
+  Future<int> count() => _dbDriver.queryBuilder(tableName, model).count();
 
   Map<String, dynamic> _preventMassAssignment(Map<String, dynamic> values) {
     if (guarded == null) {

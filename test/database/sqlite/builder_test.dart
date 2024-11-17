@@ -39,7 +39,7 @@ void main() {
     locator.reset();
   });
 
-  test('Select all rows', () {
+  test('Select all rows', () async {
     final table = 'users_1';
 
     Schema.create(table, (table) {
@@ -54,20 +54,20 @@ void main() {
       ['frank@gmail.com', 'password', 'Frank'],
     );
 
-    final result = DB.table(table).get();
+    final result = await DB.table(table).get();
 
     expect(result.length, 1);
     expect(result.first['email'], 'frank@gmail.com');
     expect(result.first['password'], 'password');
 
-    final result2 = DB.table(table).select(['email', 'password']).get();
+    final result2 = await DB.table(table).select(['email', 'password']).get();
 
     expect(result2.length, 1);
     expect(result2.first['email'], 'frank@gmail.com');
     expect(result2.first['password'], 'password');
   });
 
-  test('Where clause', () {
+  test('Where clause', () async {
     final table = 'users_2';
 
     Schema.create(table, (table) {
@@ -86,13 +86,14 @@ void main() {
       ['john@gmail.com', 'password'],
     );
 
-    final result = DB.table(table).where('email', 'frank@gmail.com').get();
+    final result =
+        await DB.table(table).where('email', 'frank@gmail.com').get();
 
     expect(result.length, 1);
     expect(result.first['email'], 'frank@gmail.com');
   });
 
-  test('OrWhere clause', () {
+  test('OrWhere clause', () async {
     final table = 'users_3';
 
     Schema.create(table, (table) {
@@ -111,7 +112,7 @@ void main() {
       ['john@gmail.com', 'password'],
     );
 
-    final result = DB
+    final result = await DB
         .table(table)
         .where('email', 'frank@gmail.com')
         .orWhere('email', 'john@gmail.com')
@@ -121,7 +122,7 @@ void main() {
     expect(result.first['email'], 'frank@gmail.com');
   });
 
-  test('first()', () {
+  test('first()', () async {
     final table = 'users_4';
 
     Schema.create(table, (table) {
@@ -140,15 +141,15 @@ void main() {
       ['john@gmail.com', 'password'],
     );
 
-    final result1 = DB
+    final result1 = await DB
         .table(table)
         .where('email', 'frank@gmail.com')
         .orWhere('email', 'john@gmail.com')
         .first();
 
-    expect(result1?['email'], 'frank@gmail.com');
+    expect(result1!['email'], 'frank@gmail.com');
 
-    final result2 = DB
+    final result2 = await DB
         .table(table)
         .where('email', 'frank-no@gmail.com')
         .orWhere('email', 'john-no@gmail.com')
@@ -182,7 +183,7 @@ void main() {
         throwsA(isA<RecordNotFoundException>()));
   });
 
-  test('value([column])', () {
+  test('value([column])', () async {
     final table = 'users_6';
 
     Schema.create(table, (table) {
@@ -202,12 +203,12 @@ void main() {
     );
 
     final result =
-        DB.table(table).where('email', 'frank@gmail.com').value('email');
+        await DB.table(table).where('email', 'frank@gmail.com').value('email');
 
     expect(result, 'frank@gmail.com');
   });
 
-  test('find([id])', () {
+  test('find([id])', () async {
     final table = 'users_7';
 
     Schema.create(table, (table) {
@@ -226,12 +227,12 @@ void main() {
       ['john@gmail.com', 'password'],
     );
 
-    final result = DB.table(table).find(1);
+    final result = await DB.table(table).find(1);
 
     expect(result?['email'], 'frank@gmail.com');
   });
 
-  test('pluck([column])', () {
+  test('pluck([column])', () async {
     final table = 'users_8';
 
     Schema.create(table, (table) {
@@ -250,17 +251,17 @@ void main() {
       ['john@gmail.com', 'password'],
     );
 
-    final result1 = DB.table(table).pluck('email');
+    final result1 = await DB.table(table).pluck('email');
 
     expect(result1, ['frank@gmail.com', 'john@gmail.com']);
 
     final result2 =
-        DB.table(table).where('email', 'frank@gmail.com').pluck('email');
+        await DB.table(table).where('email', 'frank@gmail.com').pluck('email');
 
     expect(result2, ['frank@gmail.com']);
   });
 
-  test('chunk([size]) with orderBy', () {
+  test('chunk([size]) with orderBy', () async {
     final table = 'users_9';
 
     Schema.create(table, (table) {
@@ -296,7 +297,7 @@ void main() {
 
     int chunkCount = 1;
 
-    final allRecords = DB.table(table).orderBy('email', 'DESC').get();
+    final allRecords = await DB.table(table).orderBy('email', 'DESC').get();
 
     DB.table(table).orderBy('email', 'DESC').chunk(2, (records) {
       if (chunkCount == 1) {
@@ -317,17 +318,19 @@ void main() {
 
     // Illegal State
     expect(
-        () =>
-            DB.table(table).where('age', '<=', 20).where((QueryBuilder query) {
-              query
+        () async => (await DB
+                .table(table)
+                .where('age', '<=', 20)
+                .whereAsync((QueryBuilder query) async {
+              await query
                   .where('address', 'Pluto')
                   .orWhere('address', 'Earth')
                   .chunk(2, (records) => null);
-            }).get(),
+            })),
         throwsA(isA<QueryException>()));
   });
 
-  test('chunkById([size]) with orderBy', () {
+  test('chunkById([size]) with orderBy', () async {
     final table = 'users_10';
 
     Schema.create(table, (table) {
@@ -363,7 +366,7 @@ void main() {
 
     int chunkCount = 1;
 
-    final allRecords = DB.table(table).orderBy('id', 'DESC').get();
+    final allRecords = await DB.table(table).orderBy('id', 'DESC').get();
 
     DB.table(table).orderBy('id', 'DESC').chunkById(2, (records) {
       if (chunkCount == 1) {
@@ -384,13 +387,16 @@ void main() {
 
     // Illegal State
     expect(
-        () =>
-            DB.table(table).where('age', '<=', 20).where((QueryBuilder query) {
-              query
+        () async => (await DB
+                    .table(table)
+                    .where('age', '<=', 20)
+                    .whereAsync((QueryBuilder query) async {
+              await query
                   .where('address', 'Pluto')
                   .orWhere('address', 'Earth')
                   .chunkById(2, (records) => null);
-            }).get(),
+            }))
+                .get(),
         throwsA(isA<QueryException>()));
   });
 
@@ -445,13 +451,14 @@ void main() {
 
     expect(affectedRows, 1);
 
-    final result = DB.table(table).where('email', 'tok@gmail.com').first();
+    final result =
+        await DB.table(table).where('email', 'tok@gmail.com').first();
 
     expect(result?['password'], 'edited');
 
     affectedRows = await DB.table(table).update({'password': 'edited-again'});
 
-    final allRecords = DB.table(table).get();
+    final allRecords = await DB.table(table).get();
 
     expect(allRecords[0]['password'], 'edited-again');
     expect(allRecords[1]['password'], 'edited-again');
@@ -498,8 +505,10 @@ void main() {
       'age': 19
     });
 
-    final result =
-        DB.table(table).where('age', '<=', 20).where((QueryBuilder query) {
+    final result = await DB
+        .table(table)
+        .where('age', '<=', 20)
+        .where((QueryBuilder query) {
       query.where('address', 'Pluto').orWhere('address', 'Earth');
     }).get();
 
@@ -508,8 +517,10 @@ void main() {
     expect(result[0]['email'], 'tok@gmail.com');
     expect(result[1]['email'], 'jack@gmail.com');
 
-    final result2 =
-        DB.table(table).where('age', '<=', 5).orWhere((QueryBuilder query) {
+    final result2 = await DB
+        .table(table)
+        .where('age', '<=', 5)
+        .orWhere((QueryBuilder query) {
       query.where('address', 'Pluto').where('name', 'Jack');
     }).get();
 
@@ -517,10 +528,15 @@ void main() {
 
     // Illegal State
     expect(
-        () =>
-            DB.table(table).where('age', '<=', 20).where((QueryBuilder query) {
-              query.where('address', 'Pluto').orWhere('address', 'Earth').get();
-            }).get(),
+        () async => (await DB.table(table).where('age', '<=', 20).whereAsync(
+              (QueryBuilder query) async {
+                await query
+                    .where('address', 'Pluto')
+                    .orWhere('address', 'Earth')
+                    .get();
+              },
+            ))
+                .get(),
         throwsA(isA<QueryException>()));
   });
 
@@ -686,26 +702,35 @@ void main() {
     });
 
     // AVG.
-    expect(DB.table(table).avg('age'), 2.5);
-    expect(DB.table(table).where('age', '>', 10).avg('age'), 0); // Null case.
+    expect(await DB.table(table).avg('age'), 2.5);
+    expect(await DB.table(table).where('age', '>', 10).avg('age'),
+        0); // Null case.
 
     // Illegal State
     expect(
-        () => DB.table(table).where('age', '<=', 4).where((QueryBuilder query) {
-              query.avg('age');
-            }).get(),
+        () async => (await DB
+                    .table(table)
+                    .where('age', '<=', 4)
+                    .whereAsync((QueryBuilder query) async {
+              await query.avg('age');
+            }))
+                .get(),
         throwsA(isA<QueryException>()));
 
     // Count
-    expect(DB.table(table).count(), 4);
-    expect(DB.table(table).where('age', '>', 10).count(), 0);
-    expect(DB.table(table).count('name'), 3);
+    expect(await DB.table(table).count(), 4);
+    expect(await DB.table(table).where('age', '>', 10).count(), 0);
+    expect(await DB.table(table).count('name'), 3);
 
     // Illegal State
     expect(
-        () => DB.table(table).where('age', '<=', 4).where((QueryBuilder query) {
-              query.count();
-            }).get(),
+        () async => (await DB
+                    .table(table)
+                    .where('age', '<=', 4)
+                    .whereAsync((QueryBuilder query) async {
+              await query.count();
+            }))
+                .get(),
         throwsA(isA<QueryException>()));
     // Distinct with multiple columns.
     expect(
@@ -717,36 +742,42 @@ void main() {
         throwsA(isA<QueryException>()));
 
     // Max
-    expect(DB.table(table).max('age'), 4);
-    expect(DB.table(table).where('age', '>', 10).max('age'), 0);
+    expect(await DB.table(table).max('age'), 4);
+    expect(await DB.table(table).where('age', '>', 10).max('age'), 0);
 
     // Illegal State
     expect(
-        () => DB.table(table).where((QueryBuilder query) {
-              query.max('age');
-            }).get(),
+        () async =>
+            (await DB.table(table).whereAsync((QueryBuilder query) async {
+              await query.max('age');
+            }))
+                .get(),
         throwsA(isA<QueryException>()));
 
     // Min
-    expect(DB.table(table).min('age'), 1);
-    expect(DB.table(table).where('age', '>', 10).min('age'), 0);
+    expect(await DB.table(table).min('age'), 1);
+    expect(await DB.table(table).where('age', '>', 10).min('age'), 0);
 
     // Illegal State
     expect(
-        () => DB.table(table).where((QueryBuilder query) {
-              query.min('age');
-            }).get(),
+        () async =>
+            (await DB.table(table).whereAsync((QueryBuilder query) async {
+              await query.min('age');
+            }))
+                .get(),
         throwsA(isA<QueryException>()));
 
     // Sum
-    expect(DB.table(table).sum('age'), 10);
-    expect(DB.table(table).where('age', '>', 10).sum('age'), 0);
+    expect(await DB.table(table).sum('age'), 10);
+    expect(await DB.table(table).where('age', '>', 10).sum('age'), 0);
 
     // Illegal State
     expect(
-        () => DB.table(table).where((QueryBuilder query) {
-              query.sum('age');
-            }).get(),
+        () async =>
+            (await DB.table(table).whereAsync((QueryBuilder query) async {
+              await query.sum('age');
+            }))
+                .get(),
         throwsA(isA<QueryException>()));
   });
 
@@ -794,12 +825,13 @@ void main() {
     });
 
     // Exists.
-    expect(DB.table(table).where('address', 'Earth').exists(), true);
-    expect(DB.table(table).where('address', 'Venus').exists(), false);
+    expect(await DB.table(table).where('address', 'Earth').exists(), true);
+    expect(await DB.table(table).where('address', 'Venus').exists(), false);
 
     // Doesn't Exists
-    expect(DB.table(table).where('address', 'Earth').doesntExist(), false);
-    expect(DB.table(table).where('address', 'Venus').doesntExist(), true);
+    expect(
+        await DB.table(table).where('address', 'Earth').doesntExist(), false);
+    expect(await DB.table(table).where('address', 'Venus').doesntExist(), true);
   });
 
   test('delete()', () async {
@@ -853,28 +885,28 @@ void main() {
       'age': 11
     });
 
-    expect(DB.table(table).count(), 5);
+    expect(await DB.table(table).count(), 5);
 
     int deletedRows =
         await DB.table(table).where('email', 'tok@gmail.com').delete();
 
     expect(deletedRows, 1);
-    expect(DB.table(table).count(), 4);
+    expect(await DB.table(table).count(), 4);
 
     deletedRows = await DB.table(table).where('age', '>', 10).delete();
 
     expect(deletedRows, 1);
-    expect(DB.table(table).count(), 3);
+    expect(await DB.table(table).count(), 3);
 
     deletedRows = await DB.table(table).delete(4);
 
     expect(deletedRows, 1);
-    expect(DB.table(table).count(), 2);
+    expect(await DB.table(table).count(), 2);
 
     deletedRows = await DB.table(table).delete();
 
     expect(deletedRows, 2);
-    expect(DB.table(table).count(), 0);
+    expect(await DB.table(table).count(), 0);
   });
 
   test('distinct()', () async {
@@ -921,12 +953,12 @@ void main() {
       'age': 1
     });
 
-    expect(DB.table(table).count(), 4);
+    expect(await DB.table(table).count(), 4);
     final query = DB.table(table).select('email').distinct();
     query.addSelect('password');
-    expect(query.distinct().get().length, 2);
+    expect((await query.distinct().get()).length, 2);
 
-    expect(DB.table(table).distinct().count('email'), 2);
+    expect(await DB.table(table).distinct().count('email'), 2);
   });
 
   test('selectRaw()', () async {
@@ -973,18 +1005,18 @@ void main() {
       'age': 100
     });
 
-    final result1 = DB.table(table).select('email, password').get();
+    final result1 = await DB.table(table).select('email, password').get();
 
     expect(result1.first['password'], null);
 
-    final result2 = DB.table(table).selectRaw('email, password').get();
+    final result2 = await DB.table(table).selectRaw('email, password').get();
 
     expect(result2.first['password'], 'password');
     expect(result2.first['address'], null);
 
     // With Bindings
     final result3 =
-        DB.table(table).selectRaw('age * ? as double_age', [2]).get();
+        await DB.table(table).selectRaw('age * ? as double_age', [2]).get();
 
     expect(result3[0]['double_age'], 6);
     expect(result3[1]['double_age'], 12);
@@ -992,7 +1024,7 @@ void main() {
     expect(result3[3]['double_age'], 200);
 
     // Multiple columns with bindings
-    final result4 = DB
+    final result4 = await DB
         .table(table)
         .select('name')
         .selectRaw('age * ? as double_age', [2]).get();
@@ -1003,8 +1035,10 @@ void main() {
     expect(result4[3]['double_age'], 200);
 
     // Using DB.raw()
-    final result5 =
-        DB.table(table).select(DB.raw('age * ? as double_age', [2])).get();
+    final result5 = await DB
+        .table(table)
+        .select(DB.raw('age * ? as double_age', [2]))
+        .get();
 
     expect(result5[0]['double_age'], 6);
     expect(result5[1]['double_age'], 12);
@@ -1052,7 +1086,8 @@ void main() {
       'address': 'Earth',
     });
 
-    final result = DB.table(table).whereRaw("email = 'ta@gmail.com'").get();
+    final result =
+        await DB.table(table).whereRaw("email = 'ta@gmail.com'").get();
 
     expect(result.length, 1);
     expect(result.first['email'], 'ta@gmail.com');
@@ -1098,7 +1133,7 @@ void main() {
       'address': 'Earth',
     });
 
-    final result = DB
+    final result = await DB
         .table(table)
         .whereRaw("email = 'ta@gmail.com'")
         .orWhereRaw("email = 'ta1@gmail.com'")
@@ -1153,7 +1188,7 @@ void main() {
       'age': 1
     });
 
-    final result = DB.table(table).where('age', 1).groupBy('email').get();
+    final result = await DB.table(table).where('age', 1).groupBy('email').get();
 
     expect(result.length, 2);
   });
@@ -1204,7 +1239,7 @@ void main() {
 
     final query = DB.table(table).select(['email', 'password']);
 
-    final result1 = query.get();
+    final result1 = await query.get();
 
     expect(result1.length, 4);
 
@@ -1214,7 +1249,7 @@ void main() {
 
     query.addSelect('name');
 
-    final result2 = query.get();
+    final result2 = await query.get();
 
     expect(result2.length, 4);
 
