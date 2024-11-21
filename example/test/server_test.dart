@@ -6,14 +6,13 @@ import 'package:test/test.dart';
 
 void main() {
   final port = '8080';
-  final host = 'http://0.0.0.0:$port';
+  final host = 'http://localhost:$port';
   late Process p;
 
   setUp(() async {
     p = await Process.start(
       'dart',
-      ['run', 'main.dart'],
-      environment: {'PORT': port},
+      ['run', 'main.dart', 'serve', '--port', port],
     );
     // Wait for server to start and print to stdout.
     await p.stdout.first;

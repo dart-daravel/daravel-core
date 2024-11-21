@@ -1,16 +1,30 @@
 name: daravel_core
-description: 'A new Flutter package project.'
-version: 0.0.1
-homepage:
+description: "A back-end framework for Dart, inspired by PHP's popular back-end framework: Laravel."
+version: 0.0.4
+homepage: https://daravel.dev
 
 environment:
   sdk: ^3.5.2
 
 dependencies:
+  analyzer: ^6.8.0
+  args: ^2.5.0
+  dotenv: ^4.2.0
   shelf: ^1.4.1
   shelf_router: ^1.1.0
-  dotenv: ^4.2.0
+  path: ^1.9.0
+  crypto: ^3.0.0
+  http: ^1.2.2
+  archive: ^3.6.1
+  pub_semver: ^2.1.0
+  sqlite3: ^2.4.7
+  collection: ^1.19.1
+  pluralize: ^0.0.8
+  get_it: ^8.0.2
 
 dev_dependencies:
   lints: ^4.0.0
   test: ^1.25.7
+
+executables:
+  dartisan:

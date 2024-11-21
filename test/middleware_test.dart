@@ -1,18 +1,23 @@
 import 'dart:io';
 
 import 'package:daravel_core/daravel_core.dart';
+import 'package:daravel_core/globals.dart';
 import 'package:shelf/shelf.dart';
 import 'package:test/test.dart';
 
 void main() {
   const host = 'http://localhost:8081';
+  tearDown(() {
+    locator.reset();
+  });
+
   test('CORS Middleware Test, Origin: *', () async {
     final router = DaravelRouter();
     router.get('/', (Request request) => Response.ok('Hello, World!'));
     router.get('/<name>',
         (Request request, String name) => Response.ok('Hello, $name!'));
 
-    final app = DaravelApp(
+    final app = Core(
       routers: [router],
       globalMiddlewares: [
         CorsMiddleware(),
@@ -63,7 +68,7 @@ void main() {
     router.get('/<name>',
         (Request request, String name) => Response.ok('Hello, $name!'));
 
-    final app = DaravelApp(
+    final app = Core(
       routers: [router],
       globalMiddlewares: [
         CorsMiddleware(origin: 'app.enterprise.com'),
@@ -130,7 +135,7 @@ void main() {
     router.get('/<name>',
         (Request request, String name) => Response.ok('Hello, $name!'));
 
-    final app = DaravelApp(
+    final app = Core(
       routers: [router],
       globalMiddlewares: [
         CorsMiddleware(origin: [
