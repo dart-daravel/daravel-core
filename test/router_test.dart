@@ -6,7 +6,33 @@ import 'package:test/test.dart';
 
 import 'package:daravel_core/daravel_core.dart';
 
-import 'middleware.dart';
+class TestMiddleware implements DaravelMiddleware {
+  @override
+  Middleware handle() {
+    return (Handler innerHandler) {
+      return (Request request) async {
+        final Response response = await innerHandler(request);
+        return response.change(headers: {
+          'X-Test-Middleware': 'true',
+        });
+      };
+    };
+  }
+}
+
+class GroupTestMiddleware implements DaravelMiddleware {
+  @override
+  Middleware handle() {
+    return (Handler innerHandler) {
+      return (Request request) async {
+        final Response response = await innerHandler(request);
+        return response.change(headers: {
+          'X-GroupTest-Middleware': 'true',
+        });
+      };
+    };
+  }
+}
 
 void main() {
   const host = 'http://localhost';
@@ -18,10 +44,10 @@ void main() {
   test('Top level routes', () async {
     final router = DaravelRouter();
     router.get('/', (Request request) => Response.ok('Hello, World!'));
-    router.get('/<name>',
+    router.get('/{name}',
         (Request request, String name) => Response.ok('Hello, $name!'));
     router.get(
-        '/<name>/age/<age>',
+        '/{name}/age/{age}',
         (Request request, String name, String age) =>
             Response.ok('Hello, $name! You are $age years old!'));
 
@@ -67,10 +93,10 @@ void main() {
   test('Post requests', () async {
     final router = DaravelRouter();
     router.post('/', (Request request) => Response.ok('Hello, World!'));
-    router.post('/<name>',
+    router.post('/{name}',
         (Request request, String name) => Response.ok('Hello, $name!'));
     router.post(
-        '/<name>/age/<age>',
+        '/{name}/age/{age}',
         (Request request, String name, String age) =>
             Response.ok('Hello, $name! You are $age years old!'));
 
@@ -116,10 +142,10 @@ void main() {
   test('Put requests', () async {
     final router = DaravelRouter();
     router.put('/', (Request request) => Response.ok('Hello, World!'));
-    router.put('/<name>',
+    router.put('/{name}',
         (Request request, String name) => Response.ok('Hello, $name!'));
     router.put(
-        '/<name>/age/<age>',
+        '/{name}/age/{age}',
         (Request request, String name, String age) =>
             Response.ok('Hello, $name! You are $age years old!'));
 
@@ -165,10 +191,10 @@ void main() {
   test('Patch requests', () async {
     final router = DaravelRouter();
     router.patch('/', (Request request) => Response.ok('Hello, World!'));
-    router.patch('/<name>',
+    router.patch('/{name}',
         (Request request, String name) => Response.ok('Hello, $name!'));
     router.patch(
-        '/<name>/age/<age>',
+        '/{name}/age/{age}',
         (Request request, String name, String age) =>
             Response.ok('Hello, $name! You are $age years old!'));
 
@@ -214,11 +240,11 @@ void main() {
   test('Custom requests', () async {
     final router = DaravelRouter();
     router.add('GET', '/', (Request request) => Response.ok('Hello, World!'));
-    router.add('POST', '/<name>',
+    router.add('POST', '/{name}',
         (Request request, String name) => Response.ok('Hello, $name!'));
     router.add(
         'PATCH',
-        '/<name>/age/<age>',
+        '/{name}/age/{age}',
         (Request request, String name, String age) =>
             Response.ok('Hello, $name! You are $age years old!'));
 
@@ -269,8 +295,8 @@ void main() {
   test('Head requests', () async {
     final router = DaravelRouter();
     router.head('/', (Request request) => Response.ok(''));
-    router.head('/<name>', (Request request, String name) => Response.ok(''));
-    router.head('/<name>/age/<age>',
+    router.head('/{name}', (Request request, String name) => Response.ok(''));
+    router.head('/{name}/age/{age}',
         (Request request, String name, String age) => Response.ok(''));
 
     expect(router.routes.length, 3);
@@ -315,8 +341,8 @@ void main() {
     final router = DaravelRouter();
     router.options('/', (Request request) => Response.ok(''));
     router.options(
-        '/<name>', (Request request, String name) => Response.ok(''));
-    router.options('/<name>/age/<age>',
+        '/{name}', (Request request, String name) => Response.ok(''));
+    router.options('/{name}/age/{age}',
         (Request request, String name, String age) => Response.ok(''));
 
     expect(router.routes.length, 3);
@@ -360,10 +386,10 @@ void main() {
   test('Any requests', () async {
     final router = DaravelRouter();
     router.any('/', (Request request) => Response.ok('Hello, World!'));
-    router.any('/<name>',
+    router.any('/{name}',
         (Request request, String name) => Response.ok('Hello, $name!'));
     router.any(
-        '/<name>/age/<age>',
+        '/{name}/age/{age}',
         (Request request, String name, String age) =>
             Response.ok('Hello, $name! You are $age years old!'));
 
@@ -426,7 +452,7 @@ void main() {
   test('Delete requests', () {
     final router = DaravelRouter();
     router.delete('/', (Request request) => Response.ok('Hello, World!'));
-    router.delete('/<name>',
+    router.delete('/{name}',
         (Request request, String name) => Response.ok('Hello, $name!'));
     expect(router.routes.length, 2);
     expect(router.routes[0].method, 'DELETE');
@@ -439,7 +465,7 @@ void main() {
     router.get('/', (Request request) => Response.ok('Hello, World!'));
     router.group('/v1', (router) {
       router.get('/', (Request request) => Response.ok('Hello, World!'));
-      router.get('/echo/<message>',
+      router.get('/echo/{message}',
           (Request request, String message) => Response.ok(message));
     });
     expect(router.routes.length, 2);
@@ -500,6 +526,35 @@ void main() {
     expect(response.statusCode, 200);
 
     expect(response.headers['X-Test-Middleware'], 'true');
+    expect(await response.readAsString(), 'Hello, World!');
+
+    await server.close();
+  });
+
+  test('Grouped middleware', () async {
+    final router = DaravelRouter();
+    router.group('', (router) {
+      router
+          .get('/', (Request request) => Response.ok('Hello, World!'))
+          .middleware(TestMiddleware());
+    }).middleware(GroupTestMiddleware());
+
+    final app = Core(
+      routers: [router],
+      globalMiddlewares: [
+        LoggerMiddleware(),
+      ],
+    );
+
+    final HttpServer server = await app.run(port: 8099);
+
+    final Response response =
+        await app.rootHandler!(Request('GET', Uri.parse('$host:8099/')));
+
+    expect(response.statusCode, 200);
+
+    expect(response.headers['X-Test-Middleware'], 'true');
+    expect(response.headers['X-GroupTest-Middleware'], 'true');
     expect(await response.readAsString(), 'Hello, World!');
 
     await server.close();
