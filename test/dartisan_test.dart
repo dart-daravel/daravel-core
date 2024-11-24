@@ -304,8 +304,6 @@ void main() {
   });
 
   test('Generate Middleware', () async {
-    final logs = <String>[];
-
     // Prepare
     final playgroundDirectory =
         Directory(path.join(Directory.current.path, 'test/playground'));
