@@ -33,7 +33,6 @@ class MakeMiddlewareCommand extends Command {
 
     if (!directory.existsSync()) {
       directory.createSync(recursive: true);
-      return;
     }
 
     middlewareName = (argResults?.rest.isNotEmpty ?? false)

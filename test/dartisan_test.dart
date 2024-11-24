@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:daravel_core/console/commands/make_middleware.dart';
 import 'package:test/test.dart';
 import 'package:path/path.dart' as path;
 
@@ -300,5 +301,47 @@ void main() {
     );
 
     expect(logs, ['\x1B[31m[ERROR] \x1B[37mConfig directory not found.']);
+  });
+
+  test('Generate Middleware', () async {
+    final logs = <String>[];
+
+    // Prepare
+    final playgroundDirectory =
+        Directory(path.join(Directory.current.path, 'test/playground'));
+
+    if (!playgroundDirectory.existsSync()) {
+      playgroundDirectory.createSync();
+    }
+
+    await MakeMiddlewareCommand().run(playgroundDirectory.path, 'auth');
+
+    // Verify created middleware file.
+    final generatedMiddlewareFile = File(
+        path.join(playgroundDirectory.path, 'app/http/middleware/auth.dart'));
+
+    expect(generatedMiddlewareFile.existsSync(), true);
+
+    String generatedMiddlewareFileContent =
+        await generatedMiddlewareFile.readAsString();
+
+    expect(
+        generatedMiddlewareFileContent
+            .contains("import 'package:daravel_core/daravel_core.dart';"),
+        true);
+
+    expect(
+        generatedMiddlewareFileContent
+            .contains("import 'package:shelf/shelf.dart';"),
+        true);
+
+    expect(
+        generatedMiddlewareFileContent
+            .contains('class Auth implements DaravelMiddleware {'),
+        true);
+    expect(
+        generatedMiddlewareFileContent.contains(
+            '  @override\n  Middleware handle() {\n    return (Handler innerHandler) {\n      return (Request request) async {\n        \n      }\n    }\n  }\n}'),
+        true);
   });
 }
